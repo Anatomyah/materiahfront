@@ -1,24 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { createContext, useState } from "react";
+import Login from "./pages/Login";
+import TopNavBar from "./components/TopNavbar";
+import SiteRoutes from "./components/SiteRoutes";
+
+export const AppContext = createContext(null);
 
 function App() {
+  const [isLogged, setIsLogged] = useState(false);
+  const [token, setToken] = useState("");
+  const [userDetails, setUserDetails] = useState({});
+  const [userType, setUserType] = useState("regular");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <AppContext.Provider
+        value={{
+          isLogged,
+          setIsLogged,
+          token,
+          setToken,
+          userDetails,
+          setUserDetails,
+          userType,
+          setUserType,
+        }}
+      >
+        {isLogged ? (
+          <>
+            <TopNavBar />
+            <SiteRoutes />
+          </>
+        ) : (
+          <Login />
+        )}
+      </AppContext.Provider>
+    </>
   );
 }
 
