@@ -13,7 +13,6 @@ export const signup = async (userInfo) => {
       userprofile: {
         phone_prefix: userInfo.phonePrefix,
         phone_suffix: userInfo.phoneSuffix,
-        id_number: userInfo.idNumber,
       },
     };
 
@@ -106,18 +105,79 @@ export const resetPassword = (token, password) => {
     });
 };
 
-export const updateUserDetails = (token, updatedDetails, isSupplier) => {
+export const updateUserProfile = async (
+  token,
+  userId,
+  updatedDetails,
+  isSupplier = false,
+) => {
+  let updatedUserData = {};
+  console.log(updatedDetails);
   if (!isSupplier) {
-    console.log("supplier details");
+    updatedUserData = {
+      email: updatedDetails.email,
+      first_name: updatedDetails.firstName,
+      last_name: updatedDetails.lastName,
+      userprofile: {
+        phone_prefix: updatedDetails.phonePrefix,
+        phone_suffix: updatedDetails.phoneSuffix,
+      },
+    };
   } else {
-    console.log("userprofile details");
+    updatedUserData = {
+      email: updatedDetails.contactEmail,
+      first_name: updatedDetails.firstName,
+      last_name: updatedDetails.lastName,
+      supplieruserprofile: {
+        contact_phone_prefix: updatedDetails.contactPhonePrefix,
+        contact_phone_suffix: updatedDetails.contactPhoneSuffix,
+      },
+    };
   }
-  axios
-    .patch(`${BACKEND_URL}users/`, { updatedDetails })
-    .then((response) => {
-      console.log(response.data);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  console.log(updatedUserData);
+  try {
+    const response = await axios.patch(
+      `${BACKEND_URL}users/${userId}/`,
+      updatedUserData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return error.response ? error.response.data : "Something went wrong";
+  }
+};
+
+export const updateSupplierProfile = async (
+  token,
+  supplierId,
+  updatedDetails,
+) => {
+  let updatedSupplierData = {
+    email: updatedDetails.email,
+    phone_prefix: updatedDetails.phonePrefix,
+    phone_suffix: updatedDetails.phoneSuffix,
+  };
+
+  try {
+    const response = await axios.patch(
+      `${BACKEND_URL}suppliers/${supplierId}/`,
+      updatedSupplierData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return error.response ? error.response.data : "Something went wrong";
+  }
 };

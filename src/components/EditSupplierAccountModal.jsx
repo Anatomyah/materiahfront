@@ -1,32 +1,36 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validateId, validatePhoneSuffix } from "../helpers";
+import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
+import { updateSupplierProfile, updateUserProfile } from "../client";
+import { useNavigate } from "react-router-dom";
 
-const EditAccountModal = ({ details }) => {
+const EditSupplierAccountModal = () => {
+  const nav = useNavigate();
+  const { token, userDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phonePrefix, setPhonePrefix] = useState("");
   const [phoneSuffix, setPhoneSuffix] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhonePrefix, setContactPhonePrefix] = useState("");
+  const [contactPhoneSuffix, setContactPhoneSuffix] = useState("");
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
-  const [contactEmail, setContactEmail] = useState();
-  const [contactPhonePrefix, setContactPhonePrefix] = useState();
-  const [contactPhoneSuffix, setContactPhoneSuffix] = useState();
 
   useEffect(() => {
-    setFirstName(details.first_name);
-    setLastName(details.last_name);
-    setEmail(details.email);
-    setPhonePrefix(details.phone_prefix);
-    setPhoneSuffix(details.phone_suffix);
-    setContactEmail(details.contact_email);
-    setContactPhonePrefix(details.contact_phone_prefix);
-    setContactPhoneSuffix(details.contact_phone_suffix);
+    setFirstName(userDetails.first_name);
+    setLastName(userDetails.last_name);
+    setEmail(userDetails.email);
+    setPhonePrefix(userDetails.phone_prefix);
+    setPhoneSuffix(userDetails.phone_suffix);
+    setContactEmail(userDetails.contact_email);
+    setContactPhonePrefix(userDetails.contact_phone_prefix);
+    setContactPhoneSuffix(userDetails.contact_phone_suffix);
   }, [showModal]);
 
   useEffect(() => {
@@ -89,8 +93,36 @@ const EditAccountModal = ({ details }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      setIsFilled(true);
-      handleClose();
+      updateUserProfile(
+        token,
+        userDetails.user_id,
+        {
+          firstName,
+          lastName,
+          contactEmail,
+          contactPhonePrefix,
+          contactPhoneSuffix,
+        },
+        true,
+      ).then((response) => {
+        if (response === true) {
+          updateSupplierProfile(
+            email,
+            userDetails.supplier,
+            phonePrefix,
+            phoneSuffix,
+          ).then((response) => {
+            if (response === true) {
+              handleClose();
+              nav("/account");
+            } else {
+              setErrorMessages((prevState) => [...prevState, response]);
+            }
+          });
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
+        }
+      });
     }
   };
 
@@ -201,4 +233,4 @@ const EditAccountModal = ({ details }) => {
     </>
   );
 };
-export default EditAccountModal;
+export default EditSupplierAccountModal;

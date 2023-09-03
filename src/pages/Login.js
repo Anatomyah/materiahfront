@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../client";
 import { AppContext } from "../App";
 import SignupModal from "../components/SignupModal";
-import ChangePasswordModal from "../components/ChangePasswordModal";
 import ResetPasswordModal from "../components/ResetPasswordModal";
 
 const Login = () => {

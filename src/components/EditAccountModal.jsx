@@ -1,13 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validateId, validatePhoneSuffix } from "../helpers";
+import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
+import { updateUserProfile } from "../client";
+import { useNavigate } from "react-router-dom";
 
-const EditAccountModal = ({ details }) => {
+const EditAccountModal = () => {
+  const nav = useNavigate();
+  const { token, userDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
-  const [idNumber, setIdNumber] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,19 +20,16 @@ const EditAccountModal = ({ details }) => {
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    setFirstName(details.first_name);
-    setLastName(details.last_name);
-    setEmail(details.email);
-    setPhonePrefix(details.phone_prefix);
-    setPhoneSuffix(details.phone_suffix);
-    setIdNumber(details.id_number);
+    setFirstName(userDetails.first_name);
+    setLastName(userDetails.last_name);
+    setEmail(userDetails.email);
+    setPhonePrefix(userDetails.phone_prefix);
+    setPhoneSuffix(userDetails.phone_suffix);
   }, [showModal]);
 
   useEffect(() => {
-    setIsFilled(
-      firstName && lastName && email && idNumber && phonePrefix && phoneSuffix,
-    );
-  }, [firstName, lastName, email, idNumber, phonePrefix, phoneSuffix]);
+    setIsFilled(firstName && lastName && email && phonePrefix && phoneSuffix);
+  }, [firstName, lastName, email, phonePrefix, phoneSuffix]);
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(true);
@@ -39,14 +39,10 @@ const EditAccountModal = ({ details }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErrorMessages([]);
     const emailInput = document.getElementById("email");
-    const idValidation = validateId(idNumber);
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (
-      !phoneValidation.valid ||
-      !idValidation.valid ||
-      !emailInput.checkValidity()
-    ) {
+    if (!phoneValidation.valid || !emailInput.checkValidity()) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
         if (!emailInput.checkValidity()) {
@@ -55,14 +51,23 @@ const EditAccountModal = ({ details }) => {
         if (!phoneValidation.valid) {
           newErrorMessages.push(phoneValidation.error);
         }
-        if (!idValidation.valid) {
-          newErrorMessages.push(idValidation.error);
-        }
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      setIsFilled(true);
-      handleClose();
+      updateUserProfile(token, userDetails.user_id, {
+        firstName,
+        lastName,
+        email,
+        phonePrefix,
+        phoneSuffix,
+      }).then((response) => {
+        if (response === true) {
+          handleClose();
+          nav("/account");
+        } else {
+          setErrorMessages((prevState) => [...prevState, response.detail]);
+        }
+      });
     }
   };
 
@@ -79,13 +84,6 @@ const EditAccountModal = ({ details }) => {
         <Modal.Body>
           <form className="form-control">
             <label htmlFor="idNumber">ID Number</label>
-            <input
-              id="idNumber"
-              onChange={(e) => setIdNumber(e.target.value)}
-              type="text"
-              placeholder="ID Number"
-              value={idNumber}
-            />
             <label htmlFor="firstName">First Name</label>
             <input
               id="firstName"

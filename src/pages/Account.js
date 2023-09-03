@@ -12,7 +12,7 @@ const Account = () => {
       <h3>
         {userDetails.first_name} {userDetails.last_name}
       </h3>
-      {isSupplier && <p>{userDetails.id_number}</p>}
+      {!isSupplier && <p>{userDetails.id_number}</p>}
       {isSupplier ? (
         <p>
           {userDetails.contact_phone_prefix}-{userDetails.contact_phone_suffix}
@@ -25,11 +25,7 @@ const Account = () => {
       <h3>{userDetails.email}</h3>
       {isSupplier && <h3>{userDetails.contact_email}</h3>}
 
-      {isSupplier ? (
-        <EditSupplierAccountModal details={userDetails} />
-      ) : (
-        <EditAccountModal details={userDetails} />
-      )}
+      {isSupplier ? <EditSupplierAccountModal /> : <EditAccountModal />}
       <ChangePasswordModal
         email={userDetails.email}
         buttonText="Change Password"
