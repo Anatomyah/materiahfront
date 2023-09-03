@@ -32,7 +32,12 @@ export const signup = async (userInfo) => {
   }
 };
 
-export const login = async (credentials, setToken, setUserDetails) => {
+export const login = async (
+  credentials,
+  setToken,
+  setUserDetails,
+  setIsSupplier,
+) => {
   try {
     const userData = {
       username: credentials.username,
@@ -47,6 +52,10 @@ export const login = async (credentials, setToken, setUserDetails) => {
     if (res.status === 200 && res.data) {
       setToken(res.data.token);
       setUserDetails(res.data.user_details);
+      if (res.data.user_details.is_supplier) {
+        setIsSupplier(true);
+      }
+      console.log(res.data.user_details);
       return true;
     }
   } catch (e) {
@@ -94,5 +103,21 @@ export const resetPassword = (token, password) => {
     })
     .catch((error) => {
       return error;
+    });
+};
+
+export const updateUserDetails = (token, updatedDetails, isSupplier) => {
+  if (!isSupplier) {
+    console.log("supplier details");
+  } else {
+    console.log("userprofile details");
+  }
+  axios
+    .patch(`${BACKEND_URL}users/`, { updatedDetails })
+    .then((response) => {
+      console.log(response.data);
+    })
+    .catch((error) => {
+      console.error(error);
     });
 };

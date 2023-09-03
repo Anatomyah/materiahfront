@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { validateId, validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
+import { AppContext } from "../App";
 
 const EditAccountModal = ({ details }) => {
   const [showModal, setShowModal] = useState(false);
   const [idNumber, setIdNumber] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [phonePrefix, setPhonePrefix] = useState("");
   const [phoneSuffix, setPhoneSuffix] = useState("");
   const [isFilled, setIsFilled] = useState(true);
@@ -17,14 +19,17 @@ const EditAccountModal = ({ details }) => {
   useEffect(() => {
     setFirstName(details.first_name);
     setLastName(details.last_name);
+    setEmail(details.email);
     setPhonePrefix(details.phone_prefix);
     setPhoneSuffix(details.phone_suffix);
     setIdNumber(details.id_number);
   }, [showModal]);
 
   useEffect(() => {
-    setIsFilled(firstName && lastName && idNumber && phoneSuffix);
-  }, [firstName, lastName, idNumber, phoneSuffix]);
+    setIsFilled(
+      firstName && lastName && email && idNumber && phonePrefix && phoneSuffix,
+    );
+  }, [firstName, lastName, email, idNumber, phonePrefix, phoneSuffix]);
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(true);
@@ -34,11 +39,19 @@ const EditAccountModal = ({ details }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const emailInput = document.getElementById("email");
     const idValidation = validateId(idNumber);
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (!phoneValidation.valid || !idValidation.valid) {
+    if (
+      !phoneValidation.valid ||
+      !idValidation.valid ||
+      !emailInput.checkValidity()
+    ) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
+        if (!emailInput.checkValidity()) {
+          newErrorMessages.push("Invalid email format.");
+        }
         if (!phoneValidation.valid) {
           newErrorMessages.push(phoneValidation.error);
         }
@@ -56,7 +69,7 @@ const EditAccountModal = ({ details }) => {
   return (
     <>
       <Button variant="primary" onClick={handleShow}>
-        Edit Name
+        Edit details
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -88,6 +101,13 @@ const EditAccountModal = ({ details }) => {
               type="text"
               placeholder="Last Name"
               value={lastName}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
             />
             <label htmlFor="phone">Phone</label>{" "}
             <select

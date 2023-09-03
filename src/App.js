@@ -10,7 +10,7 @@ function App() {
   const [isLogged, setIsLogged] = useState(false);
   const [token, setToken] = useState("");
   const [userDetails, setUserDetails] = useState({});
-  const [userType, setUserType] = useState("regular");
+  const [isSupplier, setIsSupplier] = useState(false);
 
   return (
     <>
@@ -23,8 +23,8 @@ function App() {
           setToken,
           userDetails,
           setUserDetails,
-          userType,
-          setUserType,
+          isSupplier,
+          setIsSupplier,
         }}
       >
         {isLogged ? (
