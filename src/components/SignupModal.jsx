@@ -75,7 +75,6 @@ const SignupModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      console.log(phonePrefix);
       signup({
         username,
         email,
@@ -90,7 +89,6 @@ const SignupModal = () => {
         setUserFirstName,
       }).then((res) => {
         if (res) {
-          console.log(username, password);
           login({ username, password }, setToken, setFirstName).then((res) => {
             if (res) {
               setIsLogged(true);
@@ -212,7 +210,7 @@ const SignupModal = () => {
               handleSubmit(e);
             }}
           >
-            Save Changes
+            Signup
           </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
