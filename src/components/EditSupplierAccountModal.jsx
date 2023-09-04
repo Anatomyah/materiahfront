@@ -4,21 +4,24 @@ import Modal from "react-bootstrap/Modal";
 import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
-import { updateSupplierProfile, updateUserProfile } from "../client";
-import { useNavigate } from "react-router-dom";
+import {
+  getUserDetails,
+  updateSupplierProfile,
+  updateUserProfile,
+} from "../client";
 
 const EditSupplierAccountModal = () => {
-  const nav = useNavigate();
-  const { token, userDetails } = useContext(AppContext);
+  const { token, userDetails, setUserDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phonePrefix, setPhonePrefix] = useState("");
   const [phoneSuffix, setPhoneSuffix] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhonePrefix, setContactPhonePrefix] = useState("");
-  const [contactPhoneSuffix, setContactPhoneSuffix] = useState("");
+  const [supplierEmail, setSupplierEmail] = useState("");
+  const [supplierPhonePrefix, setSupplierPhonePrefix] = useState("");
+  const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState("");
+  const [supplierWebsite, setSupplierWebsite] = useState("");
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
 
@@ -28,9 +31,10 @@ const EditSupplierAccountModal = () => {
     setEmail(userDetails.email);
     setPhonePrefix(userDetails.phone_prefix);
     setPhoneSuffix(userDetails.phone_suffix);
-    setContactEmail(userDetails.contact_email);
-    setContactPhonePrefix(userDetails.contact_phone_prefix);
-    setContactPhoneSuffix(userDetails.contact_phone_suffix);
+    setSupplierEmail(userDetails.supplier_email);
+    setSupplierPhonePrefix(userDetails.supplier_phone_prefix);
+    setSupplierPhoneSuffix(userDetails.supplier_phone_suffix);
+    setSupplierWebsite(userDetails.supplier_website);
   }, [showModal]);
 
   useEffect(() => {
@@ -40,19 +44,19 @@ const EditSupplierAccountModal = () => {
         email &&
         phonePrefix &&
         phoneSuffix &&
-        contactEmail &&
-        contactPhonePrefix &&
-        contactPhoneSuffix,
+        supplierEmail &&
+        supplierPhonePrefix &&
+        supplierPhoneSuffix,
     );
   }, [
     firstName,
     lastName,
     email,
-    contactEmail,
+    supplierEmail,
     phonePrefix,
     phoneSuffix,
-    contactPhonePrefix,
-    contactPhoneSuffix,
+    supplierPhonePrefix,
+    supplierPhoneSuffix,
   ]);
   const handleClose = () => {
     setErrorMessages([]);
@@ -63,27 +67,28 @@ const EditSupplierAccountModal = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const emailInput = document.getElementById("email");
-    const contactEmailInput = document.getElementById("contact_email");
+    setErrorMessages([]);
+    const supplierEmailInput = document.getElementById("contact_email");
+    const contactEmailInput = document.getElementById("supplier_email");
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    const contactPhoneValidation = validatePhoneSuffix(contactPhoneSuffix);
+    const contactPhoneValidation = validatePhoneSuffix(supplierPhoneSuffix);
 
     if (
-      !emailInput.checkValidity() ||
+      !supplierEmailInput.checkValidity() ||
       !contactEmailInput.checkValidity() ||
       !phoneValidation.valid ||
       !contactPhoneValidation.valid
     ) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!emailInput.checkValidity()) {
+        if (!supplierEmailInput.checkValidity()) {
           newErrorMessages.push("Invalid office email format.");
         }
         if (!contactEmailInput.checkValidity()) {
           newErrorMessages.push("Invalid contact email format.");
         }
         if (!phoneValidation.valid) {
-          newErrorMessages.push(`Office phone: ${phoneValidation.error}`);
+          newErrorMessages.push(`Supplier phone: ${phoneValidation.error}`);
         }
         if (!contactPhoneValidation.valid) {
           newErrorMessages.push(
@@ -93,32 +98,35 @@ const EditSupplierAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      updateUserProfile(
-        token,
-        userDetails.user_id,
-        {
-          firstName,
-          lastName,
-          contactEmail,
-          contactPhonePrefix,
-          contactPhoneSuffix,
-        },
-        true,
-      ).then((response) => {
+      updateSupplierProfile(token, userDetails.supplier_id, {
+        supplierEmail,
+        supplierPhonePrefix,
+        supplierPhoneSuffix,
+        supplierWebsite,
+      }).then((response) => {
         if (response === true) {
-          updateSupplierProfile(
-            email,
-            userDetails.supplier,
-            phonePrefix,
-            phoneSuffix,
+          updateUserProfile(
+            token,
+            userDetails.user_id,
+            {
+              firstName,
+              lastName,
+              email,
+              phonePrefix,
+              phoneSuffix,
+            },
+            setUserDetails,
+            true,
           ).then((response) => {
             if (response === true) {
               handleClose();
-              nav("/account");
+              console.log("user details success");
             } else {
               setErrorMessages((prevState) => [...prevState, response]);
             }
           });
+
+          console.log("supplier details success");
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
@@ -138,30 +146,31 @@ const EditSupplierAccountModal = () => {
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
+            <legend>Supplier contact details</legend>
             <label htmlFor="firstName">First Name</label>
             <input
-              id="firstName"
+              id="first_name"
               onChange={(e) => setFirstName(e.target.value)}
               type="text"
-              placeholder="First Name"
+              placeholder="Contact First Name"
               value={firstName}
             />
             <label htmlFor="lastName">Last Name</label>
             <input
-              id="lastName"
+              id="last_name"
               onChange={(e) => setLastName(e.target.value)}
               type="text"
-              placeholder="Last Name"
+              placeholder="Contact Last Name"
               value={lastName}
             />
             <input
               type="email"
-              placeholder="Office Email"
-              id="email"
+              placeholder="Contact Email"
+              id="contact_email"
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
-            <label htmlFor="phone">Phone</label>{" "}
+            <label htmlFor="phone">Phone</label>
             <select
               value={phonePrefix}
               onChange={(e) => setPhonePrefix(e.target.value)}
@@ -176,20 +185,22 @@ const EditSupplierAccountModal = () => {
               id="phone"
               onChange={(e) => setPhoneSuffix(e.target.value)}
               type="text"
-              placeholder="Office Phone"
+              placeholder="Contact Phone"
               value={phoneSuffix}
             />
+            <legend>Supplier details:</legend>
+            <br />
             <input
               type="email"
-              placeholder="Contact Email"
-              id="contact_email"
-              onChange={(e) => setContactEmail(e.target.value)}
-              value={contactEmail}
+              placeholder="Supplier email for quotes"
+              id="supplier_email"
+              onChange={(e) => setSupplierEmail(e.target.value)}
+              value={supplierEmail}
             />
-            <label htmlFor="contact_phone">Phone</label>{" "}
+            <label htmlFor="supplier_phone">Phone</label>{" "}
             <select
-              value={contactPhonePrefix}
-              onChange={(e) => setContactPhonePrefix(e.target.value)}
+              value={supplierPhonePrefix}
+              onChange={(e) => setSupplierPhonePrefix(e.target.value)}
             >
               {PHONE_PREFIX_CHOICES.map((choice, index) => (
                 <option key={index} value={choice.value}>
@@ -198,11 +209,18 @@ const EditSupplierAccountModal = () => {
               ))}
             </select>
             <input
-              id="contact_phone"
-              onChange={(e) => setContactPhoneSuffix(e.target.value)}
+              id="supplier_phone"
+              onChange={(e) => setSupplierPhoneSuffix(e.target.value)}
               type="text"
-              placeholder="Contact Phone"
-              value={contactPhoneSuffix}
+              placeholder="Supplier office phone"
+              value={supplierPhoneSuffix}
+            />
+            <input
+              id="supplier_website"
+              onChange={(e) => setSupplierWebsite(e.target.value)}
+              type="url"
+              placeholder="Supplier Website URL"
+              value={supplierWebsite}
             />
             {errorMessages && (
               <ul>

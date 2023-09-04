@@ -4,12 +4,10 @@ import Modal from "react-bootstrap/Modal";
 import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
-import { updateUserProfile } from "../client";
-import { useNavigate } from "react-router-dom";
+import { getUserDetails, updateUserProfile } from "../client";
 
 const EditAccountModal = () => {
-  const nav = useNavigate();
-  const { token, userDetails } = useContext(AppContext);
+  const { token, userDetails, setUserDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -30,11 +28,13 @@ const EditAccountModal = () => {
   useEffect(() => {
     setIsFilled(firstName && lastName && email && phonePrefix && phoneSuffix);
   }, [firstName, lastName, email, phonePrefix, phoneSuffix]);
+
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(true);
     setShowModal(false);
   };
+
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (e) => {
@@ -54,18 +54,22 @@ const EditAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      updateUserProfile(token, userDetails.user_id, {
-        firstName,
-        lastName,
-        email,
-        phonePrefix,
-        phoneSuffix,
-      }).then((response) => {
+      updateUserProfile(
+        token,
+        userDetails.user_id,
+        {
+          firstName,
+          lastName,
+          email,
+          phonePrefix,
+          phoneSuffix,
+        },
+        setUserDetails,
+      ).then((response) => {
         if (response === true) {
           handleClose();
-          nav("/account");
         } else {
-          setErrorMessages((prevState) => [...prevState, response.detail]);
+          setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }

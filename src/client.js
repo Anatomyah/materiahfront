@@ -109,10 +109,14 @@ export const updateUserProfile = async (
   token,
   userId,
   updatedDetails,
+  setUserDetails,
   isSupplier = false,
 ) => {
   let updatedUserData = {};
+  console.log("IN UPDATE USER");
   console.log(updatedDetails);
+  console.log(userId);
+  console.log("IN UPDATE USER");
   if (!isSupplier) {
     updatedUserData = {
       email: updatedDetails.email,
@@ -125,7 +129,7 @@ export const updateUserProfile = async (
     };
   } else {
     updatedUserData = {
-      email: updatedDetails.contactEmail,
+      email: updatedDetails.email,
       first_name: updatedDetails.firstName,
       last_name: updatedDetails.lastName,
       supplieruserprofile: {
@@ -134,7 +138,6 @@ export const updateUserProfile = async (
       },
     };
   }
-  console.log(updatedUserData);
   try {
     const response = await axios.patch(
       `${BACKEND_URL}users/${userId}/`,
@@ -145,11 +148,14 @@ export const updateUserProfile = async (
         },
       },
     );
+    console.log("IN UPDATE USER - RESPNSE");
     console.log(response.data);
+    setUserDetails(response.data);
+    console.log("IN UPDATE USER - RESPNSE");
     return true;
   } catch (error) {
     console.error(error);
-    return error.response ? error.response.data : "Something went wrong";
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -159,9 +165,10 @@ export const updateSupplierProfile = async (
   updatedDetails,
 ) => {
   let updatedSupplierData = {
-    email: updatedDetails.email,
-    phone_prefix: updatedDetails.phonePrefix,
-    phone_suffix: updatedDetails.phoneSuffix,
+    email: updatedDetails.supplierEmail,
+    phone_prefix: updatedDetails.supplierPhonePrefix,
+    phone_suffix: updatedDetails.supplierPhoneSuffix,
+    website: updatedDetails.supplierWebsite,
   };
 
   try {
@@ -174,10 +181,27 @@ export const updateSupplierProfile = async (
         },
       },
     );
+    console.log("IN UPDATE SUPPLIER - RESPNSE");
     console.log(response.data);
+    console.log("IN UPDATE SUPPLIER - RESPNSE");
     return true;
   } catch (error) {
-    console.error(error);
-    return error.response ? error.response.data : "Something went wrong";
+    console.error(error.response.data);
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
+
+// export const getUserDetails = async (token, setUserDetails) => {
+//   try {
+//     const response = await axios.get(`${BACKEND_URL}users/`, {
+//       headers: {
+//         Authorization: `Token ${token}`,
+//       },
+//     });
+//     setUserDetails(response.data.results[0]);
+//     console.log(response.data.results[0]);
+//     return true;
+//   } catch (error) {
+//     return error;
+//   }
+// };

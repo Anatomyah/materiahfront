@@ -10,13 +10,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 function TopNavBar() {
-  const { token, setIsLogged } = useContext(AppContext);
+  const { token, setIsLogged, setIsSupplier } = useContext(AppContext);
   const handleLogout = async () => {
     try {
       await logout(token);
     } catch (error) {
       console.error("Error during logout:", error);
     }
+    setIsSupplier(false);
     setIsLogged(false);
     toast("See you soon!");
   };
