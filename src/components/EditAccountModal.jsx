@@ -66,7 +66,7 @@ const EditAccountModal = () => {
         },
         setUserDetails,
       ).then((response) => {
-        if (response === true) {
+        if (!response) {
           handleClose();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);

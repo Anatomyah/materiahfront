@@ -10,7 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 function TopNavBar() {
-  const { token, setIsLogged, setIsSupplier } = useContext(AppContext);
+  const { token, setIsLogged, isSupplier, setIsSupplier } =
+    useContext(AppContext);
   const handleLogout = async () => {
     try {
       await logout(token);
@@ -35,17 +36,25 @@ function TopNavBar() {
             <Nav.Link as={Link} to="/account">
               Account
             </Nav.Link>
-            <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.4">
-                Separated link
-              </NavDropdown.Item>
-            </NavDropdown>
+            {isSupplier ? (
+              <Nav.Link as={Link} to="/supplier_catalogue">
+                Catalogue
+              </Nav.Link>
+            ) : (
+              <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
+                <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                <NavDropdown.Item href="#action/3.2">
+                  Another action
+                </NavDropdown.Item>
+                <NavDropdown.Item href="#action/3.3">
+                  Something
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item href="#action/3.4">
+                  Separated link
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
           </Nav>
           <Nav>
             <Nav.Link href="#deets">More deets</Nav.Link>

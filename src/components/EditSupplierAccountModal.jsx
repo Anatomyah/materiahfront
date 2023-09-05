@@ -4,11 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
-import {
-  getUserDetails,
-  updateSupplierProfile,
-  updateUserProfile,
-} from "../client";
+import { updateSupplierProfile, updateUserProfile } from "../client";
 
 const EditSupplierAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
@@ -104,7 +100,7 @@ const EditSupplierAccountModal = () => {
         supplierPhoneSuffix,
         supplierWebsite,
       }).then((response) => {
-        if (response === true) {
+        if (!response) {
           updateUserProfile(
             token,
             userDetails.user_id,
@@ -118,15 +114,12 @@ const EditSupplierAccountModal = () => {
             setUserDetails,
             true,
           ).then((response) => {
-            if (response === true) {
+            if (!response) {
               handleClose();
-              console.log("user details success");
             } else {
               setErrorMessages((prevState) => [...prevState, response]);
             }
           });
-
-          console.log("supplier details success");
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }

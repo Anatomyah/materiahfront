@@ -8,7 +8,7 @@ import { AppContext } from "../App";
 import { useNavigate } from "react-router-dom";
 
 const SignupModal = () => {
-  const { setToken, setUserFirstName, setIsLogged } = useContext(AppContext);
+  const { setToken, setUserFirstName } = useContext(AppContext);
   const nav = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [username, setUsername] = useState("");
@@ -87,14 +87,20 @@ const SignupModal = () => {
         password2: confirmPassword,
         setToken,
         setUserFirstName,
-      }).then((res) => {
-        if (res) {
-          login({ username, password }, setToken, setFirstName).then((res) => {
-            if (res) {
-              setIsLogged(true);
-              nav("/");
-            }
-          });
+      }).then((response) => {
+        if (!response) {
+          login({ username, password }, setToken, setFirstName).then(
+            (response) => {
+              if (!response) {
+                handleClose();
+                nav("/");
+              } else {
+                setErrorMessages((prevState) => [...prevState, response]);
+              }
+            },
+          );
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }

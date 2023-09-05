@@ -10,15 +10,13 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const nav = useNavigate();
-  const { setIsLogged, setToken, setUserDetails, setIsSupplier } =
-    useContext(AppContext);
+  const { setToken, setUserDetails, setIsSupplier } = useContext(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
     login({ username, password }, setToken, setUserDetails, setIsSupplier).then(
-      (res) => {
-        if (res) {
+      (response) => {
+        if (!response) {
           setLoginError(false);
-          setIsLogged(true);
           nav("/");
         } else {
           setLoginError(true);

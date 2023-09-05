@@ -16,18 +16,15 @@ export const signup = async (userInfo) => {
       },
     };
 
-    const res = await axios.post(`${BACKEND_URL}users/`, userData, {
+    await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-
-    if (res.status === 201) {
-      return true;
-    }
-  } catch (e) {
-    alert(e);
-    return false;
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -54,11 +51,11 @@ export const login = async (
       if (res.data.user_details.is_supplier) {
         setIsSupplier(true);
       }
-      console.log(res.data.user_details);
-      return true;
     }
-  } catch (e) {
-    return false;
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -78,31 +75,27 @@ export const logout = async (token) => {
   }
 };
 
-export const getPasswordToken = (email) => {
-  axios
-    .post(`${BACKEND_URL}api/password_reset/`, {
-      email: email,
-    })
-    .then((response) => {
-      return true;
-    })
-    .catch((error) => {
-      return error;
-    });
+export const getPasswordToken = async (email) => {
+  try {
+    await axios.post(`${BACKEND_URL}api/password_reset/`, { email });
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
 };
 
-export const resetPassword = (token, password) => {
-  axios
-    .post(`${BACKEND_URL}api/password_reset/confirm/`, {
-      token: token,
-      password: password,
-    })
-    .then((response) => {
-      return true;
-    })
-    .catch((error) => {
-      return error;
+export const resetPassword = async (token, password) => {
+  try {
+    await axios.post(`${BACKEND_URL}api/password_reset/confirm/`, {
+      token,
+      password,
     });
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
 };
 
 export const updateUserProfile = async (
@@ -113,10 +106,6 @@ export const updateUserProfile = async (
   isSupplier = false,
 ) => {
   let updatedUserData = {};
-  console.log("IN UPDATE USER");
-  console.log(updatedDetails);
-  console.log(userId);
-  console.log("IN UPDATE USER");
   if (!isSupplier) {
     updatedUserData = {
       email: updatedDetails.email,
@@ -148,11 +137,7 @@ export const updateUserProfile = async (
         },
       },
     );
-    console.log("IN UPDATE USER - RESPNSE");
-    console.log(response.data);
     setUserDetails(response.data);
-    console.log("IN UPDATE USER - RESPNSE");
-    return true;
   } catch (error) {
     console.error(error);
     return error.response ? error.response.data.detail : "Something went wrong";
@@ -172,7 +157,7 @@ export const updateSupplierProfile = async (
   };
 
   try {
-    const response = await axios.patch(
+    await axios.patch(
       `${BACKEND_URL}suppliers/${supplierId}/`,
       updatedSupplierData,
       {
@@ -181,13 +166,23 @@ export const updateSupplierProfile = async (
         },
       },
     );
-    console.log("IN UPDATE SUPPLIER - RESPNSE");
-    console.log(response.data);
-    console.log("IN UPDATE SUPPLIER - RESPNSE");
-    return true;
   } catch (error) {
     console.error(error.response.data);
     return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
+export const getSupplierProducts = async (token, setSupplierCatalogue) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}products/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    console.log(response.data.results);
+    setSupplierCatalogue(response.data.results);
+  } catch (error) {
+    return error;
   }
 };
 

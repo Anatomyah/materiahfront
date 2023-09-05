@@ -32,19 +32,25 @@ const ChangePasswordModal = ({}) => {
         "Email entered not found in our database",
       ]);
     }
-    const res = getPasswordToken(email);
-    if (res instanceof Error) {
-      setErrorMessages((prevState) => [...prevState, res.message]);
-    }
-    setTokenSent(true);
+    getPasswordToken(email).then((response) => {
+      if (!response) {
+        setTokenSent(true);
+      } else {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const res = resetPassword(token, password);
-    if (res instanceof Error) {
-      setErrorMessages((prevState) => [...prevState, res.message]);
-    }
+    resetPassword(token, password).then((response) => {
+      if (!response) {
+        handleClose();
+      } else {
+        setErrorMessages((prevState) => [...prevState, res.message]);
+      }
+    });
+
     handleClose();
   };
 
