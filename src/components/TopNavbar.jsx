@@ -33,35 +33,35 @@ function TopNavBar() {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
-            <Nav.Link as={Link} to="/account">
-              Account
+            <Nav.Link as={Link} to="/inventory">
+              Inventory
+            </Nav.Link>
+            <Nav.Link as={Link} to="/shop">
+              Shop
+            </Nav.Link>
+            <Nav.Link as={Link} to="/receive_orders">
+              Orders
             </Nav.Link>
             {isSupplier ? (
               <Nav.Link as={Link} to="/supplier_catalogue">
                 Catalogue
               </Nav.Link>
             ) : (
-              <NavDropdown title="Dropdown" id="collasible-nav-dropdown">
-                <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                <NavDropdown.Item href="#action/3.2">
-                  Another action
+              <NavDropdown title="Database" id="collasible-nav-dropdown">
+                <NavDropdown.Item as={Link} to="/suppliers">
+                  Suppliers
                 </NavDropdown.Item>
-                <NavDropdown.Item href="#action/3.3">
-                  Something
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action/3.4">
-                  Separated link
+                <NavDropdown.Item as={Link} to="/manufacturers">
+                  Manufacturers
                 </NavDropdown.Item>
               </NavDropdown>
             )}
           </Nav>
           <Nav>
-            <Nav.Link href="#deets">More deets</Nav.Link>
-            <Nav.Link eventKey={2} href="#memes">
-              Dank memes
+            <Nav.Link as={Link} to="/account">
+              Account
             </Nav.Link>
+            <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -3,14 +3,12 @@ import { useContext, useEffect, useState } from "react";
 import { getSupplierProducts } from "../client/user_client";
 import { AppContext } from "../App";
 import PaginatorComponent from "../components/PaginatorComponent";
-const ShowSupplierCatalogue = () => {
+const SupplierCataloguePage = () => {
   const { token } = useContext(AppContext);
   const [supplierCatalogue, setSupplierCatalogue] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-
-  console.log("Outside useEffect:", supplierCatalogue);
 
   useEffect(() => {
     getSupplierProducts(
@@ -55,4 +53,4 @@ const ShowSupplierCatalogue = () => {
     </div>
   );
 };
-export default ShowSupplierCatalogue;
+export default SupplierCataloguePage;

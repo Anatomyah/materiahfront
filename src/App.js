@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import Login from "./pages/Login";
+import LoginPage from "./pages/LoginPage";
 import TopNavBar from "./components/TopNavbar";
 import SiteRoutes from "./components/SiteRoutes";
 import { ToastContainer } from "react-toastify";
@@ -68,7 +68,7 @@ function App() {
             <SiteRoutes />
           </>
         ) : (
-          <Login />
+          <LoginPage />
         )}
       </AppContext.Provider>
     </>

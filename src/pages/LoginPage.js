@@ -5,7 +5,7 @@ import { AppContext } from "../App";
 import SignupModal from "../components/SignupModal";
 import ResetPasswordModal from "../components/ResetPasswordModal";
 
-const Login = () => {
+const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
@@ -37,7 +37,7 @@ const Login = () => {
           alignContent: "center",
         }}
       >
-        <legend>Login</legend>
+        <legend>LoginPage</legend>
         <input
           onChange={(e) => setUsername(e.target.value)}
           type="text"
@@ -61,11 +61,15 @@ const Login = () => {
           Remember Me
         </label>
         {loginError && <p>Unable to log in with provided credentials</p>}
-        <input type="submit" value="Login" disabled={!password || !username} />
+        <input
+          type="submit"
+          value="LoginPage"
+          disabled={!password || !username}
+        />
       </form>
       <SignupModal />
       <ResetPasswordModal />
     </div>
   );
 };
-export default Login;
+export default LoginPage;
