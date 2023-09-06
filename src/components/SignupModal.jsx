@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { validateId, validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
-import { login, signup } from "../client";
+import { login, signup } from "../client/user_client";
 import { AppContext } from "../App";
 import { useNavigate } from "react-router-dom";
 

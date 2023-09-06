@@ -1,6 +1,6 @@
 import React from "react";
 import { useContext, useEffect, useState } from "react";
-import { getSupplierProducts } from "../client";
+import { getSupplierProducts } from "../client/user_client";
 import { AppContext } from "../App";
 import PaginatorComponent from "../components/PaginatorComponent";
 const ShowSupplierCatalogue = () => {

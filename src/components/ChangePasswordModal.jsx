@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { getPasswordToken, resetPassword } from "../client";
+import { getPasswordToken, resetPassword } from "../client/user_client";
 
 const ChangePasswordModal = ({ email }) => {
   const [showModal, setShowModal] = useState(false);

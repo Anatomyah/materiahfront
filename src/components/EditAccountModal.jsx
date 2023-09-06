@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import { validatePhoneSuffix } from "../helpers";
 import { PHONE_PREFIX_CHOICES } from "../config";
 import { AppContext } from "../App";
-import { getUserDetails, updateUserProfile } from "../client";
+import { getUserDetails, updateUserProfile } from "../client/user_client";
 
 const EditAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
