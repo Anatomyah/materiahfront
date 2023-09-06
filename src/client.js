@@ -105,7 +105,7 @@ export const updateUserProfile = async (
   setUserDetails,
   isSupplier = false,
 ) => {
-  let updatedUserData = {};
+  let updatedUserData;
   if (!isSupplier) {
     updatedUserData = {
       email: updatedDetails.email,
@@ -172,15 +172,24 @@ export const updateSupplierProfile = async (
   }
 };
 
-export const getSupplierProducts = async (token, setSupplierCatalogue) => {
+export const getSupplierProducts = async (
+  token,
+  setSupplierCatalogue,
+  setTotalPages,
+  page = 1,
+) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}products/`, {
-      headers: {
-        Authorization: `Token ${token}`,
+    const response = await axios.get(
+      `${BACKEND_URL}products/?page_num=${page}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
       },
-    });
+    );
     console.log(response.data.results);
     setSupplierCatalogue(response.data.results);
+    setTotalPages(response.data.total_pages);
   } catch (error) {
     return error;
   }

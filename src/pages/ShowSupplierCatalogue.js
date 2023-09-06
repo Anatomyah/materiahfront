@@ -2,34 +2,56 @@ import React from "react";
 import { useContext, useEffect, useState } from "react";
 import { getSupplierProducts } from "../client";
 import { AppContext } from "../App";
+import PaginatorComponent from "../components/PaginatorComponent";
 const ShowSupplierCatalogue = () => {
   const { token } = useContext(AppContext);
   const [supplierCatalogue, setSupplierCatalogue] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+
+  console.log("Outside useEffect:", supplierCatalogue);
 
   useEffect(() => {
-    getSupplierProducts(token, setSupplierCatalogue).then((response) => {
-      if (response) {
+    getSupplierProducts(
+      token,
+      setSupplierCatalogue,
+      setTotalPages,
+      currentPage,
+    ).then((response) => {
+      if (!response) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
-  }, []);
+  }, [currentPage]);
 
-  if (!supplierCatalogue) {
-    return "loading...";
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  if (!supplierCatalogue.length) {
+    return "Loading...";
   }
   return (
     <div>
       {supplierCatalogue.map((product) => (
         <li key={product.id}>{product.cat_num}</li>
       ))}
-      <ul>
-        {errorMessages.map((error, id) => (
-          <li key={id} className="text-danger fw-bold">
-            {error}
-          </li>
-        ))}
-      </ul>
+      {!errorMessages && (
+        <ul>
+          {errorMessages.map((error, id) => (
+            <li key={id} className="text-danger fw-bold">
+              {error}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <PaginatorComponent
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

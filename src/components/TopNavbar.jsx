@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 function TopNavBar() {
-  const { token, setIsLogged, isSupplier, setIsSupplier } =
+  const { token, setToken, isSupplier, setIsSupplier, setRememberMe } =
     useContext(AppContext);
   const handleLogout = async () => {
     try {
@@ -19,7 +19,8 @@ function TopNavBar() {
       console.error("Error during logout:", error);
     }
     setIsSupplier(false);
-    setIsLogged(false);
+    setToken("");
+    setRememberMe(false);
     toast("See you soon!");
   };
 

@@ -10,27 +10,35 @@ function App() {
   const [token, setToken] = useState("");
   const [userDetails, setUserDetails] = useState({});
   const [isSupplier, setIsSupplier] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUserDetails = localStorage.getItem("userDetails");
     const savedIsSupplier = localStorage.getItem("isSupplier");
+    const savedRememberMe = localStorage.getItem("rememberMe");
 
-    if (savedToken !== null) setToken(savedToken);
-    if (savedUserDetails !== null) setUserDetails(JSON.parse(savedUserDetails));
-    if (savedIsSupplier !== null) setIsSupplier(savedIsSupplier === "true");
-
-    localStorage.removeItem("isLogged");
-    localStorage.removeItem("token");
-    localStorage.removeItem("userDetails");
-    localStorage.removeItem("isSupplier");
+    if (savedRememberMe === "true") {
+      setRememberMe(true);
+      if (savedToken !== null) setToken(savedToken);
+      if (savedUserDetails !== null)
+        setUserDetails(JSON.parse(savedUserDetails));
+      if (savedIsSupplier !== null) setIsSupplier(savedIsSupplier === "true");
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userDetails");
+      localStorage.removeItem("isSupplier");
+    }
   }, []);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      localStorage.setItem("token", token);
-      localStorage.setItem("userDetails", JSON.stringify(userDetails));
-      localStorage.setItem("isSupplier", String(isSupplier));
+      if (rememberMe) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("userDetails", JSON.stringify(userDetails));
+        localStorage.setItem("isSupplier", String(isSupplier));
+        localStorage.setItem("rememberMe", String(rememberMe));
+      }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -38,7 +46,7 @@ function App() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [token, userDetails, isSupplier]);
+  }, [token, userDetails, isSupplier, rememberMe]);
   return (
     <>
       <ToastContainer />
@@ -46,6 +54,8 @@ function App() {
         value={{
           token,
           setToken,
+          rememberMe,
+          setRememberMe,
           userDetails,
           setUserDetails,
           isSupplier,

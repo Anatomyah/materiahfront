@@ -10,7 +10,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const nav = useNavigate();
-  const { setToken, setUserDetails, setIsSupplier } = useContext(AppContext);
+  const { setToken, rememberMe, setRememberMe, setUserDetails, setIsSupplier } =
+    useContext(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
     login({ username, password }, setToken, setUserDetails, setIsSupplier).then(
@@ -51,6 +52,14 @@ const Login = () => {
           value={password}
           required
         />
+        <label>
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          Remember Me
+        </label>
         {loginError && <p>Unable to log in with provided credentials</p>}
         <input type="submit" value="Login" disabled={!password || !username} />
       </form>
