@@ -1,36 +1,35 @@
 import React, { useContext, useEffect, useState } from "react";
-import { getLabInventory } from "../client/product_client";
-import { AppContext } from "../App";
 import PaginatorComponent from "../components/PaginatorComponent";
+import { AppContext } from "../App";
+import { getOrders } from "../client/order_client";
 
-const OrdersPge = () => {
+const OrdersPage = () => {
   const { token } = useContext(AppContext);
-  const [labInventory, setLabInventory] = useState([]);
+  const [orders, setOrders] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    getLabInventory(token, setLabInventory, setTotalPages, currentPage).then(
-      (response) => {
-        if (!response) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      },
-    );
+    getOrders(token, setOrders, setTotalPages, currentPage).then((response) => {
+      if (!response) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   }, [currentPage]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  if (!labInventory.length) {
+  if (!orders) {
     return "Loading...";
   }
+
   return (
     <div>
-      {labInventory.map((product) => (
-        <li key={product.id}>{product.cat_num}</li>
+      {orders.map((order) => (
+        <li key={order.id}>{order.id}</li>
       ))}
       {!errorMessages && (
         <ul>
@@ -50,4 +49,4 @@ const OrdersPge = () => {
     </div>
   );
 };
-export default OrdersPge;
+export default OrdersPage;

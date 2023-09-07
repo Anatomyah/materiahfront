@@ -33,28 +33,30 @@ function TopNavBar() {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={Link} to="/inventory">
-              Inventory
-            </Nav.Link>
-            <Nav.Link as={Link} to="/shop">
-              Shop
-            </Nav.Link>
-            <Nav.Link as={Link} to="/receive_orders">
-              Orders
-            </Nav.Link>
             {isSupplier ? (
               <Nav.Link as={Link} to="/supplier_catalogue">
                 Catalogue
               </Nav.Link>
             ) : (
-              <NavDropdown title="Database" id="collasible-nav-dropdown">
-                <NavDropdown.Item as={Link} to="/suppliers">
-                  Suppliers
-                </NavDropdown.Item>
-                <NavDropdown.Item as={Link} to="/manufacturers">
-                  Manufacturers
-                </NavDropdown.Item>
-              </NavDropdown>
+              <>
+                <Nav.Link as={Link} to="/inventory">
+                  Inventory
+                </Nav.Link>
+                <Nav.Link as={Link} to="/shop">
+                  Shop
+                </Nav.Link>
+                <Nav.Link as={Link} to="/orders">
+                  Orders
+                </Nav.Link>
+                <NavDropdown title="Database" id="collasible-nav-dropdown">
+                  <NavDropdown.Item as={Link} to="/suppliers">
+                    Suppliers
+                  </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/manufacturers">
+                    Manufacturers
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
             )}
           </Nav>
           <Nav>

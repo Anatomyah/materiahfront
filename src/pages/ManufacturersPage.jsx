@@ -3,7 +3,7 @@ import PaginatorComponent from "../components/PaginatorComponent";
 import { AppContext } from "../App";
 import { getManufacturers } from "../client/manufacturer_client";
 
-const SuppliersPage = () => {
+const ManufacturersPage = () => {
   const { token } = useContext(AppContext);
   const [manufacturers, setManufacturers] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
@@ -51,4 +51,4 @@ const SuppliersPage = () => {
     </div>
   );
 };
-export default SuppliersPage;
+export default ManufacturersPage;
