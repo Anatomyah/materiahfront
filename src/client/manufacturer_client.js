@@ -22,3 +22,24 @@ export const getManufacturers = async (
     return error;
   }
 };
+
+export const getManufacturerDetails = async (
+  token,
+  manufacturerId,
+  setManufacturerDetails,
+) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}manufacturers/${manufacturerId}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    setManufacturerDetails(response.data);
+    console.log(response.data);
+  } catch (error) {
+    return error;
+  }
+};

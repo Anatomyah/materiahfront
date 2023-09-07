@@ -55,6 +55,9 @@ function TopNavBar() {
                   <NavDropdown.Item as={Link} to="/manufacturers">
                     Manufacturers
                   </NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/quotes">
+                    Quotes
+                  </NavDropdown.Item>
                 </NavDropdown>
               </>
             )}

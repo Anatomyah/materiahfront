@@ -9,6 +9,9 @@ import ShopPage from "../pages/ShopPage";
 import SuppliersPage from "../pages/SuppliersPage";
 import ManufacturersPage from "../pages/ManufacturersPage";
 import OrdersPage from "../pages/OrdersPage";
+import QuotesPage from "../pages/QuotesPage";
+import ProductDetailComponent from "./ProductDetailComponent";
+import ManufacturerDetailComponent from "./ManufacturerDetailComponent";
 
 const SiteRoutes = () => {
   return (
@@ -23,6 +26,15 @@ const SiteRoutes = () => {
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/suppliers" element={<SuppliersPage />} />
         <Route path="/manufacturers" element={<ManufacturersPage />} />
+        <Route path="/quotes" element={<QuotesPage />} />
+        <Route
+          path="/product-details/:id"
+          element={<ProductDetailComponent />}
+        />
+        <Route
+          path="/manufacturer-details/:id"
+          element={<ManufacturerDetailComponent />}
+        />
       </Routes>
     </div>
   );
