@@ -69,6 +69,8 @@ const OrderDetailsComponent = () => {
           <p>{item.price}</p>
         </div>
       ))}
+      <Link to={`/quote-details/${order.quote}`}>{order.quote}</Link>
+      #todo - make sure link works
       <a href={order.quote_pdf} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
