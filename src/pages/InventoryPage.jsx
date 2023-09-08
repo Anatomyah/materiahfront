@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { getLabInventory } from "../client/product_client";
+import { getLabInventory } from "../clients/product_client";
 import { AppContext } from "../App";
 import PaginatorComponent from "../components/PaginatorComponent";
 import { useNavigate } from "react-router-dom";

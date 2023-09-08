@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validateId, validatePhoneSuffix } from "../client/helpers";
-import { PHONE_PREFIX_CHOICES } from "../client/config";
-import { login, signup } from "../client/user_client";
+import { validateId, validatePhoneSuffix } from "../clients/helpers";
+import { PHONE_PREFIX_CHOICES } from "../clients/config";
+import { login, signup } from "../clients/user_client";
 import { AppContext } from "../App";
 import { useNavigate } from "react-router-dom";
 

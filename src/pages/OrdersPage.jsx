@@ -1,10 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import PaginatorComponent from "../components/PaginatorComponent";
 import { AppContext } from "../App";
-import { getOrders } from "../client/order_client";
+import { getOrders } from "../clients/order_client";
+import { useNavigate } from "react-router-dom";
 
 const OrdersPage = () => {
   const { token } = useContext(AppContext);
+  const nav = useNavigate();
   const [orders, setOrders] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,6 +24,13 @@ const OrdersPage = () => {
     setCurrentPage(page);
   };
 
+  const goToOrderDetails = (order) => {
+    console.log(order);
+    nav(`/order-details/${order.id}`, {
+      state: { order },
+    });
+  };
+
   if (!orders) {
     return "Loading...";
   }
@@ -29,7 +38,14 @@ const OrdersPage = () => {
   return (
     <div>
       {orders.map((order) => (
-        <li key={order.id}>{order.id}</li>
+        <span
+          key={order.id}
+          className="text-decoration-underline text-primary"
+          style={{ cursor: "pointer" }}
+          onClick={() => goToOrderDetails(order)}
+        >
+          {order.id}
+        </span>
       ))}
       {!errorMessages && (
         <ul>

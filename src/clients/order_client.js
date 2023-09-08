@@ -9,7 +9,22 @@ export const getOrders = async (token, setOrders, setTotalPages, page = 1) => {
       },
     });
     setOrders(response.data.results);
+    console.log(response.data.results);
     setTotalPages(response.data.total_pages);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getOrderDetails = async (token, orderId, setOrderDetails) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}orders/${orderId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    setOrderDetails(response.data);
+    console.log(response.data);
   } catch (error) {
     return error;
   }

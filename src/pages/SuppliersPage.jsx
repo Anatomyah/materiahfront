@@ -1,9 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import PaginatorComponent from "../components/PaginatorComponent";
 import { AppContext } from "../App";
-import { getSuppliers } from "../client/supplier_client";
+import { getSuppliers } from "../clients/supplier_client";
+import { useNavigate } from "react-router-dom";
 
 const SuppliersPage = () => {
+  const nav = useNavigate();
   const { token } = useContext(AppContext);
   const [suppliers, setSuppliers] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
@@ -20,6 +22,11 @@ const SuppliersPage = () => {
     );
   }, [currentPage]);
 
+  const goToSupplierDetails = (supplier) => {
+    nav(`/supplier-details/${supplier.id}`, {
+      state: { supplier },
+    });
+  };
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -31,7 +38,14 @@ const SuppliersPage = () => {
   return (
     <div>
       {suppliers.map((supplier) => (
-        <li key={supplier.id}>{supplier.name}</li>
+        <span
+          key={supplier.id}
+          className="text-decoration-underline text-primary"
+          style={{ cursor: "pointer" }}
+          onClick={() => goToSupplierDetails(supplier)}
+        >
+          {supplier.name}
+        </span>
       ))}
       {!errorMessages && (
         <ul>

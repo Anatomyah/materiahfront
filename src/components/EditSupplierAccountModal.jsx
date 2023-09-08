@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../client/helpers";
-import { PHONE_PREFIX_CHOICES } from "../client/config";
+import { validatePhoneSuffix } from "../clients/helpers";
+import { PHONE_PREFIX_CHOICES } from "../clients/config";
 import { AppContext } from "../App";
 import {
   updateSupplierProfile,
   updateUserProfile,
-} from "../client/user_client";
+} from "../clients/user_client";
 
 const EditSupplierAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);

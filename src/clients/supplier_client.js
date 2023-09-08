@@ -22,3 +22,21 @@ export const getSuppliers = async (
     return error;
   }
 };
+
+export const getSupplierDetails = async (
+  token,
+  supplierId,
+  setSupplierDetails,
+) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}suppliers/${supplierId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    setSupplierDetails(response.data);
+    console.log(response.data);
+  } catch (error) {
+    return error;
+  }
+};

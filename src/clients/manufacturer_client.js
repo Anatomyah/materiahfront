@@ -17,6 +17,7 @@ export const getManufacturers = async (
       },
     );
     setManufacturers(response.data.results);
+    console.log(response.data.results);
     setTotalPages(response.data.total_pages);
   } catch (error) {
     return error;
