@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BACKEND_URL } from "./config";
+import { BACKEND_URL } from "../config_and_helpers/config";
 
 export const getQuotes = async (token, setQuotes, setTotalPages, page = 1) => {
   try {

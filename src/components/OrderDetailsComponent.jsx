@@ -29,32 +29,6 @@ const OrderDetailsComponent = () => {
   if (!order) {
     return "Order details not available";
   }
-  //   0
-  // :
-  // arrival_date
-  // :
-  // "2023-08-22"
-  // id
-  // :
-  // 5
-  // items
-  // :
-  // [{…}]
-  // quote
-  // :
-  // 3
-  // quote_pdf
-  // :
-  // "/media/quotes_pdfs/materiah.drawio_lXxTjbL.pdf"
-  // supplier
-  // :
-  // {id: 1, name: 'Supplier 1'}
-  // [[Prototype]]
-  // :
-  // Object
-  // length
-  // :
-  // 1
 
   return (
     <div>
@@ -70,7 +44,6 @@ const OrderDetailsComponent = () => {
         </div>
       ))}
       <Link to={`/quote-details/${order.quote}`}>{order.quote}</Link>
-      #todo - make sure link works
       <a href={order.quote_pdf} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>

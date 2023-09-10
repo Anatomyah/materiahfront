@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BACKEND_URL } from "./config";
+import { BACKEND_URL } from "../config_and_helpers/config";
 
 export const getManufacturers = async (
   token,
@@ -19,6 +19,20 @@ export const getManufacturers = async (
     setManufacturers(response.data.results);
     console.log(response.data.results);
     setTotalPages(response.data.total_pages);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getManufacturerSelectList = async (token, setManufacturers) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}manufacturers/names/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    setManufacturers(response.data);
+    console.log(response.data);
   } catch (error) {
     return error;
   }

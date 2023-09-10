@@ -3,6 +3,7 @@ import { getLabInventory } from "../clients/product_client";
 import { AppContext } from "../App";
 import PaginatorComponent from "../components/PaginatorComponent";
 import { useNavigate } from "react-router-dom";
+import AddProductModal from "../components/AddProductModal";
 
 const InventoryPage = () => {
   const nav = useNavigate();
@@ -35,6 +36,9 @@ const InventoryPage = () => {
   }
   return (
     <div>
+      <div>
+        <AddProductModal />
+      </div>
       {labInventory.map((product) => (
         <span
           key={product.id}

@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../clients/helpers";
-import { PHONE_PREFIX_CHOICES } from "../clients/config";
+import { validatePhoneSuffix } from "../config_and_helpers/helpers";
+import { PHONE_PREFIX_CHOICES } from "../config_and_helpers/config";
 import { AppContext } from "../App";
 import {
   updateSupplierProfile,

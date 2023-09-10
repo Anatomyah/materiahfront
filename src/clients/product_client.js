@@ -1,5 +1,20 @@
 import axios from "axios";
-import { BACKEND_URL } from "./config";
+import { BACKEND_URL } from "../config_and_helpers/config";
+
+export const createProduct = async (token, productData) => {
+  try {
+    await axios.post(`${BACKEND_URL}products/`, productData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
 
 export const getLabInventory = async (
   token,
@@ -17,6 +32,7 @@ export const getLabInventory = async (
       },
     );
     setLabInventory(response.data.results);
+    console.log(response.data.results);
     setTotalPages(response.data.total_pages);
   } catch (error) {
     return error;

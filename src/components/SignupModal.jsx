@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validateId, validatePhoneSuffix } from "../clients/helpers";
-import { PHONE_PREFIX_CHOICES } from "../clients/config";
+import { validateId, validatePhoneSuffix } from "../config_and_helpers/helpers";
+import { PHONE_PREFIX_CHOICES } from "../config_and_helpers/config";
 import { login, signup } from "../clients/user_client";
 import { AppContext } from "../App";
 import { useNavigate } from "react-router-dom";
@@ -105,6 +105,7 @@ const SignupModal = () => {
       });
     }
   };
+
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(null);
@@ -197,7 +198,7 @@ const SignupModal = () => {
               placeholder="Confirm password"
               value={confirmPassword}
             />
-            {errorMessages && (
+            {!errorMessages && (
               <ul>
                 {errorMessages.map((error, id) => (
                   <li key={id} className="text-danger fw-bold">

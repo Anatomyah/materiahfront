@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BACKEND_URL } from "./config";
+import { BACKEND_URL } from "../config_and_helpers/config";
 
 export const getSuppliers = async (
   token,
@@ -18,6 +18,20 @@ export const getSuppliers = async (
     );
     setSuppliers(response.data.results);
     setTotalPages(response.data.total_pages);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const getSupplierSelectList = async (token, setSuppliers) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}suppliers/names/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    setSuppliers(response.data);
+    console.log(response.data);
   } catch (error) {
     return error;
   }
