@@ -1,9 +1,9 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../clients/user_client";
-import { AppContext } from "../App";
-import SignupModal from "../components/SignupModal";
-import ResetPasswordModal from "../components/ResetPasswordModal";
+import { login } from "../../clients/user_client";
+import { AppContext } from "../../App";
+import SignupModal from "../../components/User/SignupModal";
+import ResetPasswordModal from "../../components/User/ResetPasswordModal";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");

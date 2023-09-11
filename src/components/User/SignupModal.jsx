@@ -1,21 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validateId, validatePhoneSuffix } from "../config_and_helpers/helpers";
-import { PHONE_PREFIX_CHOICES } from "../config_and_helpers/config";
-import { login, signup } from "../clients/user_client";
-import { AppContext } from "../App";
+import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
+import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import { login, signup } from "../../clients/user_client";
+import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 
 const SignupModal = () => {
-  const { setToken, setUserFirstName } = useContext(AppContext);
+  const { setToken, setUserDetails } = useContext(AppContext);
   const nav = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [idNumber, setIdNumber] = useState("");
   const [phonePrefix, setPhonePrefix] = useState("050");
   const [phoneSuffix, setPhoneSuffix] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +28,6 @@ const SignupModal = () => {
         email &&
         firstName &&
         lastName &&
-        idNumber &&
         phoneSuffix &&
         password &&
         confirmPassword,
@@ -39,7 +37,6 @@ const SignupModal = () => {
     email,
     firstName,
     lastName,
-    idNumber,
     phoneSuffix,
     password,
     confirmPassword,
@@ -49,12 +46,10 @@ const SignupModal = () => {
     e.preventDefault();
     setErrorMessages([]);
     const emailInput = document.getElementById("email");
-    const idValidation = validateId(idNumber);
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
     if (
       !emailInput.checkValidity() ||
       !phoneValidation.valid ||
-      !idValidation.valid ||
       password !== confirmPassword
     ) {
       setIsFilled(false);
@@ -66,30 +61,25 @@ const SignupModal = () => {
         if (!phoneValidation.valid) {
           newErrorMessages.push(phoneValidation.error);
         }
-        if (!idValidation.valid) {
-          newErrorMessages.push(idValidation.error);
-        }
         if (password !== confirmPassword) {
           newErrorMessages.push("Passwords do not match.");
         }
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      signup({
-        username,
-        email,
-        firstName,
-        lastName,
-        idNumber,
-        phonePrefix,
-        phoneSuffix,
-        password1: password,
-        password2: confirmPassword,
-        setToken,
-        setUserFirstName,
-      }).then((response) => {
-        if (!response) {
-          login({ username, password }, setToken, setFirstName).then(
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("email", email);
+      formData.append("first_name", firstName);
+      formData.append("last_name", lastName);
+      formData.append("password", password);
+      formData.append("confirm_password", confirmPassword);
+      formData.append("phone_prefix", phonePrefix);
+      formData.append("phone_suffix", phoneSuffix);
+
+      signup(formData).then((response) => {
+        if (response && response.success) {
+          login({ username, password }, setToken, setUserDetails).then(
             (response) => {
               if (!response) {
                 handleClose();
@@ -158,13 +148,6 @@ const SignupModal = () => {
               id="last_name"
               onChange={(e) => setLastName(e.target.value)}
               value={lastName}
-            />
-            <input
-              type="text"
-              placeholder="ID Number"
-              id="id_number"
-              onChange={(e) => setIdNumber(e.target.value)}
-              value={idNumber}
             />
             <label htmlFor="phone">Phone</label>
             <select

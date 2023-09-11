@@ -1,30 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
-import PaginatorComponent from "../components/PaginatorComponent";
-import { AppContext } from "../App";
-import { getManufacturers } from "../clients/manufacturer_client";
+import PaginatorComponent from "../../components/Generic/PaginatorComponent";
+import { AppContext } from "../../App";
+import { getQuotes } from "../../clients/quote_client";
 import { useNavigate } from "react-router-dom";
 
-const ManufacturersPage = () => {
-  const nav = useNavigate();
+const QuotesPage = () => {
   const { token } = useContext(AppContext);
-  const [manufacturers, setManufacturers] = useState();
+  const nav = useNavigate();
+  const [quotes, setQuotes] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    getManufacturers(token, setManufacturers, setTotalPages, currentPage).then(
-      (response) => {
-        if (!response) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      },
-    );
+    getQuotes(token, setQuotes, setTotalPages, currentPage).then((response) => {
+      if (!response) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   }, [currentPage]);
 
-  const goToManufacturerDetails = (manufacturer) => {
-    nav(`/manufacturer-details/${manufacturer.id}`, {
-      state: { manufacturer },
+  const goToQuoteDetails = (quote) => {
+    console.log(quote);
+    nav(`/quote-details/${quote.id}`, {
+      state: { quote },
     });
   };
 
@@ -32,20 +31,20 @@ const ManufacturersPage = () => {
     setCurrentPage(page);
   };
 
-  if (!manufacturers) {
+  if (!quotes) {
     return "Loading...";
   }
 
   return (
     <div>
-      {manufacturers.map((manufacturer) => (
+      {quotes.map((quote) => (
         <span
-          key={manufacturer.id}
+          key={quote.id}
           className="text-decoration-underline text-primary"
           style={{ cursor: "pointer" }}
-          onClick={() => goToManufacturerDetails(manufacturer)}
+          onClick={() => goToQuoteDetails(quote)}
         >
-          {manufacturer.name}
+          {quote.id}
         </span>
       ))}
       {!errorMessages && (
@@ -66,4 +65,4 @@ const ManufacturersPage = () => {
     </div>
   );
 };
-export default ManufacturersPage;
+export default QuotesPage;

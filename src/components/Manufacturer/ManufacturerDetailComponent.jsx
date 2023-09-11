@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { getManufacturerDetails } from "../clients/manufacturer_client";
-import { AppContext } from "../App";
+import { getManufacturerDetails } from "../../clients/manufacturer_client";
+import { AppContext } from "../../App";
 
 const ManufacturerDetailComponent = () => {
   const { token } = useContext(AppContext);

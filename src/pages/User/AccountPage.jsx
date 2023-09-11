@@ -1,8 +1,8 @@
 import React, { useContext, useEffect } from "react";
-import { AppContext } from "../App";
-import EditAccountModal from "../components/EditAccountModal";
-import ChangePasswordModal from "../components/ChangePasswordModal";
-import EditSupplierAccountModal from "../components/EditSupplierAccountModal";
+import { AppContext } from "../../App";
+import EditAccountModal from "../../components/User/EditAccountModal";
+import ChangePasswordModal from "../../components/User/ChangePasswordModal";
+import EditSupplierAccountModal from "../../components/User/EditSupplierAccountModal";
 
 const Account = () => {
   const { userDetails, isSupplier } = useContext(AppContext);

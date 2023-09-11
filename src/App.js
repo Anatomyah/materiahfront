@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
-import LoginPage from "./pages/LoginPage";
-import TopNavBar from "./components/TopNavbar";
+import LoginPage from "./pages/User/LoginPage";
+import TopNavBar from "./components/Header/TopNavbar";
 import SiteRoutes from "./components/SiteRoutes";
 import { ToastContainer } from "react-toastify";
 

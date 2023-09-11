@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext, useEffect, useState } from "react";
-import { getSupplierProducts } from "../clients/user_client";
-import { AppContext } from "../App";
-import PaginatorComponent from "../components/PaginatorComponent";
+import { getSupplierProducts } from "../../clients/user_client";
+import { AppContext } from "../../App";
+import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 const SupplierCataloguePage = () => {
   const { token } = useContext(AppContext);
   const [supplierCatalogue, setSupplierCatalogue] = useState([]);

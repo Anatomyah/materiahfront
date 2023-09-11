@@ -53,7 +53,6 @@ export const getManufacturerDetails = async (
       },
     );
     setManufacturerDetails(response.data);
-    console.log(response.data);
   } catch (error) {
     return error;
   }

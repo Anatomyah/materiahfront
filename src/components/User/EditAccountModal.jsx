@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../config_and_helpers/helpers";
-import { PHONE_PREFIX_CHOICES } from "../config_and_helpers/config";
-import { AppContext } from "../App";
-import { getUserDetails, updateUserProfile } from "../clients/user_client";
+import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
+import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import { AppContext } from "../../App";
+import { getUserDetails, updateUserProfile } from "../../clients/user_client";
 
 const EditAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
@@ -78,7 +78,7 @@ const EditAccountModal = () => {
   return (
     <>
       <Button variant="primary" onClick={handleShow}>
-        Edit details
+        Edit product details
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>

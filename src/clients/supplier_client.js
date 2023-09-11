@@ -31,7 +31,6 @@ export const getSupplierSelectList = async (token, setSuppliers) => {
       },
     });
     setSuppliers(response.data);
-    console.log(response.data);
   } catch (error) {
     return error;
   }

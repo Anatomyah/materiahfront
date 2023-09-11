@@ -9,6 +9,38 @@ export const createProduct = async (token, productData) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
+export const updateProduct = async (token, productData) => {
+  try {
+    await axios.patch(`${BACKEND_URL}products/`, productData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
+export const deleteProduct = async (token, productId) => {
+  try {
+    await axios.delete(`${BACKEND_URL}products/${productId}`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
     alert(error);

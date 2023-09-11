@@ -1,50 +1,50 @@
 import React, { useContext, useEffect, useState } from "react";
-import PaginatorComponent from "../components/PaginatorComponent";
-import { AppContext } from "../App";
-import { getQuotes } from "../clients/quote_client";
+import PaginatorComponent from "../../components/Generic/PaginatorComponent";
+import { AppContext } from "../../App";
+import { getOrders } from "../../clients/order_client";
 import { useNavigate } from "react-router-dom";
 
-const QuotesPage = () => {
+const OrdersPage = () => {
   const { token } = useContext(AppContext);
   const nav = useNavigate();
-  const [quotes, setQuotes] = useState();
+  const [orders, setOrders] = useState();
   const [errorMessages, setErrorMessages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    getQuotes(token, setQuotes, setTotalPages, currentPage).then((response) => {
+    getOrders(token, setOrders, setTotalPages, currentPage).then((response) => {
       if (!response) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
   }, [currentPage]);
 
-  const goToQuoteDetails = (quote) => {
-    console.log(quote);
-    nav(`/quote-details/${quote.id}`, {
-      state: { quote },
-    });
-  };
-
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  if (!quotes) {
+  const goToOrderDetails = (order) => {
+    console.log(order);
+    nav(`/order-details/${order.id}`, {
+      state: { order },
+    });
+  };
+
+  if (!orders) {
     return "Loading...";
   }
 
   return (
     <div>
-      {quotes.map((quote) => (
+      {orders.map((order) => (
         <span
-          key={quote.id}
+          key={order.id}
           className="text-decoration-underline text-primary"
           style={{ cursor: "pointer" }}
-          onClick={() => goToQuoteDetails(quote)}
+          onClick={() => goToOrderDetails(order)}
         >
-          {quote.id}
+          {order.id}
         </span>
       ))}
       {!errorMessages && (
@@ -65,4 +65,4 @@ const QuotesPage = () => {
     </div>
   );
 };
-export default QuotesPage;
+export default OrdersPage;

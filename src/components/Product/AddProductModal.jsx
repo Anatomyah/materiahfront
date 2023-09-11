@@ -5,12 +5,12 @@ import {
   PRODUCT_CATEGORIES,
   PRODUCT_MEASUREMENT_UNITS,
   PRODUCT_STORAGE_OPTIONS,
-} from "../config_and_helpers/config";
-import { AppContext } from "../App";
+} from "../../config_and_helpers/config";
+import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
-import { createProduct } from "../clients/product_client";
-import { getManufacturerSelectList } from "../clients/manufacturer_client";
-import { getSupplierSelectList } from "../clients/supplier_client";
+import { createProduct } from "../../clients/product_client";
+import { getManufacturerSelectList } from "../../clients/manufacturer_client";
+import { getSupplierSelectList } from "../../clients/supplier_client";
 
 const AddProductModal = () => {
   const { token } = useContext(AppContext);
@@ -103,10 +103,8 @@ const AddProductModal = () => {
       formData.append("url", productLink);
       formData.append("manufacturer", manufacturer);
       formData.append("supplier", supplier);
-      images.forEach((file, index) => {
-        console.log(images);
-        formData.append(`file${index + 1}`, file);
-        console.log(formData);
+      images.forEach((image, index) => {
+        formData.append(`image${index + 1}`, image);
       });
       createProduct(token, formData).then((response) => {
         if (!response) {
@@ -135,16 +133,11 @@ const AddProductModal = () => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit your personal details</Modal.Title>
+          <Modal.Title>Create Product</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <form
-            className="form-control"
-            onSubmit={(e) => {
-              handleSubmit(e);
-            }}
-          >
-            <legend>Signup</legend>
+          <form className="form-control">
+            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Product Name"
@@ -258,16 +251,16 @@ const AddProductModal = () => {
               id="product_images"
               onChange={handeFileChange}
             />
-            {!errorMessages && (
-              <ul>
-                {errorMessages.map((error, id) => (
-                  <li key={id} className="text-danger fw-bold">
-                    {error}
-                  </li>
-                ))}
-              </ul>
-            )}
           </form>
+          {!errorMessages && (
+            <ul>
+              {errorMessages.map((error, id) => (
+                <li key={id} className="text-danger fw-bold">
+                  {error}
+                </li>
+              ))}
+            </ul>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button

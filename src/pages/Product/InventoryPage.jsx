@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import { getLabInventory } from "../clients/product_client";
-import { AppContext } from "../App";
-import PaginatorComponent from "../components/PaginatorComponent";
+import { getLabInventory } from "../../clients/product_client";
+import { AppContext } from "../../App";
+import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { useNavigate } from "react-router-dom";
-import AddProductModal from "../components/AddProductModal";
+import AddProductModal from "../../components/Product/AddProductModal";
 
 const InventoryPage = () => {
   const nav = useNavigate();

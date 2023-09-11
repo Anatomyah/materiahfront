@@ -1,20 +1,20 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import LoginPage from "../pages/LoginPage";
+import LoginPage from "../pages/User/LoginPage";
 import HomePage from "../pages/HomePage";
-import AccountPage from "../pages/AccountPage";
-import SupplierCataloguePage from "../pages/SupplierCataloguePage";
-import InventoryPage from "../pages/InventoryPage";
-import ShopPage from "../pages/ShopPage";
-import SuppliersPage from "../pages/SuppliersPage";
-import ManufacturersPage from "../pages/ManufacturersPage";
-import OrdersPage from "../pages/OrdersPage";
-import QuotesPage from "../pages/QuotesPage";
-import ProductDetailComponent from "./ProductDetailComponent";
-import ManufacturerDetailComponent from "./ManufacturerDetailComponent";
-import SupplierDetailComponent from "./SupplierDetailsComponent";
-import QuoteDetailComponent from "./QuoteDetailComponent";
-import OrderDetailsComponent from "./OrderDetailsComponent";
+import AccountPage from "../pages/User/AccountPage";
+import SupplierCataloguePage from "../pages/Supplier/SupplierCataloguePage";
+import InventoryPage from "../pages/Product/InventoryPage";
+import ShopPage from "../pages/Shop/ShopPage";
+import SuppliersPage from "../pages/Supplier/SuppliersPage";
+import ManufacturersPage from "../pages/Manufacturer/ManufacturersPage";
+import OrdersPage from "../pages/Order/OrdersPage";
+import QuotesPage from "../pages/Quote/QuotesPage";
+import ProductDetailComponent from "./Product/ProductDetailComponent";
+import ManufacturerDetailComponent from "./Manufacturer/ManufacturerDetailComponent";
+import SupplierDetailComponent from "./Supplier/SupplierDetailsComponent";
+import QuoteDetailComponent from "./Quote/QuoteDetailComponent";
+import OrderDetailsComponent from "./Order/OrderDetailsComponent";
 
 const SiteRoutes = () => {
   return (

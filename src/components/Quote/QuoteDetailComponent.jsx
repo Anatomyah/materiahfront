@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { AppContext } from "../App";
-import { getQuoteDetails } from "../clients/quote_client";
+import { AppContext } from "../../App";
+import { getQuoteDetails } from "../../clients/quote_client";
 
 const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);

@@ -1,26 +1,15 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
-export const signup = async (userInfo) => {
+export const signup = async (userData) => {
   try {
-    const userData = {
-      username: userInfo.username,
-      email: userInfo.email,
-      first_name: userInfo.firstName,
-      last_name: userInfo.lastName,
-      password: userInfo.password1,
-      confirm_password: userInfo.password2,
-      userprofile: {
-        phone_prefix: userInfo.phonePrefix,
-        phone_suffix: userInfo.phoneSuffix,
-      },
-    };
-
+    console.log(userData);
     await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "multipart/form-data",
       },
     });
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
     alert(error);

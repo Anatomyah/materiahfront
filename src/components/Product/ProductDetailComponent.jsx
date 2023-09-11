@@ -1,7 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { AppContext } from "../App";
-import { getProductDetails } from "../clients/product_client";
+import { AppContext } from "../../App";
+import { getProductDetails } from "../../clients/product_client";
+import DeleteButton from "../Generic/DeleteButton";
+import EditProductModal from "./EditProductModal";
 
 const ProductDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -55,6 +57,12 @@ const ProductDetailComponent = () => {
       <a href={product.url} target="_blank" rel="noopener noreferrer">
         Product Details
       </a>
+      <DeleteButton
+        objectType="product"
+        objectName={product.name}
+        objectId={product.id}
+      />
+      {product && <EditProductModal product={product} />}
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
