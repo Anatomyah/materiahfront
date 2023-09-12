@@ -17,14 +17,25 @@ export const createProduct = async (token, productData) => {
   }
 };
 
-export const updateProduct = async (token, productData) => {
+export const updateProduct = async (
+  token,
+  productId,
+  productData,
+  setProduct,
+) => {
   try {
-    await axios.patch(`${BACKEND_URL}products/`, productData, {
-      headers: {
-        Authorization: `Token ${token}`,
-        "Content-Type": "multipart/form-data",
+    const response = await axios.patch(
+      `${BACKEND_URL}products/${productId}/`,
+      productData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       },
-    });
+    );
+    console.log("update response", response.data);
+    setProduct(response.data);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);

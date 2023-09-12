@@ -35,12 +35,12 @@ const AddProductModal = () => {
 
   useEffect(() => {
     getManufacturerSelectList(token, setManufacturerList).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
     getSupplierSelectList(token, setSupplierList).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
@@ -77,9 +77,35 @@ const AddProductModal = () => {
   ]);
 
   const handeFileChange = (event) => {
-    const images = Array.from(event.target.files);
-    setImages(images);
+    const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const allFiles = Array.from(event.target.files);
+
+    const invalidFiles = allFiles.filter(
+      (file) => !validImageTypes.includes(file.type),
+    );
+    if (invalidFiles > 0) {
+      const invalidFileNames = invalidFiles.map((file) => file.name).join(", ");
+      setErrorMessages((prevState) => [
+        ...prevState,
+        `files: ${invalidFileNames} are of invalid types. Only JPEG and PNG files are allowed`,
+      ]);
+    }
+
+    const validFiles = allFiles.filter((file) =>
+      validImageTypes.includes(file.type),
+    );
+    const newImages = validFiles.map((file) => ({
+      file,
+      id: `temp-${Date.now()}-${Math.random()}`,
+    }));
+
+    setImages((prevState) => [...prevState, ...newImages]);
   };
+
+  function handleDeleteImage(imageId) {
+    setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
@@ -104,7 +130,7 @@ const AddProductModal = () => {
       formData.append("manufacturer", manufacturer);
       formData.append("supplier", supplier);
       images.forEach((image, index) => {
-        formData.append(`image${index + 1}`, image);
+        formData.append(`image${index + 1}`, image.file);
       });
       createProduct(token, formData).then((response) => {
         if (!response) {
@@ -245,6 +271,26 @@ const AddProductModal = () => {
               onChange={(e) => setProductLink(e.target.value)}
               value={productLink}
             />
+            <div>
+              {images.map((image) => {
+                let imageUrl = image.image || URL.createObjectURL(image.file);
+                return (
+                  <div key={image.id}>
+                    <img
+                      src={imageUrl}
+                      alt={`product-${catalogueNumber}-image-${image.id}`}
+                      width="200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(image.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
             <input
               type="file"
               multiple
@@ -252,7 +298,7 @@ const AddProductModal = () => {
               onChange={handeFileChange}
             />
           </form>
-          {!errorMessages && (
+          {errorMessages.length > 0 && (
             <ul>
               {errorMessages.map((error, id) => (
                 <li key={id} className="text-danger fw-bold">

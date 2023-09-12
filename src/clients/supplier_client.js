@@ -31,8 +31,9 @@ export const getSupplierSelectList = async (token, setSuppliers) => {
       },
     });
     setSuppliers(response.data);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 

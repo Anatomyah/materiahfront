@@ -32,11 +32,11 @@ const ProductDetailComponent = () => {
     <div>
       <h1>{product.name}</h1>
       <div>
-        {product.images.map((image, index) => (
+        {product.images.map((image) => (
           <img
-            key={index}
+            key={image.id}
             src={image.image}
-            alt={`product-${index}`}
+            alt={`product-${product.cat_num}-image-${image.id}`}
             width="200"
           />
         ))}
@@ -62,7 +62,9 @@ const ProductDetailComponent = () => {
         objectName={product.name}
         objectId={product.id}
       />
-      {product && <EditProductModal product={product} />}
+      {product && (
+        <EditProductModal product={product} setProduct={setProduct} />
+      )}
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
@@ -75,4 +77,5 @@ const ProductDetailComponent = () => {
     </div>
   );
 };
+ProductDetailComponent.whyDidYouRender = true;
 export default ProductDetailComponent;

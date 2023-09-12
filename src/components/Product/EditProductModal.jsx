@@ -9,9 +9,9 @@ import {
 } from "../../config_and_helpers/config";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import { updateProduct } from "../../clients/product_client";
+import { getProductDetails, updateProduct } from "../../clients/product_client";
 
-const EditProductModal = ({ product }) => {
+const EditProductModal = ({ product, setProduct }) => {
   const { token } = useContext(AppContext);
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
@@ -33,12 +33,12 @@ const EditProductModal = ({ product }) => {
 
   useEffect(() => {
     getManufacturerSelectList(token, setManufacturerList).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
     getSupplierSelectList(token, setSupplierList).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
@@ -57,6 +57,7 @@ const EditProductModal = ({ product }) => {
     setProductLink(product.url);
     setManufacturer(product.manufacturer.name);
     setSupplier(product.supplier.name);
+    setImages(product.images);
   }, [showModal]);
 
   useEffect(() => {
@@ -90,14 +91,39 @@ const EditProductModal = ({ product }) => {
   ]);
 
   const handeFileChange = (event) => {
-    const images = Array.from(event.target.files);
-    setImages(images);
+    const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const allFiles = Array.from(event.target.files);
+
+    const invalidFiles = allFiles.filter(
+      (file) => !validImageTypes.includes(file.type),
+    );
+    if (invalidFiles.length > 0) {
+      const invalidFileNames = invalidFiles.map((file) => file.name).join(", ");
+      setErrorMessages((prevState) => [
+        ...prevState,
+        `files '${invalidFileNames}' are of invalid types. Only JPEG and PNG files are allowed`,
+      ]);
+    }
+
+    const validFiles = allFiles.filter((file) =>
+      validImageTypes.includes(file.type),
+    );
+    const newImages = validFiles.map((file) => ({
+      file,
+      id: `temp-${Date.now()}-${Math.random()}`,
+    }));
+
+    setImages((prevState) => [...prevState, ...newImages]);
   };
 
+  function handleDeleteImage(imageId) {
+    setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
+  }
+
   const handleClose = () => {
+    setShowModal(false);
     setErrorMessages([]);
     setIsFilled(true);
-    setShowModal(false);
   };
 
   const handleShow = () => setShowModal(true);
@@ -126,14 +152,20 @@ const EditProductModal = ({ product }) => {
       formData.append("manufacturer", manufacturer);
       formData.append("supplier", supplier);
       images.forEach((image, index) => {
-        formData.append(`image${index + 1}`, image);
-      });
-      updateProduct(token, formData).then((response) => {
-        if (!response) {
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
+        formData.append(`image${index + 1}`, image.file);
+        for (var key of formData.entries()) {
+          console.log(key[0] + ", " + key[1]);
         }
       });
+      updateProduct(token, product.id, formData, setProduct).then(
+        (response) => {
+          if (response && response.success) {
+            handleClose();
+          } else {
+            setErrorMessages((prevState) => [...prevState, response]);
+          }
+        },
+      );
     }
   };
 
@@ -261,6 +293,26 @@ const EditProductModal = ({ product }) => {
               onChange={(e) => setProductLink(e.target.value)}
               value={productLink}
             />
+            <div>
+              {images.map((image) => {
+                let imageUrl = image.image || URL.createObjectURL(image.file);
+                return (
+                  <div key={image.id}>
+                    <img
+                      src={imageUrl}
+                      alt={`product-${catalogueNumber}-image-${image.id}`}
+                      width="200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(image.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
             <input
               type="file"
               multiple
@@ -268,7 +320,7 @@ const EditProductModal = ({ product }) => {
               onChange={handeFileChange}
             />
           </form>
-          {!errorMessages && (
+          {errorMessages.length > 0 && (
             <ul>
               {errorMessages.map((error, id) => (
                 <li key={id} className="text-danger fw-bold">
@@ -289,11 +341,12 @@ const EditProductModal = ({ product }) => {
             Save Changes
           </Button>
           <Button variant="secondary" onClick={handleClose}>
-            Close
+            Cancel
           </Button>
         </Modal.Footer>
       </Modal>
     </>
   );
 };
+// EditProductModal.whyDidYouRender = true;
 export default EditProductModal;
