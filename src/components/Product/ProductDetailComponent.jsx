@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
-import { getProductDetails } from "../../clients/product_client";
+import { deleteProduct, getProductDetails } from "../../clients/product_client";
 import DeleteButton from "../Generic/DeleteButton";
 import EditProductModal from "./EditProductModal";
 
@@ -61,6 +61,7 @@ const ProductDetailComponent = () => {
         objectType="product"
         objectName={product.name}
         objectId={product.id}
+        deleteFetchFunc={deleteProduct}
       />
       {product && (
         <EditProductModal product={product} setProduct={setProduct} />

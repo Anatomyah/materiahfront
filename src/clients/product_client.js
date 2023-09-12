@@ -34,7 +34,6 @@ export const updateProduct = async (
         },
       },
     );
-    console.log("update response", response.data);
     setProduct(response.data);
     return { success: true };
   } catch (error) {

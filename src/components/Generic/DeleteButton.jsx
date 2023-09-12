@@ -5,7 +5,12 @@ import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { deleteProduct } from "../../clients/product_client";
 
-const DeleteButton = ({ objectType, objectName, objectId }) => {
+const DeleteButton = ({
+  objectType,
+  objectName,
+  objectId,
+  deleteFetchFunc,
+}) => {
   const { token } = useContext(AppContext);
   const nav = useNavigate();
   const [errorMessages, setErrorMessages] = useState([]);
@@ -17,7 +22,7 @@ const DeleteButton = ({ objectType, objectName, objectId }) => {
   const handleShow = () => setShowModal(true);
 
   function handleDelete() {
-    deleteProduct(token, objectId).then((response) => {
+    deleteFetchFunc(token, objectId).then((response) => {
       if (response && response.success) {
         handleClose();
         nav("/inventory");

@@ -10,6 +10,7 @@ import {
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { getProductDetails, updateProduct } from "../../clients/product_client";
+import { isValidURL } from "../../config_and_helpers/helpers";
 
 const EditProductModal = ({ product, setProduct }) => {
   const { token } = useContext(AppContext);
@@ -132,10 +133,38 @@ const EditProductModal = ({ product, setProduct }) => {
     e.preventDefault();
     setErrorMessages([]);
 
-    if (!isFilled) {
+    const urlValidation = isValidURL(productLink);
+    const priceValidation = price <= 0;
+    const stockValidation = stock <= 0;
+    const volumeValidation = volume <= 0;
+
+    if (
+      !urlValidation ||
+      !priceValidation ||
+      !stockValidation ||
+      !volumeValidation
+    ) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
+        if (!urlValidation) {
+          newErrorMessages.push("Invalid product link");
+        }
+        if (!priceValidation) {
+          newErrorMessages.push(
+            "Invalid price number. Must be larger than zero.",
+          );
+        }
+        if (!stockValidation) {
+          newErrorMessages.push(
+            "Invalid stock number. Must be larger than zero.",
+          );
+        }
+        if (!volumeValidation) {
+          newErrorMessages.push(
+            "Invalid volume number. Must be larger than zero.",
+          );
+        }
         return [...prevState, ...newErrorMessages];
       });
     } else {

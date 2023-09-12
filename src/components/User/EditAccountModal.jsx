@@ -129,16 +129,16 @@ const EditAccountModal = () => {
               placeholder="phone"
               value={phoneSuffix}
             />
-            {errorMessages && (
-              <ul>
-                {errorMessages.map((error, id) => (
-                  <li key={id} className="text-danger fw-bold">
-                    {error}
-                  </li>
-                ))}
-              </ul>
-            )}
           </form>
+          {errorMessages.length > 0 && (
+            <ul>
+              {errorMessages.map((error, id) => (
+                <li key={id} className="text-danger fw-bold">
+                  {error}
+                </li>
+              ))}
+            </ul>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button
