@@ -14,7 +14,7 @@ const OrdersPage = () => {
 
   useEffect(() => {
     getOrders(token, setOrders, setTotalPages, currentPage).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });

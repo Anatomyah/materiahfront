@@ -11,8 +11,9 @@ export const getOrders = async (token, setOrders, setTotalPages, page = 1) => {
     setOrders(response.data.results);
     console.log(response.data.results);
     setTotalPages(response.data.total_pages);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -25,7 +26,8 @@ export const getOrderDetails = async (token, orderId, setOrderDetails) => {
     });
     setOrderDetails(response.data);
     console.log(response.data);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };

@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import { getPasswordToken, resetPassword } from "../../clients/user_client";
 import button from "bootstrap/js/src/button";
 
-const ChangePasswordModal = ({}) => {
+const ChangePasswordModal = () => {
   const [email, setEmail] = useState();
   const [tokenSent, setTokenSent] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -25,33 +25,32 @@ const ChangePasswordModal = ({}) => {
   };
 
   const handleTokenSent = () => {
-    const emailInput = document.getElementById("email");
-    if (!emailInput.checkValidity()) {
+    const emailInput = document.getElementById("email").checkValidity();
+    if (!emailInput) {
       setErrorMessages((prevState) => [
         ...prevState,
-        "Email entered not found in our database",
+        "Invalid email address. Check again.",
       ]);
+    } else {
+      getPasswordToken(email).then((response) => {
+        if (response && response.success) {
+          setTokenSent(true);
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
+        }
+      });
     }
-    getPasswordToken(email).then((response) => {
-      if (!response) {
-        setTokenSent(true);
-      } else {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     resetPassword(token, password).then((response) => {
-      if (!response) {
+      if (response && response.success) {
         handleClose();
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
-
-    handleClose();
   };
 
   return (
@@ -68,8 +67,8 @@ const ChangePasswordModal = ({}) => {
           {!tokenSent ? (
             <>
               <p>
-                Please enter your email address below. Once we've identified
-                your address a token will be sent to your address
+                Please enter your email address below. Once it's identified a
+                token will be sent your way
               </p>
               <input
                 id="email"
@@ -102,16 +101,16 @@ const ChangePasswordModal = ({}) => {
                   value={password}
                 />
               </form>
-              {errorMessages.length > 0 && (
-                <ul>
-                  {errorMessages.map((error, id) => (
-                    <li key={id} className="text-danger fw-bold">
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </>
+          )}
+          {errorMessages.length > 0 && (
+            <ul>
+              {errorMessages.map((error, id) => (
+                <li key={id} className="text-danger fw-bold">
+                  {error}
+                </li>
+              ))}
+            </ul>
           )}
         </Modal.Body>
         <Modal.Footer>

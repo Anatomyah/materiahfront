@@ -67,23 +67,27 @@ const EditSupplierAccountModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const supplierEmailInput = document.getElementById("contact_email");
-    const contactEmailInput = document.getElementById("supplier_email");
+    const supplierEmailInput = document
+      .getElementById("contact_email")
+      .checkValidity();
+    const contactEmailInput = document
+      .getElementById("supplier_email")
+      .checkValidity();
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
     const contactPhoneValidation = validatePhoneSuffix(supplierPhoneSuffix);
 
     if (
-      !supplierEmailInput.checkValidity() ||
-      !contactEmailInput.checkValidity() ||
+      !supplierEmailInput ||
+      !contactEmailInput ||
       !phoneValidation.valid ||
       !contactPhoneValidation.valid
     ) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!supplierEmailInput.checkValidity()) {
+        if (!supplierEmailInput) {
           newErrorMessages.push("Invalid office email format.");
         }
-        if (!contactEmailInput.checkValidity()) {
+        if (!contactEmailInput) {
           newErrorMessages.push("Invalid contact email format.");
         }
         if (!phoneValidation.valid) {
@@ -103,7 +107,7 @@ const EditSupplierAccountModal = () => {
         supplierPhoneSuffix,
         supplierWebsite,
       }).then((response) => {
-        if (!response) {
+        if (response && response.success) {
           updateUserProfile(
             token,
             userDetails.user_id,
@@ -117,7 +121,7 @@ const EditSupplierAccountModal = () => {
             setUserDetails,
             true,
           ).then((response) => {
-            if (!response) {
+            if (response && response.success) {
               handleClose();
             } else {
               setErrorMessages((prevState) => [...prevState, response]);

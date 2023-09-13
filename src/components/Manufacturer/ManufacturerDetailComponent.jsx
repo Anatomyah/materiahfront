@@ -15,7 +15,7 @@ const ManufacturerDetailComponent = () => {
   useEffect(() => {
     if (!manufacturer) {
       getManufacturerDetails(token, id, setManufacturer).then((response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });

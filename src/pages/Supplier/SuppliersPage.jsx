@@ -15,7 +15,7 @@ const SuppliersPage = () => {
   useEffect(() => {
     getSuppliers(token, setSuppliers, setTotalPages, currentPage).then(
       (response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       },

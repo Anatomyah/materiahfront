@@ -1,7 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
-import { getSupplierDetails } from "../../clients/supplier_client";
+import {
+  deleteSupplier,
+  getSupplierDetails,
+} from "../../clients/supplier_client";
+import DeleteButton from "../Generic/DeleteButton";
 
 const SupplierDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -15,7 +19,7 @@ const SupplierDetailComponent = () => {
   useEffect(() => {
     if (!supplier) {
       getSupplierDetails(token, id, setSupplier).then((response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
@@ -55,6 +59,13 @@ const SupplierDetailComponent = () => {
           </Link>
         </div>
       ))}
+      <DeleteButton
+        objectType="supplier"
+        objectName={supplier.name}
+        objectId={supplier.id}
+        deleteFetchFunc={deleteSupplier}
+        returnLocation="suppliers"
+      />
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (

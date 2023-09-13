@@ -16,7 +16,7 @@ const InventoryPage = () => {
   useEffect(() => {
     getLabInventory(token, setLabInventory, setTotalPages, currentPage).then(
       (response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       },

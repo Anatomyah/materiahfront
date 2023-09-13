@@ -18,19 +18,24 @@ const ChangePasswordModal = ({ email }) => {
     setShowModal(false);
   };
   const handleShow = () => {
-    const res = getPasswordToken(email);
-    if (res instanceof Error) {
-      setErrorMessages((prevState) => [...prevState, res.message]);
-    }
-    setShowModal(true);
+    getPasswordToken(email).then((response) => {
+      if (response && !response.success) {
+        // setErrorMessages((prevState) => [...prevState, response]);
+        //   todo - present email sending error - modal? toast? message?
+      }
+      if (response && response.success) {
+        setShowModal(true);
+      }
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const res = resetPassword(token, password);
-    if (res instanceof Error) {
-      setErrorMessages((prevState) => [...prevState, res.message]);
-    }
+    resetPassword(token, password).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   return (

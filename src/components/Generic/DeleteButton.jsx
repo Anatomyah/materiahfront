@@ -10,6 +10,7 @@ const DeleteButton = ({
   objectName,
   objectId,
   deleteFetchFunc,
+  returnLocation,
 }) => {
   const { token } = useContext(AppContext);
   const nav = useNavigate();
@@ -25,7 +26,7 @@ const DeleteButton = ({
     deleteFetchFunc(token, objectId).then((response) => {
       if (response && response.success) {
         handleClose();
-        nav("/inventory");
+        nav(`/${returnLocation}`);
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }

@@ -19,8 +19,9 @@ export const getManufacturers = async (
     setManufacturers(response.data.results);
     console.log(response.data.results);
     setTotalPages(response.data.total_pages);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -53,7 +54,8 @@ export const getManufacturerDetails = async (
       },
     );
     setManufacturerDetails(response.data);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };

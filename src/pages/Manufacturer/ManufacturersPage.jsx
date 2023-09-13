@@ -15,7 +15,7 @@ const ManufacturersPage = () => {
   useEffect(() => {
     getManufacturers(token, setManufacturers, setTotalPages, currentPage).then(
       (response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       },

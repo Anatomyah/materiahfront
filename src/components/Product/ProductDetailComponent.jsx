@@ -17,7 +17,7 @@ const ProductDetailComponent = () => {
   useEffect(() => {
     if (!product) {
       getProductDetails(token, id, setProduct).then((response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
@@ -62,6 +62,7 @@ const ProductDetailComponent = () => {
         objectName={product.name}
         objectId={product.id}
         deleteFetchFunc={deleteProduct}
+        returnLocation="inventory"
       />
       {product && (
         <EditProductModal product={product} setProduct={setProduct} />

@@ -15,7 +15,7 @@ const QuoteDetailComponent = () => {
   useEffect(() => {
     if (!quote) {
       getQuoteDetails(token, id, setQuote).then((response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });

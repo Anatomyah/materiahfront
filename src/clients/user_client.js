@@ -1,6 +1,20 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const validateToken = async (token) => {
+  try {
+    const response = await axios.get(`${BACKEND_URL}users/validate_token/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
 export const signup = async (userData) => {
   try {
     console.log(userData);
@@ -41,9 +55,9 @@ export const login = async (
         setIsSupplier(true);
       }
     }
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
     return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
@@ -67,9 +81,9 @@ export const logout = async (token) => {
 export const getPasswordToken = async (email) => {
   try {
     await axios.post(`${BACKEND_URL}api/password_reset/`, { email });
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
     return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
@@ -80,9 +94,9 @@ export const resetPassword = async (token, password) => {
       token,
       password,
     });
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
     return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
@@ -127,6 +141,7 @@ export const updateUserProfile = async (
       },
     );
     setUserDetails(response.data);
+    return { success: true };
   } catch (error) {
     console.error(error);
     return error.response ? error.response.data.detail : "Something went wrong";
@@ -155,6 +170,7 @@ export const updateSupplierProfile = async (
         },
       },
     );
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
     return error.response ? error.response.data.detail : "Something went wrong";
@@ -179,8 +195,9 @@ export const getSupplierProducts = async (
     console.log(response.data.results);
     setSupplierCatalogue(response.data.results);
     setTotalPages(response.data.total_pages);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 

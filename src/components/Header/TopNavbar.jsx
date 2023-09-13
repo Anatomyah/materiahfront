@@ -19,7 +19,7 @@ function TopNavBar() {
       console.error("Error during logout:", error);
     }
     setIsSupplier(false);
-    setToken("");
+    setToken(null);
     setRememberMe(false);
     toast("See you soon!");
   };

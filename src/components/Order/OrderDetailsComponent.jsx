@@ -15,7 +15,7 @@ const OrderDetailsComponent = () => {
   useEffect(() => {
     if (!order) {
       getOrderDetails(token, id, setOrder).then((response) => {
-        if (!response) {
+        if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });

@@ -3,36 +3,59 @@ import LoginPage from "./pages/User/LoginPage";
 import TopNavBar from "./components/Header/TopNavbar";
 import SiteRoutes from "./components/SiteRoutes";
 import { ToastContainer } from "react-toastify";
+import { validateToken } from "./clients/user_client";
 
 export const AppContext = createContext(null);
 
 function App() {
-  const [token, setToken] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [isSupplier, setIsSupplier] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUserDetails = localStorage.getItem("userDetails");
-    const savedIsSupplier = localStorage.getItem("isSupplier");
-    const savedRememberMe = localStorage.getItem("rememberMe");
+    const loadFromLocalStorage = async () => {
+      const savedToken = localStorage.getItem("token");
+      const savedUserDetails = localStorage.getItem("userDetails");
+      const savedIsSupplier = localStorage.getItem("isSupplier");
+      const savedRememberMe = localStorage.getItem("rememberMe");
 
-    if (savedRememberMe === "true") {
-      setRememberMe(true);
-      if (savedToken !== null) setToken(savedToken);
-      if (savedUserDetails !== null)
-        setUserDetails(JSON.parse(savedUserDetails));
-      if (savedIsSupplier !== null) setIsSupplier(savedIsSupplier === "true");
-    } else {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userDetails");
-      localStorage.removeItem("isSupplier");
-    }
+      if (savedRememberMe === "true") {
+        setRememberMe(true);
+        if (savedToken !== null) setToken(savedToken);
+        if (savedUserDetails !== null)
+          setUserDetails(JSON.parse(savedUserDetails));
+        if (savedIsSupplier !== null) setIsSupplier(savedIsSupplier === "true");
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userDetails");
+        localStorage.removeItem("isSupplier");
+      }
+    };
+
+    loadFromLocalStorage().then(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const validateExistingToken = async () => {
+      if (token) {
+        const response = await validateToken(token);
+        if (response && !response.success) {
+          setToken(null);
+          alert("Your session has expired. Please log in again.");
+        }
+      }
+    };
+
+    if (!isLoading) {
+      validateExistingToken();
+    }
+  }, [token, isLoading]);
+
+  // This useEffect runs for handling beforeunload event
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
       if (rememberMe) {
         localStorage.setItem("token", token);
         localStorage.setItem("userDetails", JSON.stringify(userDetails));
@@ -42,11 +65,15 @@ function App() {
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [token, userDetails, isSupplier, rememberMe]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <ToastContainer />

@@ -14,7 +14,7 @@ const QuotesPage = () => {
 
   useEffect(() => {
     getQuotes(token, setQuotes, setTotalPages, currentPage).then((response) => {
-      if (!response) {
+      if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });

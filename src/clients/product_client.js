@@ -76,8 +76,9 @@ export const getLabInventory = async (
     setLabInventory(response.data.results);
     console.log(response.data.results);
     setTotalPages(response.data.total_pages);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
 
@@ -94,7 +95,8 @@ export const getProductDetails = async (
     });
     setProductDetails(response.data);
     console.log(response.data);
+    return { success: true };
   } catch (error) {
-    return error;
+    return error.response ? error.response.data.detail : "Something went wrong";
   }
 };

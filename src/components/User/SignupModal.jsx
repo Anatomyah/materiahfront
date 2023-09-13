@@ -45,17 +45,13 @@ const SignupModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const emailInput = document.getElementById("email");
+    const emailInput = document.getElementById("email").checkValidity();
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (
-      !emailInput.checkValidity() ||
-      !phoneValidation.valid ||
-      password !== confirmPassword
-    ) {
+    if (!emailInput || !phoneValidation.valid || password !== confirmPassword) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!emailInput.checkValidity()) {
+        if (!emailInput) {
           newErrorMessages.push("Invalid email format.");
         }
         if (!phoneValidation.valid) {
@@ -81,7 +77,7 @@ const SignupModal = () => {
         if (response && response.success) {
           login({ username, password }, setToken, setUserDetails).then(
             (response) => {
-              if (!response) {
+              if (response && response.success) {
                 handleClose();
                 nav("/");
               } else {

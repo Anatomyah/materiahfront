@@ -9,7 +9,7 @@ import {
 } from "../../config_and_helpers/config";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import { getProductDetails, updateProduct } from "../../clients/product_client";
+import { updateProduct } from "../../clients/product_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
 const EditProductModal = ({ product, setProduct }) => {
@@ -46,7 +46,6 @@ const EditProductModal = ({ product, setProduct }) => {
   }, []);
 
   useEffect(() => {
-    console.log(product);
     setProductName(product.name);
     setCatalogueNumber(product.cat_num);
     setCategory(product.category);
