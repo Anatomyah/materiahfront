@@ -3,15 +3,14 @@ import { BACKEND_URL } from "../config_and_helpers/config";
 
 export const validateToken = async (token) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}users/validate_token/`, {
+    await axios.get(`${BACKEND_URL}users/validate_token/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
     });
     return { success: true };
   } catch (error) {
-    alert(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return { success: false };
   }
 };
 
@@ -36,6 +35,7 @@ export const login = async (
   setToken,
   setUserDetails,
   setIsSupplier,
+  rememberMe,
 ) => {
   try {
     const userData = {
@@ -54,6 +54,11 @@ export const login = async (
       if (res.data.user_details.is_supplier) {
         setIsSupplier(true);
       }
+      let storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("token", res.data.token);
+      storage.setItem("userDetails", JSON.stringify(res.data.user_details));
+      storage.setItem("isSupplier", String(res.data.user_details.is_supplier));
+      storage.setItem("rememberMe", String(rememberMe));
     }
     return { success: true };
   } catch (error) {
@@ -73,6 +78,8 @@ export const logout = async (token) => {
         },
       },
     );
+    localStorage.clear();
+    sessionStorage.clear();
   } catch (e) {
     alert(e);
   }
@@ -104,29 +111,29 @@ export const resetPassword = async (token, password) => {
 export const updateUserProfile = async (
   token,
   userId,
-  updatedDetails,
+  updatedData,
   setUserDetails,
   isSupplier = false,
 ) => {
   let updatedUserData;
   if (!isSupplier) {
     updatedUserData = {
-      email: updatedDetails.email,
-      first_name: updatedDetails.firstName,
-      last_name: updatedDetails.lastName,
+      email: updatedData.email,
+      first_name: updatedData.firstName,
+      last_name: updatedData.lastName,
       userprofile: {
-        phone_prefix: updatedDetails.phonePrefix,
-        phone_suffix: updatedDetails.phoneSuffix,
+        phone_prefix: updatedData.phonePrefix,
+        phone_suffix: updatedData.phoneSuffix,
       },
     };
   } else {
     updatedUserData = {
-      email: updatedDetails.email,
-      first_name: updatedDetails.firstName,
-      last_name: updatedDetails.lastName,
+      email: updatedData.email,
+      first_name: updatedData.firstName,
+      last_name: updatedData.lastName,
       supplieruserprofile: {
-        contact_phone_prefix: updatedDetails.contactPhonePrefix,
-        contact_phone_suffix: updatedDetails.contactPhoneSuffix,
+        contact_phone_prefix: updatedData.contactPhonePrefix,
+        contact_phone_suffix: updatedData.contactPhoneSuffix,
       },
     };
   }
@@ -144,35 +151,6 @@ export const updateUserProfile = async (
     return { success: true };
   } catch (error) {
     console.error(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
-  }
-};
-
-export const updateSupplierProfile = async (
-  token,
-  supplierId,
-  updatedDetails,
-) => {
-  let updatedSupplierData = {
-    email: updatedDetails.supplierEmail,
-    phone_prefix: updatedDetails.supplierPhonePrefix,
-    phone_suffix: updatedDetails.supplierPhoneSuffix,
-    website: updatedDetails.supplierWebsite,
-  };
-
-  try {
-    await axios.patch(
-      `${BACKEND_URL}suppliers/${supplierId}/`,
-      updatedSupplierData,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      },
-    );
-    return { success: true };
-  } catch (error) {
-    console.error(error.response.data);
     return error.response ? error.response.data.detail : "Something went wrong";
   }
 };

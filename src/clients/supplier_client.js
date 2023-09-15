@@ -1,6 +1,29 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const updateSupplier = async (
+  token,
+  supplierId,
+  updatedSupplierData,
+) => {
+  try {
+    await axios.patch(
+      `${BACKEND_URL}suppliers/${supplierId}/`,
+      updatedSupplierData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
 export const deleteSupplier = async (token, supplierId) => {
   try {
     await axios.delete(`${BACKEND_URL}suppliers/${supplierId}`, {

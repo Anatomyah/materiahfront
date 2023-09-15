@@ -4,10 +4,8 @@ import Modal from "react-bootstrap/Modal";
 import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
-import {
-  updateSupplierProfile,
-  updateUserProfile,
-} from "../../clients/user_client";
+import { updateUserProfile } from "../../clients/user_client";
+import { updateSupplier } from "../../clients/supplier_client";
 
 const EditSupplierAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
@@ -101,36 +99,38 @@ const EditSupplierAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      updateSupplierProfile(token, userDetails.supplier_id, {
-        supplierEmail,
-        supplierPhonePrefix,
-        supplierPhoneSuffix,
-        supplierWebsite,
-      }).then((response) => {
-        if (response && response.success) {
-          updateUserProfile(
-            token,
-            userDetails.user_id,
-            {
-              firstName,
-              lastName,
-              email,
-              phonePrefix,
-              phoneSuffix,
-            },
-            setUserDetails,
-            true,
-          ).then((response) => {
-            if (response && response.success) {
-              handleClose();
-            } else {
-              setErrorMessages((prevState) => [...prevState, response]);
-            }
-          });
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+      const formData = new FormData();
+      formData.append("email", supplierEmail);
+      formData.append("phone_prefix", supplierPhonePrefix);
+      formData.append("phone_suffix", supplierPhoneSuffix);
+      formData.append("website", supplierWebsite);
+      updateSupplier(token, userDetails.supplier_id, formData).then(
+        (response) => {
+          if (response && response.success) {
+            updateUserProfile(
+              token,
+              userDetails.user_id,
+              {
+                firstName,
+                lastName,
+                email,
+                phonePrefix,
+                phoneSuffix,
+              },
+              setUserDetails,
+              true,
+            ).then((response) => {
+              if (response && response.success) {
+                handleClose();
+              } else {
+                setErrorMessages((prevState) => [...prevState, response]);
+              }
+            });
+          } else {
+            setErrorMessages((prevState) => [...prevState, response]);
+          }
+        },
+      );
     }
   };
 

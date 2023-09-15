@@ -5,6 +5,8 @@ import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
+import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import DropdownMultiselect from "../Generic/DropdownMultiselect";
 
 const AddSupplierModal = () => {
   const { token } = useContext(AppContext);
@@ -15,7 +17,7 @@ const AddSupplierModal = () => {
   const [phonePrefix, setPhonePrefix] = useState();
   const [phoneSuffix, setPhoneSuffix] = useState();
   const [relatedManufacturers, setRelatedManufacturers] = useState();
-  const [manufacturerList, setManufacturerList] = useState(null);
+  const [manufacturerList, setManufacturerList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -57,10 +59,14 @@ const AddSupplierModal = () => {
   };
   const handleShow = () => setShowModal(true);
 
+  if (!manufacturerList) {
+    return "Loading...";
+  }
+
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Add Product
+        Add Supplier
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -72,31 +78,43 @@ const AddSupplierModal = () => {
             <legend>Create Product</legend>
             <input
               type="text"
-              placeholder="Product Name"
-              id="product_name"
+              placeholder="Supplier Name"
+              id="supplier_name"
               onChange={(e) => setSupplierName(e.target.value)}
               value={supplierName}
             />
             <input
               type="url"
-              placeholder="Product Link"
-              id="product_link"
+              placeholder="Supplier Website"
+              id="supplier_website"
               onChange={(e) => setWebsiteUrl(e.target.value)}
               value={websiteUrl}
             />
-            {/*<select*/}
-            {/*  value={manufacturer}*/}
-            {/*  onChange={(e) => setManufacturer(e.target.value)}*/}
-            {/*>*/}
-            {/*  <option value="" disabled>*/}
-            {/*    --Select Manufacturer--*/}
-            {/*  </option>*/}
-            {/*  {manufacturerList.map((choice, index) => (*/}
-            {/*    <option key={index} value={choice.value}>*/}
-            {/*      {choice.label}*/}
-            {/*    </option>*/}
-            {/*  ))}*/}
-            {/*</select>*/}
+            <input
+              type="email"
+              placeholder="Customer service Email"
+              id="supplier_email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
+            />
+            <select
+              value={phonePrefix}
+              onChange={(e) => setPhonePrefix(e.target.value)}
+            >
+              {PHONE_PREFIX_CHOICES.map((choice, index) => (
+                <option key={index} value={choice.value}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
+            <input
+              id="phone"
+              onChange={(e) => setPhoneSuffix(e.target.value)}
+              type="text"
+              placeholder="Contact Phone"
+              value={phoneSuffix}
+            />
+            <DropdownMultiselect optionsList={manufacturerList} />
           </form>
           {errorMessages.length > 0 && (
             <ul>

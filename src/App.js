@@ -3,7 +3,10 @@ import LoginPage from "./pages/User/LoginPage";
 import TopNavBar from "./components/Header/TopNavbar";
 import SiteRoutes from "./components/SiteRoutes";
 import { ToastContainer } from "react-toastify";
-import { validateToken } from "./clients/user_client";
+import {
+  createBeforeUnloadHandler,
+  initializeApp,
+} from "./config_and_helpers/helpers";
 
 export const AppContext = createContext(null);
 
@@ -15,54 +18,26 @@ function App() {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    const loadFromLocalStorage = async () => {
-      const savedToken = localStorage.getItem("token");
-      const savedUserDetails = localStorage.getItem("userDetails");
-      const savedIsSupplier = localStorage.getItem("isSupplier");
-      const savedRememberMe = localStorage.getItem("rememberMe");
-
-      if (savedRememberMe === "true") {
-        setRememberMe(true);
-        if (savedToken !== null) setToken(savedToken);
-        if (savedUserDetails !== null)
-          setUserDetails(JSON.parse(savedUserDetails));
-        if (savedIsSupplier !== null) setIsSupplier(savedIsSupplier === "true");
-      } else {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userDetails");
-        localStorage.removeItem("isSupplier");
-      }
-    };
-
-    loadFromLocalStorage().then(() => setIsLoading(false));
+    (async () => {
+      await initializeApp(
+        setRememberMe,
+        setToken,
+        setUserDetails,
+        setIsSupplier,
+        setIsLoading,
+      );
+    })();
   }, []);
 
   useEffect(() => {
-    const validateExistingToken = async () => {
-      if (token) {
-        const response = await validateToken(token);
-        if (response && !response.success) {
-          setToken(null);
-          alert("Your session has expired. Please log in again.");
-        }
-      }
-    };
-
-    if (!isLoading) {
-      validateExistingToken();
-    }
-  }, [token, isLoading]);
-
-  // This useEffect runs for handling beforeunload event
-  useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (rememberMe) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("userDetails", JSON.stringify(userDetails));
-        localStorage.setItem("isSupplier", String(isSupplier));
-        localStorage.setItem("rememberMe", String(rememberMe));
-      }
-    };
+    let storageType = rememberMe ? "localStorage" : "sessionStorage";
+    const handleBeforeUnload = createBeforeUnloadHandler(
+      storageType,
+      token,
+      userDetails,
+      isSupplier,
+      rememberMe,
+    );
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {

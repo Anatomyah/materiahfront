@@ -20,17 +20,21 @@ const LoginPage = () => {
   } = useContext(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
-    login({ username, password }, setToken, setUserDetails, setIsSupplier).then(
-      (response) => {
-        if (response && response.success) {
-          setLoginError(false);
-          console.log(token);
-          nav("/");
-        } else {
-          setLoginError(true);
-        }
-      },
-    );
+    login(
+      { username, password },
+      setToken,
+      setUserDetails,
+      setIsSupplier,
+      rememberMe,
+    ).then((response) => {
+      if (response && response.success) {
+        setLoginError(false);
+        console.log(token);
+        nav("/");
+      } else {
+        setLoginError(true);
+      }
+    });
   };
 
   return (
