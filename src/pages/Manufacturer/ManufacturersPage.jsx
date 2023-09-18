@@ -3,6 +3,7 @@ import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getManufacturers } from "../../clients/manufacturer_client";
 import { useNavigate } from "react-router-dom";
+import AddManufacturerModal from "../../components/Manufacturer/AddManufacturerModal";
 
 const ManufacturersPage = () => {
   const nav = useNavigate();
@@ -12,7 +13,7 @@ const ManufacturersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  const fetchManufacturers = () => {
     getManufacturers(token, setManufacturers, setTotalPages, currentPage).then(
       (response) => {
         if (response && !response.success) {
@@ -20,6 +21,10 @@ const ManufacturersPage = () => {
         }
       },
     );
+  };
+
+  useEffect(() => {
+    fetchManufacturers();
   }, [currentPage]);
 
   const goToManufacturerDetails = (manufacturer) => {
@@ -63,6 +68,7 @@ const ManufacturersPage = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
+      <AddManufacturerModal onSuccessfulCreate={fetchManufacturers} />
     </div>
   );
 };

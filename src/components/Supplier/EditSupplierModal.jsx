@@ -174,6 +174,7 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
               optionsList={manufacturerList}
               selectedValues={relatedManufacturers}
               setSelectedValues={setRelatedManufacturers}
+              placeholder="Manufacturers"
             />
           </form>
           {errorMessages.length > 0 && (

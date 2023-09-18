@@ -6,6 +6,7 @@ export default function DropdownMultiselect({
   optionsList,
   selectedValues,
   setSelectedValues,
+  placeholder,
 }) {
   const handleChange = (event, newValue) => {
     setSelectedValues(newValue);
@@ -21,7 +22,7 @@ export default function DropdownMultiselect({
       getOptionLabel={(option) => option.label}
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => (
-        <TextField {...params} label="Related Manufacturers" />
+        <TextField {...params} label={`Related ${placeholder}`} />
       )}
     />
   );

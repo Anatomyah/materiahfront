@@ -1,6 +1,22 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const createManufacturer = async (token, manufacturerData) => {
+  try {
+    await axios.post(`${BACKEND_URL}manufacturers/`, manufacturerData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
 export const getManufacturers = async (
   token,
   setManufacturers,

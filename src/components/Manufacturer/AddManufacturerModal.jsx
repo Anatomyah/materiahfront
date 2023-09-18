@@ -2,27 +2,23 @@ import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
-import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
-import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import DropdownMultiselect from "../Generic/DropdownMultiselect";
-import { createSupplier } from "../../clients/supplier_client";
+import { getSupplierSelectList } from "../../clients/supplier_client";
+import { createManufacturer } from "../../clients/manufacturer_client";
 
-const AddSupplierModal = ({ onSuccessfulCreate }) => {
+const AddManufacturerModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
-  const [supplierName, setSupplierName] = useState("");
+  const [name, setName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
-  const [email, setEmail] = useState("");
-  const [phonePrefix, setPhonePrefix] = useState("050");
-  const [phoneSuffix, setPhoneSuffix] = useState("");
-  const [relatedManufacturers, setRelatedManufacturers] = useState([]);
-  const [manufacturerList, setManufacturerList] = useState([]);
+  const [relatedSuppliers, setRelatedSuppliers] = useState([]);
+  const [supplierList, setSupplierList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList).then((response) => {
+    getSupplierSelectList(token, setSupplierList).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
@@ -30,57 +26,29 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
   }, []);
 
   useEffect(() => {
-    setIsFilled(
-      supplierName &&
-        websiteUrl &&
-        email &&
-        phonePrefix &&
-        phoneSuffix &&
-        relatedManufacturers,
-    );
-  }, [
-    supplierName,
-    websiteUrl,
-    email,
-    phonePrefix,
-    phoneSuffix,
-    relatedManufacturers,
-  ]);
+    setIsFilled(name && websiteUrl && relatedSuppliers);
+  }, [name, websiteUrl, relatedSuppliers]);
 
   function handleSubmit(e) {
     e.preventDefault();
     setErrorMessages([]);
     const urlValidation = isValidURL(websiteUrl);
-    const emailValidation = document
-      .getElementById("supplier_email")
-      .checkValidity();
 
-    if (!urlValidation || !emailValidation) {
+    if (!urlValidation) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!urlValidation) {
-          newErrorMessages.push("Invalid website link");
-        }
-        if (!emailValidation) {
-          newErrorMessages.push("Invalid email address");
-        }
         return [...prevState, ...newErrorMessages];
       });
     } else {
       const formData = new FormData();
-      formData.append("name", supplierName);
+      formData.append("name", name);
       formData.append("website", websiteUrl);
-      formData.append("email", email);
-      formData.append("phone_prefix", phonePrefix);
-      formData.append("phone_suffix", phoneSuffix);
       formData.append(
-        "manufacturers",
-        relatedManufacturers
-          .map((manufacturer) => manufacturer.value)
-          .join(","),
+        "suppliers",
+        relatedSuppliers.map((supplier) => supplier.value).join(","),
       );
-      createSupplier(token, formData).then((response) => {
+      createManufacturer(token, formData).then((response) => {
         if (response && response.success) {
           onSuccessfulCreate();
           handleClose();
@@ -98,14 +66,14 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
   };
   const handleShow = () => setShowModal(true);
 
-  if (!manufacturerList) {
+  if (!supplierList) {
     return "Loading...";
   }
 
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Add Supplier
+        Add Manufacturer
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -119,45 +87,21 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
               type="text"
               placeholder="Supplier Name"
               id="supplier_name"
-              onChange={(e) => setSupplierName(e.target.value)}
-              value={supplierName}
+              onChange={(e) => setName(e.target.value)}
+              value={name}
             />
             <input
               type="url"
               placeholder="Supplier Website"
-              id="supplier_website"
+              id="website"
               onChange={(e) => setWebsiteUrl(e.target.value)}
               value={websiteUrl}
             />
-            <input
-              type="email"
-              placeholder="Customer service Email"
-              id="supplier_email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-            <select
-              value={phonePrefix}
-              onChange={(e) => setPhonePrefix(e.target.value)}
-            >
-              {PHONE_PREFIX_CHOICES.map((choice, index) => (
-                <option key={index} value={choice.value}>
-                  {choice.label}
-                </option>
-              ))}
-            </select>
-            <input
-              id="phone"
-              onChange={(e) => setPhoneSuffix(e.target.value)}
-              type="text"
-              placeholder="Office Phone"
-              value={phoneSuffix}
-            />
             <DropdownMultiselect
-              optionsList={manufacturerList}
-              selectedValues={relatedManufacturers}
-              setSelectedValues={setRelatedManufacturers}
-              placeholder="Manufacturers"
+              optionsList={supplierList}
+              selectedValues={relatedSuppliers}
+              setSelectedValues={setRelatedSuppliers}
+              placeholder="Suppliers"
             />
           </form>
           {errorMessages.length > 0 && (
@@ -188,4 +132,4 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddSupplierModal;
+export default AddManufacturerModal;
