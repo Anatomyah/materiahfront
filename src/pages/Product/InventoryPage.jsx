@@ -13,7 +13,7 @@ const InventoryPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [errorMessages, setErrorMessages] = useState([]);
 
-  useEffect(() => {
+  const fetchProducts = () => {
     getLabInventory(token, setLabInventory, setTotalPages, currentPage).then(
       (response) => {
         if (response && !response.success) {
@@ -21,6 +21,10 @@ const InventoryPage = () => {
         }
       },
     );
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, [currentPage]);
 
   const goToProductDetails = (product) => {
@@ -37,7 +41,7 @@ const InventoryPage = () => {
   return (
     <div>
       <div>
-        <AddProductModal />
+        <AddProductModal onSuccessfulCreate={fetchProducts} />
       </div>
       {labInventory.map((product) => (
         <span

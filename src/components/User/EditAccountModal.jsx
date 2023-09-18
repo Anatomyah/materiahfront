@@ -40,12 +40,12 @@ const EditAccountModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const emailInput = document.getElementById("email");
+    const emailValidation = document.getElementById("email");
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (!phoneValidation.valid || !emailInput.checkValidity()) {
+    if (!phoneValidation.valid || !emailValidation.checkValidity()) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!emailInput.checkValidity()) {
+        if (!emailValidation.checkValidity()) {
           newErrorMessages.push("Invalid email format.");
         }
         if (!phoneValidation.valid) {

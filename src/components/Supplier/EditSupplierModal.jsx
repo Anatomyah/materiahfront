@@ -6,9 +6,9 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import DropdownMultiselect from "../Generic/DropdownMultiselect";
-import { createSupplier } from "../../clients/supplier_client";
+import { updateSupplier } from "../../clients/supplier_client";
 
-const AddSupplierModal = ({ onSuccessfulCreate }) => {
+const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
   const [supplierName, setSupplierName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -28,6 +28,21 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    setSupplierName(supplierObj.name);
+    setWebsiteUrl(supplierObj.website);
+    setEmail(supplierObj.email);
+    setPhonePrefix(supplierObj.phone_prefix);
+    setPhoneSuffix(supplierObj.phone_suffix);
+    const formattedRelatedManufacturers = supplierObj.manufacturers.map(
+      (item) => ({
+        value: item.id,
+        label: item.name,
+      }),
+    );
+    setRelatedManufacturers(formattedRelatedManufacturers);
+  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(
@@ -80,14 +95,16 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
           .map((manufacturer) => manufacturer.value)
           .join(","),
       );
-      createSupplier(token, formData).then((response) => {
-        if (response && response.success) {
-          onSuccessfulCreate();
-          handleClose();
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+
+      updateSupplier(token, supplierObj.id, formData, onSuccessfulUpdate).then(
+        (response) => {
+          if (response && response.success) {
+            handleClose();
+          } else {
+            setErrorMessages((prevState) => [...prevState, response]);
+          }
+        },
+      );
     }
   }
 
@@ -98,14 +115,14 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
   };
   const handleShow = () => setShowModal(true);
 
-  if (!manufacturerList) {
+  if (!manufacturerList || !supplierObj) {
     return "Loading...";
   }
 
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Add Supplier
+        Edit Supplier
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -187,4 +204,4 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddSupplierModal;
+export default EditSupplierModal;

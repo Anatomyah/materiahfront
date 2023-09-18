@@ -6,6 +6,7 @@ import {
   getSupplierDetails,
 } from "../../clients/supplier_client";
 import DeleteButton from "../Generic/DeleteButton";
+import EditSupplierModal from "./EditSupplierModal";
 
 const SupplierDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -66,6 +67,12 @@ const SupplierDetailComponent = () => {
         deleteFetchFunc={deleteSupplier}
         returnLocation="suppliers"
       />
+      {supplier && (
+        <EditSupplierModal
+          supplierObj={supplier}
+          onSuccessfulUpdate={setSupplier}
+        />
+      )}
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (

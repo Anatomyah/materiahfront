@@ -65,27 +65,27 @@ const EditSupplierAccountModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const supplierEmailInput = document
+    const supplierEmailValidation = document
       .getElementById("contact_email")
       .checkValidity();
-    const contactEmailInput = document
+    const contactEmailValidation = document
       .getElementById("supplier_email")
       .checkValidity();
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
     const contactPhoneValidation = validatePhoneSuffix(supplierPhoneSuffix);
 
     if (
-      !supplierEmailInput ||
-      !contactEmailInput ||
+      !supplierEmailValidation ||
+      !contactEmailValidation ||
       !phoneValidation.valid ||
       !contactPhoneValidation.valid
     ) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!supplierEmailInput) {
+        if (!supplierEmailValidation) {
           newErrorMessages.push("Invalid office email format.");
         }
-        if (!contactEmailInput) {
+        if (!contactEmailValidation) {
           newErrorMessages.push("Invalid contact email format.");
         }
         if (!phoneValidation.valid) {

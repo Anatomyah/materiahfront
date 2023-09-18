@@ -45,13 +45,17 @@ const SignupModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const emailInput = document.getElementById("email").checkValidity();
+    const emailValidation = document.getElementById("email").checkValidity();
     const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (!emailInput || !phoneValidation.valid || password !== confirmPassword) {
+    if (
+      !emailValidation ||
+      !phoneValidation.valid ||
+      password !== confirmPassword
+    ) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!emailInput) {
+        if (!emailValidation) {
           newErrorMessages.push("Invalid email format.");
         }
         if (!phoneValidation.valid) {

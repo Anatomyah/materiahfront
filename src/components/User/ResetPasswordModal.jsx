@@ -25,8 +25,8 @@ const ChangePasswordModal = () => {
   };
 
   const handleTokenSent = () => {
-    const emailInput = document.getElementById("email").checkValidity();
-    if (!emailInput) {
+    const emailValidation = document.getElementById("email").checkValidity();
+    if (!emailValidation) {
       setErrorMessages((prevState) => [
         ...prevState,
         "Invalid email address. Check again.",

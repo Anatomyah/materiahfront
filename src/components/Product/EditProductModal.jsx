@@ -12,7 +12,7 @@ import { getSupplierSelectList } from "../../clients/supplier_client";
 import { updateProduct } from "../../clients/product_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
-const EditProductModal = ({ product, setProduct }) => {
+const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
@@ -46,18 +46,18 @@ const EditProductModal = ({ product, setProduct }) => {
   }, []);
 
   useEffect(() => {
-    setProductName(product.name);
-    setCatalogueNumber(product.cat_num);
-    setCategory(product.category);
-    setMeasurementUnit(product.unit);
-    setVolume(product.volume);
-    setStorageConditions(product.storage);
-    setStock(product.stock);
-    setPrice(product.price);
-    setProductLink(product.url);
-    setManufacturer(product.manufacturer.name);
-    setSupplier(product.supplier.name);
-    setImages(product.images);
+    setProductName(productObj.name);
+    setCatalogueNumber(productObj.cat_num);
+    setCategory(productObj.category);
+    setMeasurementUnit(productObj.unit);
+    setVolume(productObj.volume);
+    setStorageConditions(productObj.storage);
+    setStock(productObj.stock);
+    setPrice(productObj.price);
+    setProductLink(productObj.url);
+    setManufacturer(productObj.manufacturer.name);
+    setSupplier(productObj.supplier.name);
+    setImages(productObj.images);
   }, [showModal]);
 
   useEffect(() => {
@@ -185,7 +185,7 @@ const EditProductModal = ({ product, setProduct }) => {
           console.log(key[0] + ", " + key[1]);
         }
       });
-      updateProduct(token, product.id, formData, setProduct).then(
+      updateProduct(token, productObj.id, formData, onSuccessfulUpdate).then(
         (response) => {
           if (response && response.success) {
             handleClose();
@@ -197,7 +197,7 @@ const EditProductModal = ({ product, setProduct }) => {
     }
   };
 
-  if (!manufacturerList || !supplierList || !product) {
+  if (!manufacturerList || !supplierList || !productObj) {
     return "Loading...";
   }
 

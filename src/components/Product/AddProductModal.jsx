@@ -7,15 +7,13 @@ import {
   PRODUCT_STORAGE_OPTIONS,
 } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
-import { useNavigate } from "react-router-dom";
 import { createProduct } from "../../clients/product_client";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
-const AddProductModal = () => {
+const AddProductModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
-  const nav = useNavigate();
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
   const [category, setCategory] = useState("");
@@ -161,7 +159,9 @@ const AddProductModal = () => {
         formData.append(`image${index + 1}`, image.file);
       });
       createProduct(token, formData).then((response) => {
-        if (!response) {
+        if (response && response.success) {
+          onSuccessfulCreate();
+          handleClose();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }

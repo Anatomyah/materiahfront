@@ -33,6 +33,7 @@ export const getManufacturerSelectList = async (token, setManufacturers) => {
       },
     });
     setManufacturers(response.data);
+    console.log(response.data);
     return { success: true };
   } catch (error) {
     return error.response ? error.response.data.detail : "Something went wrong";

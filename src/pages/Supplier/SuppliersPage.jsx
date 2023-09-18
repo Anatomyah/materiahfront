@@ -13,7 +13,7 @@ const SuppliersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  const fetchSuppliers = () => {
     getSuppliers(token, setSuppliers, setTotalPages, currentPage).then(
       (response) => {
         if (response && !response.success) {
@@ -21,6 +21,10 @@ const SuppliersPage = () => {
         }
       },
     );
+  };
+
+  useEffect(() => {
+    fetchSuppliers();
   }, [currentPage]);
 
   const goToSupplierDetails = (supplier) => {
@@ -39,7 +43,7 @@ const SuppliersPage = () => {
   return (
     <div>
       <div>
-        <AddSupplierModal />
+        <AddSupplierModal onSuccessfulCreate={fetchSuppliers} />
       </div>
       {suppliers.map((supplier) => (
         <span

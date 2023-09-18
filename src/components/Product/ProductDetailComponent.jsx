@@ -65,7 +65,10 @@ const ProductDetailComponent = () => {
         returnLocation="inventory"
       />
       {product && (
-        <EditProductModal product={product} setProduct={setProduct} />
+        <EditProductModal
+          productObj={product}
+          onSuccessfulUpdate={setProduct}
+        />
       )}
       {!errorMessages && (
         <ul>

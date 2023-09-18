@@ -1,13 +1,30 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const createSupplier = async (token, supplierData) => {
+  try {
+    await axios.post(`${BACKEND_URL}suppliers/`, supplierData, {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    alert(error);
+    return error.response ? error.response.data.detail : "Something went wrong";
+  }
+};
+
 export const updateSupplier = async (
   token,
   supplierId,
   updatedSupplierData,
+  setSupplier,
 ) => {
   try {
-    await axios.patch(
+    const response = await axios.patch(
       `${BACKEND_URL}suppliers/${supplierId}/`,
       updatedSupplierData,
       {
@@ -17,6 +34,8 @@ export const updateSupplier = async (
         },
       },
     );
+    setSupplier(response.data);
+    console.log(response.data);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
@@ -55,6 +74,7 @@ export const getSuppliers = async (
       },
     );
     setSuppliers(response.data.results);
+    console.log(response.data.results);
     setTotalPages(response.data.total_pages);
     return { success: true };
   } catch (error) {
