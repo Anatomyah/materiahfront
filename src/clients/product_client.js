@@ -38,8 +38,9 @@ export const updateProduct = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -53,8 +54,9 @@ export const deleteProduct = async (token, productId) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -78,7 +80,10 @@ export const getLabInventory = async (
     setTotalPages(response.data.total_pages);
     return { success: true };
   } catch (error) {
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -97,6 +102,9 @@ export const getProductDetails = async (
     console.log(response.data);
     return { success: true };
   } catch (error) {
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };

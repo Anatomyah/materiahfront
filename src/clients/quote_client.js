@@ -13,7 +13,10 @@ export const getQuotes = async (token, setQuotes, setTotalPages, page = 1) => {
     setTotalPages(response.data.total_pages);
     return { success: true };
   } catch (error) {
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -28,6 +31,9 @@ export const getQuoteDetails = async (token, quoteId, setQuoteDetails) => {
     console.log(response.data);
     return { success: true };
   } catch (error) {
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };

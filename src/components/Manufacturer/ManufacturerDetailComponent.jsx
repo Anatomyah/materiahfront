@@ -1,16 +1,41 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { getManufacturerDetails } from "../../clients/manufacturer_client";
+import {
+  deleteManufacturer,
+  getManufacturerDetails,
+} from "../../clients/manufacturer_client";
 import { AppContext } from "../../App";
+import EditManufacturerModal from "./EditManufacturerModal";
+import DeleteButton from "../Generic/DeleteButton";
 
 const ManufacturerDetailComponent = () => {
   const { token } = useContext(AppContext);
   const { id } = useParams();
   const location = useLocation();
-  const [manufacturer, setManufacturer] = useState(
+  const [manufacturer, _setManufacturer] = useState(
     location.state ? location.state.product : null,
   );
   const [errorMessages, setErrorMessages] = useState([]);
+
+  const setManufacturer = (newData) => {
+    if (!newData) {
+      console.trace("setManufacturer called with undefined");
+    }
+    console.log("Setting manufacturer data:", newData);
+    _setManufacturer(newData);
+  };
+
+  useEffect(() => {
+    console.log("Manufacturer state updated:", manufacturer); // <-- Add this
+  }, [manufacturer]);
+
+  useEffect(() => {
+    console.log("Manufacturer Component has mounted");
+
+    return () => {
+      console.log("Manufacturer Component will unmount");
+    };
+  }, []);
 
   useEffect(() => {
     if (!manufacturer) {
@@ -18,6 +43,7 @@ const ManufacturerDetailComponent = () => {
         if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
+        console.log("Initial manufacturer data fetched:", manufacturer);
       });
     }
   }, [id]);
@@ -43,7 +69,7 @@ const ManufacturerDetailComponent = () => {
           <Link to={`/supplier-details/${supplier.id}`}>{supplier.name}</Link>
         </div>
       ))}
-      {!errorMessages && (
+      {errorMessages.length > 0 && (
         <ul>
           {errorMessages.map((error, id) => (
             <li key={id} className="text-danger fw-bold">
@@ -51,6 +77,19 @@ const ManufacturerDetailComponent = () => {
             </li>
           ))}
         </ul>
+      )}
+      <DeleteButton
+        objectType="manufacturer"
+        objectName={manufacturer.name}
+        objectId={manufacturer.id}
+        deleteFetchFunc={deleteManufacturer}
+        returnLocation="manufacturers"
+      />
+      {manufacturer && (
+        <EditManufacturerModal
+          manufacturerObj={manufacturer}
+          onSuccessfulUpdate={setManufacturer}
+        />
       )}
     </div>
   );

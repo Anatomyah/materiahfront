@@ -5,9 +5,9 @@ import { AppContext } from "../../App";
 import { isValidURL } from "../../config_and_helpers/helpers";
 import DropdownMultiselect from "../Generic/DropdownMultiselect";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import { createManufacturer } from "../../clients/manufacturer_client";
+import { updateManufacturer } from "../../clients/manufacturer_client";
 
-const AddManufacturerModal = ({ onSuccessfulCreate }) => {
+const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
   const [name, setName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -24,6 +24,16 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    setName(manufacturerObj.name);
+    setWebsiteUrl(manufacturerObj.website);
+    const formattedRelatedSuppliers = manufacturerObj.suppliers.map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+    setRelatedSuppliers(formattedRelatedSuppliers);
+  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(name && websiteUrl && relatedSuppliers);
@@ -48,9 +58,13 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
         "suppliers",
         relatedSuppliers.map((supplier) => supplier.value).join(","),
       );
-      createManufacturer(token, formData).then((response) => {
+      updateManufacturer(
+        token,
+        manufacturerObj.id,
+        formData,
+        onSuccessfulUpdate,
+      ).then((response) => {
         if (response && response.success) {
-          onSuccessfulCreate();
           handleClose();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
@@ -73,7 +87,7 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Add Manufacturer
+        Edit Manufacturer
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -122,7 +136,7 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
               handleSubmit(e);
             }}
           >
-            Create Manufacturer
+            Update Manufacturer
           </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
@@ -132,4 +146,4 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddManufacturerModal;
+export default EditManufacturerModal;

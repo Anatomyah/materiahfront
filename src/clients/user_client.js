@@ -25,8 +25,9 @@ export const signup = async (userData) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    alert(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -63,7 +64,9 @@ export const login = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -91,7 +94,9 @@ export const getPasswordToken = async (email) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -104,7 +109,9 @@ export const resetPassword = async (token, password) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -150,8 +157,10 @@ export const updateUserProfile = async (
     setUserDetails(response.data);
     return { success: true };
   } catch (error) {
-    console.error(error);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
 
@@ -175,21 +184,9 @@ export const getSupplierProducts = async (
     setTotalPages(response.data.total_pages);
     return { success: true };
   } catch (error) {
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
   }
 };
-
-// export const getUserDetails = async (token, setUserDetails) => {
-//   try {
-//     const response = await axios.get(`${BACKEND_URL}users/`, {
-//       headers: {
-//         Authorization: `Token ${token}`,
-//       },
-//     });
-//     setUserDetails(response.data.results[0]);
-//     console.log(response.data.results[0]);
-//     return true;
-//   } catch (error) {
-//     return error;
-//   }
-// };

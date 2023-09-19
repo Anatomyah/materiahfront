@@ -70,7 +70,7 @@ const ProductDetailComponent = () => {
           onSuccessfulUpdate={setProduct}
         />
       )}
-      {!errorMessages && (
+      {errorMessages.length > 0 && (
         <ul>
           {errorMessages.map((error, id) => (
             <li key={id} className="text-danger fw-bold">

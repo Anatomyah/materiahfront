@@ -195,7 +195,7 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
               handleSubmit(e);
             }}
           >
-            Create Supplier
+            Update Supplier
           </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
