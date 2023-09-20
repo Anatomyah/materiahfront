@@ -8,7 +8,7 @@ import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import DropdownMultiselect from "../Generic/DropdownMultiselect";
 import { createSupplier } from "../../clients/supplier_client";
 
-const AddSupplierModal = ({ onSuccessfulCreate }) => {
+const CreateSupplierModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
   const [supplierName, setSupplierName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -188,4 +188,4 @@ const AddSupplierModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddSupplierModal;
+export default CreateSupplierModal;

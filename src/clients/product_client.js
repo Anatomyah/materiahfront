@@ -108,3 +108,27 @@ export const getProductDetails = async (
       : "Something went wrong";
   }
 };
+
+export const getProductSelectList = async (
+  token,
+  setProductSelectList,
+  supplierId,
+) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}products/names/?supplier_id=${supplierId}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    setProductSelectList(response.data);
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};

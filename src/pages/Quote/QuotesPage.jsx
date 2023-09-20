@@ -3,6 +3,7 @@ import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getQuotes } from "../../clients/quote_client";
 import { useNavigate } from "react-router-dom";
+import CreateQuoteModal from "../../components/Quote/CreateQuoteModal";
 
 const QuotesPage = () => {
   const { token } = useContext(AppContext);
@@ -12,12 +13,15 @@ const QuotesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  const fetchQuotes = () => {
     getQuotes(token, setQuotes, setTotalPages, currentPage).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
+  };
+  useEffect(() => {
+    fetchQuotes();
   }, [currentPage]);
 
   const goToQuoteDetails = (quote) => {
@@ -56,12 +60,12 @@ const QuotesPage = () => {
           ))}
         </ul>
       )}
-
       <PaginatorComponent
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
+      <CreateQuoteModal onSuccessfulCreate={fetchQuotes} />
     </div>
   );
 };

@@ -12,30 +12,10 @@ const ManufacturerDetailComponent = () => {
   const { token } = useContext(AppContext);
   const { id } = useParams();
   const location = useLocation();
-  const [manufacturer, _setManufacturer] = useState(
+  const [manufacturer, setManufacturer] = useState(
     location.state ? location.state.product : null,
   );
   const [errorMessages, setErrorMessages] = useState([]);
-
-  const setManufacturer = (newData) => {
-    if (!newData) {
-      console.trace("setManufacturer called with undefined");
-    }
-    console.log("Setting manufacturer data:", newData);
-    _setManufacturer(newData);
-  };
-
-  useEffect(() => {
-    console.log("Manufacturer state updated:", manufacturer); // <-- Add this
-  }, [manufacturer]);
-
-  useEffect(() => {
-    console.log("Manufacturer Component has mounted");
-
-    return () => {
-      console.log("Manufacturer Component will unmount");
-    };
-  }, []);
 
   useEffect(() => {
     if (!manufacturer) {

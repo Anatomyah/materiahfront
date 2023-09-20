@@ -3,7 +3,7 @@ import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getSuppliers } from "../../clients/supplier_client";
 import { useNavigate } from "react-router-dom";
-import AddSupplierModal from "../../components/Supplier/AddSupplierModal";
+import CreateSupplierModal from "../../components/Supplier/CreateSupplierModal";
 
 const SuppliersPage = () => {
   const nav = useNavigate();
@@ -43,7 +43,7 @@ const SuppliersPage = () => {
   return (
     <div>
       <div>
-        <AddSupplierModal onSuccessfulCreate={fetchSuppliers} />
+        <CreateSupplierModal onSuccessfulCreate={fetchSuppliers} />
       </div>
       {suppliers.map((supplier) => (
         <span

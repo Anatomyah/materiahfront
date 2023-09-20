@@ -12,7 +12,7 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
-const AddProductModal = ({ onSuccessfulCreate }) => {
+const CreateProductModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
@@ -354,4 +354,4 @@ const AddProductModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddProductModal;
+export default CreateProductModal;

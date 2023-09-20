@@ -7,7 +7,7 @@ import DropdownMultiselect from "../Generic/DropdownMultiselect";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { createManufacturer } from "../../clients/manufacturer_client";
 
-const AddManufacturerModal = ({ onSuccessfulCreate }) => {
+const CreateManufacturerModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
   const [name, setName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -132,4 +132,4 @@ const AddManufacturerModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default AddManufacturerModal;
+export default CreateManufacturerModal;

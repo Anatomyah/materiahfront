@@ -3,7 +3,7 @@ import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getManufacturers } from "../../clients/manufacturer_client";
 import { useNavigate } from "react-router-dom";
-import AddManufacturerModal from "../../components/Manufacturer/AddManufacturerModal";
+import CreateManufacturerModal from "../../components/Manufacturer/CreateManufacturerModal";
 
 const ManufacturersPage = () => {
   const nav = useNavigate();
@@ -68,7 +68,7 @@ const ManufacturersPage = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      <AddManufacturerModal onSuccessfulCreate={fetchManufacturers} />
+      <CreateManufacturerModal onSuccessfulCreate={fetchManufacturers} />
     </div>
   );
 };
