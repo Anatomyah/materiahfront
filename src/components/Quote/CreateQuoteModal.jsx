@@ -139,7 +139,11 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
               onChange={handleFileChange}
             />
             {quoteFile && (
-              <a href={quoteFile} target="_blank" rel="noopener noreferrer">
+              <a
+                href={URL.createObjectURL(quoteFile)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View File
               </a>
             )}
