@@ -93,6 +93,20 @@ export function isValidURL(url) {
   }
 }
 
+export const allItemsFilled = (items) => {
+  return items.every((item) => {
+    return item.product !== "" && item.quantity !== "" && item.price !== "";
+  });
+};
+
+export const valueIsPositive = (value) => {
+  return value > 0;
+};
+
+export const valueIsWhole = (value) => {
+  return Number.isInteger(Number(value));
+};
+
 // export function validateId(id) {
 //   id = String(id).trim();
 //   if (id.length > 9) {

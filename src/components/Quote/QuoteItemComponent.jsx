@@ -1,10 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
+import {
+  valueIsPositive,
+  valueIsWhole,
+} from "../../config_and_helpers/helpers";
 
-const QuoteItemComponent = ({ productList, onItemChange, index }) => {
-  const [product, setProduct] = useState(null);
-  const [quantity, setQuantity] = useState("");
-  const [price, setPrice] = useState("");
+const QuoteItemComponent = ({ productList, onItemChange, index, item }) => {
+  const [product, setProduct] = useState(
+    item ? productList.find((p) => p.value === item.product) : null,
+  );
+  const [quantity, setQuantity] = useState(item ? item.quantity : "");
+  const [price, setPrice] = useState(item ? item.price : "");
+  const [isPositiveError, setIsPositiveError] = useState(false);
+  const [isWholeError, setIsWholeError] = useState(false);
 
   const handleProductChange = (newValue) => {
     setProduct(newValue);
@@ -12,13 +20,31 @@ const QuoteItemComponent = ({ productList, onItemChange, index }) => {
   };
 
   const handleQuantityChange = (value) => {
-    setQuantity(value);
-    onItemChange(index, "quantity", value);
+    const positiveValidation = valueIsPositive(value);
+    const wholeValidation = valueIsWhole(value);
+    if (value === "" || (positiveValidation && wholeValidation)) {
+      setIsPositiveError(false);
+      setIsWholeError(false);
+      setQuantity(value);
+      onItemChange(index, "quantity", value);
+    } else {
+      if (!positiveValidation) {
+        setIsPositiveError(true);
+      }
+      if (!wholeValidation) {
+        setIsWholeError(true);
+      }
+    }
   };
 
   const handlePriceChange = (value) => {
-    setPrice(value);
-    onItemChange(index, "price", value);
+    if (value === "" || valueIsPositive(value)) {
+      setIsPositiveError(false);
+      setPrice(value);
+      onItemChange(index, "price", value);
+    } else {
+      setIsPositiveError(true);
+    }
   };
 
   return (
@@ -32,17 +58,23 @@ const QuoteItemComponent = ({ productList, onItemChange, index }) => {
       <input
         type="number"
         placeholder="Quantity"
+        min="1"
+        step="1"
         id="item_quantity"
         onChange={(e) => handleQuantityChange(e.target.value)}
         value={quantity}
       />
       <input
         type="number"
-        placeholder="Single unit price, before VAT"
+        placeholder="Price (Single unit, pre-VAT)"
+        min="1"
+        step="1"
         id="item_price"
         onChange={(e) => handlePriceChange(e.target.value)}
         value={price}
       />
+      {isPositiveError && <span>Numbers must be positive</span>}
+      {isWholeError && <span>Quantity must be a whole number</span>}
     </div>
   );
 };

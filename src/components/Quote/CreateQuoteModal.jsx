@@ -5,6 +5,9 @@ import { AppContext } from "../../App";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import { getProductSelectList } from "../../clients/product_client";
+import { allItemsFilled } from "../../config_and_helpers/helpers";
+import { createQuote } from "../../clients/quote_client";
+
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
   const [supplier, setSupplier] = useState("");
@@ -41,6 +44,14 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
     }
   }, [supplier]);
 
+  useEffect(() => {
+    const itemsValidation = allItemsFilled(items);
+    setIsFilled(supplier && date && itemsValidation && quoteFile);
+  }, [supplier, date, items, quoteFile]);
+
+  useEffect(() => {
+    setItems([{ product: "", quantity: "", price: "" }]);
+  }, [supplier]);
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(null);
@@ -64,6 +75,26 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
     const newItems = [...items];
     newItems[index][field] = value;
     setItems(newItems);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setErrorMessages([]);
+
+    const formData = new FormData();
+    formData.append("supplier", supplier);
+    formData.append("creation_date", date);
+    formData.append("items", JSON.stringify(items));
+    formData.append("quote", quoteFile);
+
+    createQuote(token, formData).then((response) => {
+      if (response && response.success) {
+        onSuccessfulCreate();
+        handleClose();
+      } else {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   if (!supplierSelectList) {
@@ -111,7 +142,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
               <>
                 {items.map((_, index) => (
                   <QuoteItemComponent
-                    key={index}
+                    key={`${supplier}-${index}`}
                     productList={productSelectList}
                     onItemChange={updateItem}
                     index={index}
@@ -140,15 +171,15 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          {/*<Button*/}
-          {/*  variant="primary"*/}
-          {/*  disabled={!isFilled}*/}
-          {/*  onClick={(e) => {*/}
-          {/*    handleSubmit(e);*/}
-          {/*  }}*/}
-          {/*>*/}
-          {/*  Create Manufacturer*/}
-          {/*</Button>*/}
+          <Button
+            variant="primary"
+            disabled={!isFilled}
+            onClick={(e) => {
+              handleSubmit(e);
+            }}
+          >
+            Create Quote
+          </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>

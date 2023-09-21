@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { getQuoteDetails } from "../../clients/quote_client";
+import EditQuoteModal from "./EditQuoteModal";
 
 const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -33,6 +34,7 @@ const QuoteDetailComponent = () => {
   return (
     <div>
       <h1>{quote.id}</h1>
+      <h1>{quote.creation_date}</h1>
       <Link to={`/supplier-details/${quote.supplier.id}`}>
         {quote.supplier.name}
       </Link>
@@ -45,6 +47,7 @@ const QuoteDetailComponent = () => {
       <a href={quote.pdf} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
+      <EditQuoteModal quoteObj={quote} onSuccessfulUpdate={setQuote} />
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
