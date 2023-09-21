@@ -7,6 +7,7 @@ const DropdownSelect = ({
   label,
   selectedValue,
   setSelectedValue,
+  disabledValues,
 }) => {
   return (
     <Autocomplete

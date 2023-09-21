@@ -138,6 +138,11 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
             />
+            {quoteFile && (
+              <a href={quoteFile} target="_blank" rel="noopener noreferrer">
+                View File
+              </a>
+            )}
             {productSelectList ? (
               <>
                 {items.map((_, index) => (

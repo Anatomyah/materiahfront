@@ -27,10 +27,6 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
-  const availableProducts = productSelectList.filter(
-    (item) => !items.includes(item.product),
-  );
-
   useEffect(() => {
     getSupplierSelectList(token, setSupplierSelectList).then((response) => {
       if (response && !response.success) {
@@ -65,6 +61,7 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
       didMountRef.current = true;
     }
   }, [supplier]);
+
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(null);
@@ -151,15 +148,19 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
             />
+            <a href={quoteFile} target="_blank" rel="noopener noreferrer">
+              View File
+            </a>
             {productSelectList && items ? (
               <>
                 {items.map((item, index) => (
                   <QuoteItemComponent
                     key={`${supplier}-${index}`}
-                    productList={availableProducts}
+                    productList={productSelectList}
                     onItemChange={updateItem}
                     index={index}
                     item={item}
+                    itemIds={items.map((item) => item.product)}
                   />
                 ))}
                 <button

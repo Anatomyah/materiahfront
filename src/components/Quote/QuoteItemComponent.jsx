@@ -5,7 +5,21 @@ import {
   valueIsWhole,
 } from "../../config_and_helpers/helpers";
 
-const QuoteItemComponent = ({ productList, onItemChange, index, item }) => {
+const QuoteItemComponent = ({
+  productList,
+  onItemChange,
+  index,
+  item,
+  itemIds,
+}) => {
+  const availableProducts = React.useMemo(
+    () =>
+      productList.filter(
+        (product) =>
+          !itemIds.includes(product.value) || product.value === item.product,
+      ),
+    [productList, itemIds, item.product],
+  );
   const [product, setProduct] = useState(
     item ? productList.find((p) => p.value === item.product) : null,
   );
@@ -50,10 +64,11 @@ const QuoteItemComponent = ({ productList, onItemChange, index, item }) => {
   return (
     <div>
       <DropdownSelect
-        optionsList={productList}
+        optionsList={availableProducts}
         label="Product"
         selectedValue={product}
         setSelectedValue={handleProductChange}
+        disabledValues={itemIds}
       />
       <input
         type="number"
