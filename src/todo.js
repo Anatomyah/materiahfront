@@ -5,5 +5,5 @@
 // todo - change date input to a datepicker component
 // todo - add file types as label to file input fields
 // todo - change numeric inputs with "min" validator
-// todo - make sure changing file in editQuote works properly and link to file works in create Quote
 // todo - set up react-pdf
+// todo - solve modal re-rendering issue for quotes - states not reset, MUI Error when removing item
