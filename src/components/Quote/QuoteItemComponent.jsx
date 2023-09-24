@@ -11,15 +11,10 @@ const QuoteItemComponent = ({
   index,
   item,
   itemIds,
+  handleItemDelete,
+  showRemoveButton,
 }) => {
-  const availableProducts = React.useMemo(
-    () =>
-      productList.filter(
-        (product) =>
-          !itemIds.includes(product.value) || product.value === item.product,
-      ),
-    [productList, itemIds, item.product],
-  );
+  const [availableProducts, setAvailableProducts] = useState([]);
   const [product, setProduct] = useState(
     item ? productList.find((p) => p.value === item.product) : null,
   );
@@ -27,6 +22,24 @@ const QuoteItemComponent = ({
   const [price, setPrice] = useState(item ? item.price : "");
   const [isPositiveError, setIsPositiveError] = useState(false);
   const [isWholeError, setIsWholeError] = useState(false);
+
+  useEffect(() => {
+    setProduct(item ? productList.find((p) => p.value === item.product) : null);
+    setQuantity(item ? item.quantity : "");
+    setPrice(item ? item.price : "");
+  }, [item, productList]);
+
+  useEffect(() => {
+    const ids = itemIds || [];
+
+    if (productList) {
+      const filteredProducts = productList.filter(
+        (product) =>
+          !ids.includes(product.value) || product.value === item?.product,
+      );
+      setAvailableProducts(filteredProducts);
+    }
+  }, []);
 
   const handleProductChange = (newValue) => {
     setProduct(newValue);
@@ -61,6 +74,9 @@ const QuoteItemComponent = ({
     }
   };
 
+  if (!productList) {
+    return <div>Loading...</div>;
+  }
   return (
     <div>
       <DropdownSelect
@@ -68,7 +84,6 @@ const QuoteItemComponent = ({
         label="Product"
         selectedValue={product}
         setSelectedValue={handleProductChange}
-        disabledValues={itemIds}
       />
       <input
         type="number"
@@ -90,6 +105,15 @@ const QuoteItemComponent = ({
       />
       {isPositiveError && <span>Numbers must be positive</span>}
       {isWholeError && <span>Quantity must be a whole number</span>}
+      {!showRemoveButton && (
+        <button
+          onClick={(e) => {
+            handleItemDelete(e, index);
+          }}
+        >
+          Remove Item
+        </button>
+      )}
     </div>
   );
 };

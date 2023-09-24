@@ -10,6 +10,7 @@ import { updateQuote } from "../../clients/quote_client";
 
 const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
+  const fileInput = useRef(null);
   const didMountRef = useRef(false);
   const [supplier, setSupplier] = useState(quoteObj.supplier.id);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
@@ -87,6 +88,16 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
     setItems(newItems);
   };
 
+  const removeItem = (e, index) => {
+    e.preventDefault();
+    if (items.length === 1) {
+      return;
+    }
+    const newItems = [...items];
+    newItems.splice(index, 1);
+    setItems(newItems);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
@@ -147,10 +158,36 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
               type="file"
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
+              style={{ display: "none" }}
+              ref={fileInput}
             />
-            <a href={quoteFile} target="_blank" rel="noopener noreferrer">
-              View File
-            </a>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                fileInput.current.click();
+              }}
+            >
+              Choose file...
+            </button>
+            {quoteFile && (
+              <span>
+                {quoteFile.name ||
+                  quoteObj.pdf.slice(quoteObj.pdf.lastIndexOf("/") + 1)}
+              </span>
+            )}
+            {quoteFile && (
+              <a
+                href={
+                  quoteFile instanceof Blob
+                    ? URL.createObjectURL(quoteFile)
+                    : quoteFile
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View File
+              </a>
+            )}
             {productSelectList && items ? (
               <>
                 {items.map((item, index) => (
@@ -161,6 +198,8 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
                     index={index}
                     item={item}
                     itemIds={items.map((item) => item.product)}
+                    handleItemDelete={removeItem}
+                    showRemoveButton={items.length === 1}
                   />
                 ))}
                 <button

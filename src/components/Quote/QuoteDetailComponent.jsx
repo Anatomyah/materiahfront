@@ -3,6 +3,8 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { getQuoteDetails } from "../../clients/quote_client";
 import EditQuoteModal from "./EditQuoteModal";
+import DeleteButton from "../Generic/DeleteButton";
+import { deleteQuote } from "../../clients/quote_client";
 
 const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -57,6 +59,13 @@ const QuoteDetailComponent = () => {
           ))}
         </ul>
       )}
+      <DeleteButton
+        objectType="quote"
+        objectName={quote.id}
+        objectId={quote.id}
+        deleteFetchFunc={deleteQuote}
+        returnLocation="quotes"
+      />
     </div>
   );
 };

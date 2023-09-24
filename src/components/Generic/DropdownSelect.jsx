@@ -7,7 +7,6 @@ const DropdownSelect = ({
   label,
   selectedValue,
   setSelectedValue,
-  disabledValues,
 }) => {
   return (
     <Autocomplete
@@ -15,8 +14,10 @@ const DropdownSelect = ({
       id="dropdown_select"
       options={optionsList}
       sx={{ width: 300 }}
-      value={selectedValue}
-      isOptionEqualToValue={(option, value) => option.value === value.value}
+      value={selectedValue !== undefined ? selectedValue : null}
+      isOptionEqualToValue={(option, value) =>
+        option.value === (value ? value.value : null)
+      }
       getOptionLabel={(option) => String(option.label)}
       onChange={(event, newValue) => {
         setSelectedValue(newValue ? newValue : null);

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
@@ -10,6 +10,7 @@ import { createQuote } from "../../clients/quote_client";
 
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
+  const fileInput = useRef(null);
   const [supplier, setSupplier] = useState("");
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [productSelectList, setProductSelectList] = useState();
@@ -52,6 +53,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   useEffect(() => {
     setItems([{ product: "", quantity: "", price: "" }]);
   }, [supplier]);
+
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(null);
@@ -74,6 +76,16 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const updateItem = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
+    setItems(newItems);
+  };
+
+  const removeItem = (e, index) => {
+    e.preventDefault();
+    if (items.length === 1) {
+      return;
+    }
+    const newItems = [...items];
+    newItems.splice(index, 1);
     setItems(newItems);
   };
 
@@ -137,10 +149,25 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
               type="file"
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
+              style={{ display: "none" }}
+              ref={fileInput}
             />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                fileInput.current.click();
+              }}
+            >
+              Choose file...
+            </button>
+            {quoteFile && <span>{quoteFile.name}</span>}
             {quoteFile && (
               <a
-                href={URL.createObjectURL(quoteFile)}
+                href={
+                  quoteFile instanceof Blob
+                    ? URL.createObjectURL(quoteFile)
+                    : quoteFile
+                }
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -155,6 +182,9 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
                     productList={productSelectList}
                     onItemChange={updateItem}
                     index={index}
+                    itemIds={items.map((item) => item.product)}
+                    handleItemDelete={removeItem}
+                    showRemoveButton={items.length === 1}
                   />
                 ))}
                 <button
