@@ -6,4 +6,5 @@
 // todo - add file types as label to file input fields
 // todo - change numeric inputs with "min" validator
 // todo - set up react-pdf
+// todo - changing edit modal with initial state
 // todo - solve modal re-rendering issue for quotes - states not reset, MUI Error when removing item

@@ -3,6 +3,8 @@ import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getOrders } from "../../clients/order_client";
 import { useNavigate } from "react-router-dom";
+import CreateOrderModal from "../../components/Order/CreateOrderModal";
+import { getQuotes } from "../../clients/quote_client";
 
 const OrdersPage = () => {
   const { token } = useContext(AppContext);
@@ -12,12 +14,16 @@ const OrdersPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  const fetchOrders = () => {
     getOrders(token, setOrders, setTotalPages, currentPage).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, [currentPage]);
 
   const handlePageChange = (page) => {
@@ -62,6 +68,7 @@ const OrdersPage = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
+      <CreateOrderModal onSuccessfulCreate={fetchOrders} />
     </div>
   );
 };

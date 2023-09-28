@@ -39,7 +39,7 @@ const QuoteItemComponent = ({
       );
       setAvailableProducts(filteredProducts);
     }
-  }, []);
+  }, [itemIds, productList]);
 
   const handleProductChange = (newValue) => {
     setProduct(newValue);

@@ -5,7 +5,7 @@ import { AppContext } from "../../App";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import { getProductSelectList } from "../../clients/product_client";
-import { allItemsFilled } from "../../config_and_helpers/helpers";
+import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
 import { createQuote } from "../../clients/quote_client";
 
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
@@ -46,7 +46,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   }, [supplier]);
 
   useEffect(() => {
-    const itemsValidation = allItemsFilled(items);
+    const itemsValidation = allQuoteItemsFilled(items);
     setIsFilled(supplier && date && itemsValidation && quoteFile);
   }, [supplier, date, items, quoteFile]);
 
@@ -120,11 +120,10 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Create Quote</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <select
               value={supplier}
               onChange={(e) => setSupplier(e.target.value)}
@@ -158,21 +157,23 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
                 fileInput.current.click();
               }}
             >
-              Choose file...
+              Upload quote...
             </button>
-            {quoteFile && <span>{quoteFile.name}</span>}
             {quoteFile && (
-              <a
-                href={
-                  quoteFile instanceof Blob
-                    ? URL.createObjectURL(quoteFile)
-                    : quoteFile
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View File
-              </a>
+              <>
+                <span>{quoteFile.name}</span>
+                <a
+                  href={
+                    quoteFile instanceof Blob
+                      ? URL.createObjectURL(quoteFile)
+                      : quoteFile
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View File
+                </a>
+              </>
             )}
             {productSelectList ? (
               <>
@@ -196,7 +197,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
                 </button>
               </>
             ) : (
-              <span>Choose supplier to view it's related products</span>
+              <span>Choose a supplier to view it's related products</span>
             )}
           </form>
           {errorMessages.length > 0 && (

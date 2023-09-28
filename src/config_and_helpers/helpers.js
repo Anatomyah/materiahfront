@@ -93,9 +93,20 @@ export function isValidURL(url) {
   }
 }
 
-export const allItemsFilled = (items) => {
+export const allQuoteItemsFilled = (items) => {
   return items.every((item) => {
     return item.product !== "" && item.quantity !== "" && item.price !== "";
+  });
+};
+
+export const allOrderItemsFilled = (items) => {
+  return items.every((item) => {
+    return (
+      item.product !== "" &&
+      item.quantity !== "" &&
+      item.price !== "" &&
+      item.batch !== ""
+    );
   });
 };
 

@@ -91,11 +91,14 @@ export const getSuppliers = async (
 
 export const getSupplierSelectList = async (token, setSuppliers) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}suppliers/names/`, {
-      headers: {
-        Authorization: `Token ${token}`,
+    const response = await axios.get(
+      `${BACKEND_URL}suppliers/serve_supplier_select_list/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
       },
-    });
+    );
     setSuppliers(response.data);
     return { success: true };
   } catch (error) {

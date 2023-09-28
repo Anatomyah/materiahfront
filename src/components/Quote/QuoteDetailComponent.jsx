@@ -10,6 +10,7 @@ const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);
   const { id } = useParams();
   const location = useLocation();
+  const [modalKey, setModalKey] = useState(0);
   const [quote, setQuote] = useState(
     location.state ? location.state.quote : null,
   );
@@ -49,7 +50,12 @@ const QuoteDetailComponent = () => {
       <a href={quote.pdf} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
-      <EditQuoteModal quoteObj={quote} onSuccessfulUpdate={setQuote} />
+      <EditQuoteModal
+        quoteObj={quote}
+        onSuccessfulUpdate={setQuote}
+        key={modalKey}
+        resetModal={() => setModalKey((prevKey) => prevKey + 1)}
+      />
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (

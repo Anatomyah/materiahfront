@@ -20,6 +20,7 @@ const QuotesPage = () => {
       }
     });
   };
+
   useEffect(() => {
     fetchQuotes();
   }, [currentPage]);

@@ -5,10 +5,10 @@ import { AppContext } from "../../App";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import { getProductSelectList } from "../../clients/product_client";
-import { allItemsFilled } from "../../config_and_helpers/helpers";
+import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
 import { updateQuote } from "../../clients/quote_client";
 
-const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
+const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
   const { token } = useContext(AppContext);
   const fileInput = useRef(null);
   const didMountRef = useRef(false);
@@ -51,7 +51,7 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
   }, [supplier]);
 
   useEffect(() => {
-    const itemsValidation = allItemsFilled(items);
+    const itemsValidation = allQuoteItemsFilled(items);
     setIsFilled(supplier && date && itemsValidation && quoteFile);
   }, [supplier, date, items, quoteFile]);
 
@@ -67,7 +67,9 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
     setErrorMessages([]);
     setIsFilled(null);
     setShowModal(false);
+    resetModal();
   };
+
   const handleShow = () => setShowModal(true);
 
   const handleFileChange = (e) => {
@@ -167,26 +169,26 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
                 fileInput.current.click();
               }}
             >
-              Choose file...
+              Upload quote...
             </button>
             {quoteFile && (
-              <span>
-                {quoteFile.name ||
-                  quoteObj.pdf.slice(quoteObj.pdf.lastIndexOf("/") + 1)}
-              </span>
-            )}
-            {quoteFile && (
-              <a
-                href={
-                  quoteFile instanceof Blob
-                    ? URL.createObjectURL(quoteFile)
-                    : quoteFile
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View File
-              </a>
+              <>
+                <span>
+                  {quoteFile.name ||
+                    quoteObj.pdf.slice(quoteObj.pdf.lastIndexOf("/") + 1)}
+                </span>
+                <a
+                  href={
+                    quoteFile instanceof Blob
+                      ? URL.createObjectURL(quoteFile)
+                      : quoteFile
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View File
+                </a>
+              </>
             )}
             {productSelectList && items ? (
               <>
@@ -211,7 +213,7 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
                 </button>
               </>
             ) : (
-              <span>Choose supplier to view it's related products</span>
+              <span>Choose a supplier to view it's related products</span>
             )}
           </form>
           {errorMessages.length > 0 && (

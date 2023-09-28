@@ -89,7 +89,26 @@ export const getQuoteDetails = async (token, quoteId, setQuoteDetails) => {
       },
     });
     setQuoteDetails(response.data);
-    console.log(response.data);
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const getOpenQuotesSelectList = async (token, setOpenQuotes) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}quotes/serve_open_quotes_select_list/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    setOpenQuotes(response.data);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
