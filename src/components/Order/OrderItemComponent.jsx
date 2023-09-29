@@ -13,8 +13,8 @@ const OrderItemComponent = ({
 }) => {
   const [typingTimeout, setTypingTimeout] = useState(null);
   const [quantity, setQuantity] = useState(item ? item.quantity : "");
-  const [price, setPrice] = useState(item ? item.price : "");
   const [batch, setBatch] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
   const [itemDisabled, setItemDisabled] = useState(true);
   const [selectedReason, setSelectedReason] = useState("");
   const [showOtherReasonTextBox, setShowOtherReasonTextBox] = useState(false);
@@ -46,23 +46,6 @@ const OrderItemComponent = ({
     }
   };
 
-  const handlePriceChange = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    if (value === "" || valueIsPositive(value)) {
-      setIsPositiveError(false);
-      setPrice(value);
-
-      const newTimeout = setTimeout(() => {
-        onItemChange(index, "price", value);
-      }, 300);
-
-      setTypingTimeout(newTimeout);
-    } else {
-      setIsPositiveError(true);
-    }
-  };
-
   const handleBatchChange = (value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 
@@ -73,6 +56,11 @@ const OrderItemComponent = ({
     }, 300);
 
     setTypingTimeout(newTimeout);
+  };
+
+  const handleExpiryDateChange = (value) => {
+    setExpiryDate(value);
+    onItemChange(index, "expiry", batch);
   };
 
   const handleReasonChange = (value) => {
@@ -110,20 +98,18 @@ const OrderItemComponent = ({
         value={quantity}
       />
       <input
-        type="number"
-        placeholder="Price (Single unit, pre-VAT)"
-        min="1"
-        step="1"
-        id="item_price"
-        onChange={(e) => handlePriceChange(e.target.value)}
-        value={price}
-      />
-      <input
         type="text"
         placeholder="Batch #"
         id="item_batch"
         onChange={(e) => handleBatchChange(e.target.value)}
         value={batch}
+      />
+      <input
+        type="date"
+        placeholder="Select expiry date"
+        id="expiry_date"
+        onChange={(e) => handleExpiryDateChange(e.target.value)}
+        value={expiryDate}
       />
       {isPositiveError && <span>Numbers must be positive</span>}
       {isWholeError && <span>Quantity must be a whole number</span>}
@@ -135,7 +121,7 @@ const OrderItemComponent = ({
             setItemDisabled((prevState) => !prevState);
           }}
         />
-        Item arrived in full
+        Item arrived in full & In good condition
       </label>
       {!itemDisabled && (
         <>

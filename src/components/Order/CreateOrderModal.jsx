@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../../App";
 import {
-  createQuote,
   getOpenQuotesSelectList,
   getQuoteDetails,
 } from "../../clients/quote_client";
@@ -9,18 +8,27 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
 import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
+import { createOrder } from "../../clients/order_client";
 
 const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
   const fileInput = useRef(null);
-  const [relatedQuote, setRelatedQuote] = useState();
+  const [relatedQuoteObj, setRelatedQuoteObj] = useState();
   const [supplier, setSupplier] = useState("");
   const [openQuotesSelectList, setOpenQuotesSelectList] = useState([]);
-  const [date, setDate] = useState(() => {
+  const [selectedQuoteOption, setSelectedQuoteOption] = useState("");
+  const [arrivalDate, setArrivalDate] = useState(() => {
     return new Date().toISOString().split("T")[0];
   });
   const [items, setItems] = useState([
-    { product: "", quantity: "", price: "", batch: "", status: "OK" },
+    {
+      quote_item_id: "",
+      product: "",
+      quantity: "",
+      batch: "",
+      expiry: "",
+      status: "OK",
+    },
   ]);
   const [orderFile, setOrderFile] = useState();
   const [otherReasonDetails, setOtherReasonDetails] = useState("");
@@ -28,7 +36,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
   const fetchQuote = (quoteId) => {
-    getQuoteDetails(token, quoteId, setRelatedQuote).then((response) => {
+    getQuoteDetails(token, quoteId, setRelatedQuoteObj).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
@@ -44,23 +52,22 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   }, []);
 
   useEffect(() => {
-    if (relatedQuote) {
-      console.log(relatedQuote);
-      setSupplier(relatedQuote.supplier.name);
+    if (relatedQuoteObj) {
+      console.log(relatedQuoteObj);
+      setSupplier(relatedQuoteObj.supplier.name);
       setItems(() => {
-        return relatedQuote.items.map((item) => ({
-          product: item.product.id,
+        return relatedQuoteObj.items.map((item) => ({
+          quote_item_id: item.id,
           quantity: item.quantity,
-          price: item.price,
         }));
       });
     }
-  }, [relatedQuote]);
+  }, [relatedQuoteObj]);
 
   useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
-    setIsFilled(relatedQuote && date && itemsValidation);
-  }, [relatedQuote, date, items]);
+    setIsFilled(relatedQuoteObj && arrivalDate && itemsValidation);
+  }, [relatedQuoteObj, arrivalDate, items]);
 
   const updateItem = (index, field, value) => {
     const newItems = [...items];
@@ -87,15 +94,16 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     setErrorMessages([]);
 
     const formData = new FormData();
-    formData.append("quote", relatedQuote.id);
-    formData.append("creation_date", date);
+    formData.append("quote", relatedQuoteObj.id);
+    formData.append("arrival_date", arrivalDate);
+    console.log(items);
     formData.append("items", JSON.stringify(items));
+    console.log(items);
     formData.append("order_img", orderFile);
     if (otherReasonDetails.length !== 0) {
       formData.append("issue_detail", otherReasonDetails);
     }
-    // todo - change submission func
-    createQuote(token, formData).then((response) => {
+    createOrder(token, formData).then((response) => {
       if (response && response.success) {
         onSuccessfulCreate();
         handleClose();
@@ -122,8 +130,11 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
         <Modal.Body>
           <form className="form-control">
             <select
-              value={relatedQuote}
-              onChange={(e) => fetchQuote(e.target.value)}
+              value={selectedQuoteOption}
+              onChange={(e) => {
+                setSelectedQuoteOption(e.target.value);
+                fetchQuote(e.target.value);
+              }}
             >
               <option value="" disabled>
                 --Select Quote--
@@ -138,22 +149,22 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
               type="date"
               placeholder="Select Date"
               id="quote_date"
-              onChange={(e) => setDate(e.target.value)}
-              value={date}
+              onChange={(e) => setArrivalDate(e.target.value)}
+              value={arrivalDate}
             />
             <h2>Supplier: {supplier}</h2>
-            {relatedQuote && (
+            {relatedQuoteObj && (
               <>
                 <span>
-                  {relatedQuote.pdf.slice(
-                    relatedQuote.pdf.lastIndexOf("/") + 1,
+                  {relatedQuoteObj.pdf.slice(
+                    relatedQuoteObj.pdf.lastIndexOf("/") + 1,
                   )}
                 </span>
                 <a
                   href={
-                    relatedQuote.pdf instanceof Blob
-                      ? URL.createObjectURL(relatedQuote.pdf)
-                      : relatedQuote.pdf
+                    relatedQuoteObj.pdf instanceof Blob
+                      ? URL.createObjectURL(relatedQuoteObj.pdf)
+                      : relatedQuoteObj.pdf
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -162,12 +173,12 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
                 </a>
               </>
             )}
-            {relatedQuote && items ? (
+            {relatedQuoteObj && items ? (
               <>
                 {items.map((item, index) => (
                   <OrderItemComponent
                     key={`${supplier}-${index}`}
-                    product={relatedQuote.items[index].product}
+                    product={relatedQuoteObj.items[index].product}
                     onItemChange={updateItem}
                     index={index}
                     item={item}
@@ -178,7 +189,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
             ) : (
               <span>Choose a quote to view it's related products</span>
             )}
-            {relatedQuote && (
+            {relatedQuoteObj && (
               <>
                 <input
                   type="file"

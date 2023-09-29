@@ -7,4 +7,6 @@
 // todo - change numeric inputs with "min" validator
 // todo - set up react-pdf
 // todo - changing edit modal with initial state
-// todo - solve modal re-rendering issue for quotes - states not reset, MUI Error when removing item
+// todo -change fetching requests based on select menus to onChange, if relevant
+// todo - add timeOut where needed
+// todo - add a mini parameter todate feilds where relevant
