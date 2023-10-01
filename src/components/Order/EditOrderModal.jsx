@@ -1,88 +1,195 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AppContext } from "../../App";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { AppContext } from "../../App";
-import DropdownMultiselect from "../Generic/DropdownMultiselect";
-import { isValidURL } from "../../config_and_helpers/helpers";
-import { createManufacturer } from "../../clients/manufacturer_client";
+import OrderItemComponent from "./OrderItemComponent";
+import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
+import { updateOrder } from "../../clients/order_client";
 
-const EditOrderModal = ({ onSuccessfulCreate }) => {
+const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
   const { token } = useContext(AppContext);
+  const fileInput = useRef(null);
+  const [arrivalDate, setArrivalDate] = useState(orderObj.arrival_date);
+  const [items, setItems] = useState(() => {
+    return orderObj.items.map((item) => ({
+      quote_item: {
+        id: item.quote_item.id,
+        quantity: item.quote_item.quantity,
+      },
+      quantity: item.quantity,
+      batch: item.batch,
+      expiry: item.expiry,
+      status: item.status,
+      issue_detail: item.issue_detail,
+    }));
+  });
+  const [orderFile, setOrderFile] = useState(orderObj.receipt_img);
+  const [receivedBy, setReceivedBy] = useState(orderObj.received_by);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
-  // useEffect(() => {
-  //   setIsFilled(name && websiteUrl && relatedSuppliers);
-  // }, [name, websiteUrl, relatedSuppliers]);
+  useEffect(() => {
+    const itemsValidation = allOrderItemsFilled(items);
+    setIsFilled(arrivalDate && itemsValidation);
+  }, [arrivalDate, receivedBy, items]);
 
-  // function handleSubmit(e) {
-  //   e.preventDefault();
-  //   setErrorMessages([]);
-  //   const urlValidation = isValidURL(websiteUrl);
-  //
-  //   if (!urlValidation) {
-  //     setIsFilled(false);
-  //     setErrorMessages((prevState) => {
-  //       const newErrorMessages = [];
-  //       return [...prevState, ...newErrorMessages];
-  //     });
-  //   } else {
-  //     const formData = new FormData();
-  //     formData.append("name", name);
-  //     formData.append("website", websiteUrl);
-  //     formData.append(
-  //       "suppliers",
-  //       relatedSuppliers.map((supplier) => supplier.value).join(","),
-  //     );
-  //     createManufacturer(token, formData).then((response) => {
-  //       if (response && response.success) {
-  //         onSuccessfulCreate();
-  //         handleClose();
-  //       } else {
-  //         setErrorMessages((prevState) => [...prevState, response]);
-  //       }
-  //     });
-  //   }
-  // }
+  const updateItem = (index, field, value) => {
+    console.log(index, field, value);
+    const newItems = [...items];
+    console.log(newItems);
+    newItems[index][field] = value;
+    console.log(newItems);
+    setItems(newItems);
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setOrderFile(selectedFile);
+    }
+  };
 
   const handleClose = () => {
     setErrorMessages([]);
     setIsFilled(null);
     setShowModal(false);
+    resetModal();
   };
   const handleShow = () => setShowModal(true);
 
-  // if (!supplierList) {
-  //   return "Loading...";
-  // }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setErrorMessages([]);
+    const finalItems = items.map((item) => ({
+      quote_item_id: item.quote_item.id,
+      quantity: item.quantity,
+      batch: item.batch,
+      expiry: item.expiry,
+      status: item.status,
+      issue_detail: item.issue_detail,
+    }));
+    console.log("final", finalItems);
+    const formData = new FormData();
+    formData.append("quote", orderObj.quote.id);
+    formData.append("arrival_date", arrivalDate);
+    formData.append("items", JSON.stringify(finalItems));
+    formData.append("order_img", orderFile);
+    formData.append("received_by", receivedBy);
+    updateOrder(token, orderObj.id, formData, onSuccessfulUpdate).then(
+      (response) => {
+        if (response && response.success) {
+          handleClose();
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
+        }
+      },
+    );
+  };
+
+  if (!orderObj) {
+    return "Loading...";
+  }
 
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Receive Order
+        Edit Order
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Create Order</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
-            {/*<input*/}
-            {/*  type="text"*/}
-            {/*  placeholder="Manufacturer Name"*/}
-            {/*  id="manufacturer_name"*/}
-            {/*  onChange={(e) => setName(e.target.value)}*/}
-            {/*  value={name}*/}
-            {/*/>*/}
-            {/*<DropdownMultiselect*/}
-            {/*  optionsList={supplierList}*/}
-            {/*  selectedValues={relatedSuppliers}*/}
-            {/*  setSelectedValues={setRelatedSuppliers}*/}
-            {/*  placeholder="Suppliers"*/}
-            {/*/>*/}
+            <input
+              type="date"
+              placeholder="Select Date"
+              id="quote_date"
+              onChange={(e) => setArrivalDate(e.target.value)}
+              value={arrivalDate}
+            />
+            <h2>Supplier: {orderObj.supplier.name}</h2>
+            {orderObj && (
+              <>
+                <span>
+                  {orderObj.quote.pdf.slice(
+                    orderObj.quote.pdf.lastIndexOf("/") + 1,
+                  )}
+                </span>
+                <a
+                  href={
+                    orderObj.quote.pdf instanceof Blob
+                      ? URL.createObjectURL(orderObj.quote.pdf)
+                      : orderObj.quote.pdf
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View File
+                </a>
+              </>
+            )}
+            {orderObj && items ? (
+              <>
+                {items.map((item, index) =>
+                  orderObj.items[index] ? (
+                    <OrderItemComponent
+                      key={`${orderObj.quote.id}-${index}`}
+                      product={orderObj.items[index].product}
+                      onItemChange={updateItem}
+                      index={index}
+                      item={item}
+                    />
+                  ) : null,
+                )}
+              </>
+            ) : (
+              <span>Choose a quote to view it's related products</span>
+            )}
+            {orderObj && (
+              <>
+                <input
+                  type="file"
+                  accept="application/pdf, image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                  ref={fileInput}
+                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    fileInput.current.click();
+                  }}
+                >
+                  Upload order receipt...
+                </button>
+              </>
+            )}
+            {orderFile && (
+              <>
+                <span>{orderFile.name}</span>
+                <a
+                  href={
+                    orderFile instanceof Blob
+                      ? URL.createObjectURL(orderFile)
+                      : orderFile
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View File
+                </a>
+              </>
+            )}
+            <input
+              type="text"
+              placeholder="Received by"
+              id="received_by"
+              onChange={(e) => setReceivedBy(e.target.value)}
+              value={receivedBy}
+            />
           </form>
           {errorMessages.length > 0 && (
             <ul>
@@ -95,15 +202,15 @@ const EditOrderModal = ({ onSuccessfulCreate }) => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          {/*<Button*/}
-          {/*  variant="primary"*/}
-          {/*  disabled={!isFilled}*/}
-          {/*  onClick={(e) => {*/}
-          {/*    handleSubmit(e);*/}
-          {/*  }}*/}
-          {/*>*/}
-          {/*  Create Manufacturer*/}
-          {/*</Button>*/}
+          <Button
+            variant="primary"
+            disabled={!isFilled}
+            onClick={(e) => {
+              handleSubmit(e);
+            }}
+          >
+            Update Order
+          </Button>
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>

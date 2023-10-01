@@ -76,24 +76,9 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
   ]);
 
   const handeFileChange = (event) => {
-    const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
     const allFiles = Array.from(event.target.files);
 
-    const invalidFiles = allFiles.filter(
-      (file) => !validImageTypes.includes(file.type),
-    );
-    if (invalidFiles > 0) {
-      const invalidFileNames = invalidFiles.map((file) => file.name).join(", ");
-      setErrorMessages((prevState) => [
-        ...prevState,
-        `files: ${invalidFileNames} are of invalid types. Only JPEG and PNG files are allowed`,
-      ]);
-    }
-
-    const validFiles = allFiles.filter((file) =>
-      validImageTypes.includes(file.type),
-    );
-    const newImages = validFiles.map((file) => ({
+    const newImages = allFiles.map((file) => ({
       file,
       id: `temp-${Date.now()}-${Math.random()}`,
     }));
@@ -322,6 +307,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
             <input
               type="file"
               multiple
+              accept="image/*"
               id="product_images"
               onChange={handeFileChange}
             />

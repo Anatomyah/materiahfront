@@ -26,10 +26,6 @@ const QuoteDetailComponent = () => {
     }
   }, [id]);
 
-  useEffect(() => {
-    console.log(quote);
-  }, [quote]);
-
   if (!quote) {
     return "Quote details not available";
   }
@@ -38,6 +34,7 @@ const QuoteDetailComponent = () => {
     <div>
       <h1>{quote.id}</h1>
       <h1>{quote.creation_date}</h1>
+      <h1>Fulfilled: {quote.fulfilled ? "True" : "False"}</h1>
       <Link to={`/supplier-details/${quote.supplier.id}`}>
         {quote.supplier.name}
       </Link>

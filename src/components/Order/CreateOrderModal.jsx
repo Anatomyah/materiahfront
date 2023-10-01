@@ -20,18 +20,9 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const [arrivalDate, setArrivalDate] = useState(() => {
     return new Date().toISOString().split("T")[0];
   });
-  const [items, setItems] = useState([
-    {
-      quote_item_id: "",
-      product: "",
-      quantity: "",
-      batch: "",
-      expiry: "",
-      status: "OK",
-    },
-  ]);
+  const [items, setItems] = useState([]);
   const [orderFile, setOrderFile] = useState();
-  const [otherReasonDetails, setOtherReasonDetails] = useState("");
+  const [receivedBy, setReceivedBy] = useState();
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -53,7 +44,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
 
   useEffect(() => {
     if (relatedQuoteObj) {
-      console.log(relatedQuoteObj);
       setSupplier(relatedQuoteObj.supplier.name);
       setItems(() => {
         return relatedQuoteObj.items.map((item) => ({
@@ -67,7 +57,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
     setIsFilled(relatedQuoteObj && arrivalDate && itemsValidation);
-  }, [relatedQuoteObj, arrivalDate, items]);
+  }, [relatedQuoteObj, arrivalDate, receivedBy, items]);
 
   const updateItem = (index, field, value) => {
     const newItems = [...items];
@@ -96,13 +86,9 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     const formData = new FormData();
     formData.append("quote", relatedQuoteObj.id);
     formData.append("arrival_date", arrivalDate);
-    console.log(items);
     formData.append("items", JSON.stringify(items));
-    console.log(items);
     formData.append("order_img", orderFile);
-    if (otherReasonDetails.length !== 0) {
-      formData.append("issue_detail", otherReasonDetails);
-    }
+    formData.append("received_by", receivedBy);
     createOrder(token, formData).then((response) => {
       if (response && response.success) {
         onSuccessfulCreate();
@@ -175,16 +161,17 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
             )}
             {relatedQuoteObj && items ? (
               <>
-                {items.map((item, index) => (
-                  <OrderItemComponent
-                    key={`${supplier}-${index}`}
-                    product={relatedQuoteObj.items[index].product}
-                    onItemChange={updateItem}
-                    index={index}
-                    item={item}
-                    onOtherReasonChange={setOtherReasonDetails}
-                  />
-                ))}
+                {items.map((item, index) =>
+                  relatedQuoteObj.items[index] ? (
+                    <OrderItemComponent
+                      key={`${relatedQuoteObj.id}-${index}`}
+                      product={relatedQuoteObj.items[index].product}
+                      onItemChange={updateItem}
+                      index={index}
+                      item={item}
+                    />
+                  ) : null,
+                )}
               </>
             ) : (
               <span>Choose a quote to view it's related products</span>
@@ -224,6 +211,13 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
                 </a>
               </>
             )}
+            <input
+              type="text"
+              placeholder="Received by"
+              id="received_by"
+              onChange={(e) => setReceivedBy(e.target.value)}
+              value={receivedBy}
+            />
           </form>
           {errorMessages.length > 0 && (
             <ul>
