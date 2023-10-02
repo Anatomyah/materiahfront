@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { login, signup } from "../../clients/user_client";
 import { AppContext } from "../../App";
@@ -46,20 +45,19 @@ const SignupModal = () => {
     e.preventDefault();
     setErrorMessages([]);
     const emailValidation = document.getElementById("email").checkValidity();
-    const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (
-      !emailValidation ||
-      !phoneValidation.valid ||
-      password !== confirmPassword
-    ) {
+    const phoneValidation = phoneSuffix.length === 7;
+
+    if (!emailValidation || !phoneValidation || password !== confirmPassword) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
         if (!emailValidation) {
           newErrorMessages.push("Invalid email format.");
         }
-        if (!phoneValidation.valid) {
-          newErrorMessages.push(phoneValidation.error);
+        if (!phoneValidation) {
+          newErrorMessages.push(
+            "Phone suffix should be exactly 7 digits long.",
+          );
         }
         if (password !== confirmPassword) {
           newErrorMessages.push("Passwords do not match.");
@@ -166,6 +164,11 @@ const SignupModal = () => {
               type="text"
               placeholder="phone"
               value={phoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <input
               id="password_1"

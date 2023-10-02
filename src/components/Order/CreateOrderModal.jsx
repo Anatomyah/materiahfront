@@ -178,8 +178,12 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
             )}
             {relatedQuoteObj && (
               <>
+                <label htmlFor="order_file">
+                  Upload Order Receipt (pdf, jpg, png, gif)):
+                </label>
                 <input
                   type="file"
+                  id="order_file"
                   accept="application/pdf, image/*"
                   onChange={handleFileChange}
                   style={{ display: "none" }}

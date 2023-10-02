@@ -10,12 +10,17 @@ import { updateSupplier } from "../../clients/supplier_client";
 
 const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
-  const [supplierName, setSupplierName] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [email, setEmail] = useState("");
-  const [phonePrefix, setPhonePrefix] = useState("050");
-  const [phoneSuffix, setPhoneSuffix] = useState("");
-  const [relatedManufacturers, setRelatedManufacturers] = useState([]);
+  const [supplierName, setSupplierName] = useState(supplierObj.name);
+  const [websiteUrl, setWebsiteUrl] = useState(supplierObj.website);
+  const [email, setEmail] = useState(supplierObj.email);
+  const [phonePrefix, setPhonePrefix] = useState(supplierObj.phone_prefix);
+  const [phoneSuffix, setPhoneSuffix] = useState(supplierObj.phone_suffix);
+  const [relatedManufacturers, setRelatedManufacturers] = useState(
+    supplierObj.manufacturers.map((item) => ({
+      value: item.id,
+      label: item.name,
+    })),
+  );
   const [manufacturerList, setManufacturerList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
@@ -28,21 +33,6 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
       }
     });
   }, []);
-
-  useEffect(() => {
-    setSupplierName(supplierObj.name);
-    setWebsiteUrl(supplierObj.website);
-    setEmail(supplierObj.email);
-    setPhonePrefix(supplierObj.phone_prefix);
-    setPhoneSuffix(supplierObj.phone_suffix);
-    const formattedRelatedManufacturers = supplierObj.manufacturers.map(
-      (item) => ({
-        value: item.id,
-        label: item.name,
-      }),
-    );
-    setRelatedManufacturers(formattedRelatedManufacturers);
-  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(
@@ -69,6 +59,7 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
     const emailValidation = document
       .getElementById("supplier_email")
       .checkValidity();
+    const phoneValidation = phoneSuffix.length === 7;
 
     if (!urlValidation || !emailValidation) {
       setIsFilled(false);
@@ -79,6 +70,11 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
         }
         if (!emailValidation) {
           newErrorMessages.push("Invalid email address");
+        }
+        if (!phoneValidation) {
+          newErrorMessages.push(
+            "Phone suffix should be exactly 7 digits long.",
+          );
         }
         return [...prevState, ...newErrorMessages];
       });
@@ -127,11 +123,10 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Edit Supplier</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Supplier Name"
@@ -169,6 +164,11 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
               type="text"
               placeholder="Office Phone"
               value={phoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <DropdownMultiselect
               optionsList={manufacturerList}

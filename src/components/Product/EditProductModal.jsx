@@ -14,20 +14,24 @@ import { isValidURL } from "../../config_and_helpers/helpers";
 
 const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
-  const [productName, setProductName] = useState("");
-  const [catalogueNumber, setCatalogueNumber] = useState("");
-  const [category, setCategory] = useState("");
-  const [measurementUnit, setMeasurementUnit] = useState("");
-  const [volume, setVolume] = useState("");
-  const [storageConditions, setStorageConditions] = useState("");
-  const [stock, setStock] = useState("");
-  const [price, setPrice] = useState("");
-  const [productLink, setProductLink] = useState("");
+  const [productName, setProductName] = useState(productObj.name);
+  const [catalogueNumber, setCatalogueNumber] = useState(productObj.cat_num);
+  const [category, setCategory] = useState(productObj.category);
+  const [measurementUnit, setMeasurementUnit] = useState(productObj.unit);
+  const [volume, setVolume] = useState(productObj.volume);
+  const [storageConditions, setStorageConditions] = useState(
+    productObj.storage,
+  );
+  const [stock, setStock] = useState(productObj.stock);
+  const [price, setPrice] = useState(productObj.price);
+  const [productLink, setProductLink] = useState(productObj.url);
   const [manufacturerList, setManufacturerList] = useState(null);
-  const [manufacturer, setManufacturer] = useState("");
+  const [manufacturer, setManufacturer] = useState(
+    productObj.manufacturer.name,
+  );
   const [supplierList, setSupplierList] = useState(null);
-  const [supplier, setSupplier] = useState("");
-  const [images, setImages] = useState([]);
+  const [supplier, setSupplier] = useState(productObj.supplier.name);
+  const [images, setImages] = useState(productObj.images);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -46,21 +50,6 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
   }, []);
 
   useEffect(() => {
-    setProductName(productObj.name);
-    setCatalogueNumber(productObj.cat_num);
-    setCategory(productObj.category);
-    setMeasurementUnit(productObj.unit);
-    setVolume(productObj.volume);
-    setStorageConditions(productObj.storage);
-    setStock(productObj.stock);
-    setPrice(productObj.price);
-    setProductLink(productObj.url);
-    setManufacturer(productObj.manufacturer.name);
-    setSupplier(productObj.supplier.name);
-    setImages(productObj.images);
-  }, [showModal]);
-
-  useEffect(() => {
     setIsFilled(
       productName &&
         catalogueNumber &&
@@ -68,7 +57,6 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         measurementUnit &&
         volume &&
         storageConditions &&
-        stock &&
         price &&
         productLink &&
         manufacturer &&
@@ -82,7 +70,6 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
     measurementUnit,
     volume,
     storageConditions,
-    stock,
     price,
     productLink,
     manufacturer,
@@ -194,11 +181,10 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit your personal details</Modal.Title>
+          <Modal.Title>Edit Product</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Product Name"
@@ -240,11 +226,16 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
               ))}
             </select>
             <input
-              type="number"
+              type="text"
               placeholder="Volume"
               id="volume"
               onChange={(e) => setVolume(e.target.value)}
               value={volume}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <select
               value={storageConditions}
@@ -260,18 +251,28 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
               ))}
             </select>
             <input
-              type="number"
+              type="text"
               placeholder="Current Stock"
               id="current_stock"
               onChange={(e) => setStock(e.target.value)}
               value={stock}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <input
-              type="number"
+              type="text"
               placeholder="Current Price"
               id="current_price"
               onChange={(e) => setPrice(e.target.value)}
               value={price}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <select
               value={manufacturer}
@@ -326,6 +327,9 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
                 );
               })}
             </div>
+            <label htmlFor="product_images">
+              Upload Product Images (jpg, png, gif):
+            </label>
             <input
               type="file"
               multiple

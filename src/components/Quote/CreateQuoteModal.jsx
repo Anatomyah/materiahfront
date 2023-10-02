@@ -144,8 +144,10 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
               onChange={(e) => setDate(e.target.value)}
               value={date}
             />
+            <label htmlFor="quote_file">Upload Quote File (pdf, docx):</label>
             <input
               type="file"
+              id="quote_file"
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
               style={{ display: "none" }}
@@ -157,7 +159,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
                 fileInput.current.click();
               }}
             >
-              Upload quote...
+              Upload quote
             </button>
             {quoteFile && (
               <>

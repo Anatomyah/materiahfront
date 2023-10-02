@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
 import { updateUserProfile } from "../../clients/user_client";
@@ -10,29 +9,25 @@ import { updateSupplier } from "../../clients/supplier_client";
 const EditSupplierAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phonePrefix, setPhonePrefix] = useState("");
-  const [phoneSuffix, setPhoneSuffix] = useState("");
-  const [supplierEmail, setSupplierEmail] = useState("");
-  const [supplierPhonePrefix, setSupplierPhonePrefix] = useState("");
-  const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState("");
-  const [supplierWebsite, setSupplierWebsite] = useState("");
+  const [firstName, setFirstName] = useState(userDetails.first_name);
+  const [lastName, setLastName] = useState(userDetails.last_name);
+  const [email, setEmail] = useState(userDetails.email);
+  const [phonePrefix, setPhonePrefix] = useState(userDetails.phone_prefix);
+  const [phoneSuffix, setPhoneSuffix] = useState(userDetails.phone_suffix);
+  const [supplierEmail, setSupplierEmail] = useState(
+    userDetails.supplier_email,
+  );
+  const [supplierPhonePrefix, setSupplierPhonePrefix] = useState(
+    userDetails.supplier_phone_prefix,
+  );
+  const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState(
+    userDetails.supplier_phone_suffix,
+  );
+  const [supplierWebsite, setSupplierWebsite] = useState(
+    userDetails.supplier_website,
+  );
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
-
-  useEffect(() => {
-    setFirstName(userDetails.first_name);
-    setLastName(userDetails.last_name);
-    setEmail(userDetails.email);
-    setPhonePrefix(userDetails.phone_prefix);
-    setPhoneSuffix(userDetails.phone_suffix);
-    setSupplierEmail(userDetails.supplier_email);
-    setSupplierPhonePrefix(userDetails.supplier_phone_prefix);
-    setSupplierPhoneSuffix(userDetails.supplier_phone_suffix);
-    setSupplierWebsite(userDetails.supplier_website);
-  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(
@@ -71,14 +66,14 @@ const EditSupplierAccountModal = () => {
     const contactEmailValidation = document
       .getElementById("supplier_email")
       .checkValidity();
-    const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    const contactPhoneValidation = validatePhoneSuffix(supplierPhoneSuffix);
+    const phoneValidation = phoneSuffix.length === 7;
+    const contactPhoneValidation = supplierPhoneSuffix.length === 7;
 
     if (
       !supplierEmailValidation ||
       !contactEmailValidation ||
-      !phoneValidation.valid ||
-      !contactPhoneValidation.valid
+      !phoneValidation ||
+      !contactPhoneValidation
     ) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
@@ -88,12 +83,14 @@ const EditSupplierAccountModal = () => {
         if (!contactEmailValidation) {
           newErrorMessages.push("Invalid contact email format.");
         }
-        if (!phoneValidation.valid) {
-          newErrorMessages.push(`Supplier phone: ${phoneValidation.error}`);
-        }
-        if (!contactPhoneValidation.valid) {
+        if (!phoneValidation) {
           newErrorMessages.push(
-            `Contact phone: ${contactPhoneValidation.error}`,
+            `Supplier phone: Phone suffix should be exactly 7 digits long.`,
+          );
+        }
+        if (!contactPhoneValidation) {
+          newErrorMessages.push(
+            `Contact phone: Phone suffix should be exactly 7 digits long.`,
           );
         }
         return [...prevState, ...newErrorMessages];
@@ -187,6 +184,11 @@ const EditSupplierAccountModal = () => {
               type="text"
               placeholder="Contact Phone"
               value={phoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <legend>Supplier details:</legend>
             <br />
@@ -214,6 +216,11 @@ const EditSupplierAccountModal = () => {
               type="text"
               placeholder="Supplier office phone"
               value={supplierPhoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <input
               id="supplier_website"

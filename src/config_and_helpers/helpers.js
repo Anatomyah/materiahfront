@@ -65,25 +65,6 @@ export const createBeforeUnloadHandler = (
   };
 };
 
-export function validatePhoneSuffix(value) {
-  if (isNaN(value)) {
-    return {
-      valid: false,
-      error: "The phone suffix should only contain digits.",
-    };
-  }
-  if (value.length !== 7) {
-    return {
-      valid: false,
-      error: "The phone suffix should be exactly 7 digits long.",
-    };
-  }
-  return {
-    valid: true,
-    error: "",
-  };
-}
-
 export function isValidURL(url) {
   try {
     new URL(url);

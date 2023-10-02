@@ -15,6 +15,7 @@ import ManufacturerDetailComponent from "./Manufacturer/ManufacturerDetailCompon
 import SupplierDetailComponent from "./Supplier/SupplierDetailsComponent";
 import QuoteDetailComponent from "./Quote/QuoteDetailComponent";
 import OrderDetailsComponent from "./Order/OrderDetailsComponent";
+import ShoppingCart from "./Shop/ShoppingCart";
 
 const SiteRoutes = () => {
   return (
@@ -23,9 +24,10 @@ const SiteRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<AccountPage />} />
-        <Route path="/supplier_catalogue" element={<SupplierCataloguePage />} />
+        <Route path="/supplier-catalogue" element={<SupplierCataloguePage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/shopping-cart" element={<ShoppingCart />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/suppliers" element={<SuppliersPage />} />
         <Route path="/manufacturers" element={<ManufacturersPage />} />

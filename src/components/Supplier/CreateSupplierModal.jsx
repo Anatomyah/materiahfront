@@ -54,8 +54,9 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
     const emailValidation = document
       .getElementById("supplier_email")
       .checkValidity();
+    const phoneValidation = phoneSuffix.length === 7;
 
-    if (!urlValidation || !emailValidation) {
+    if (!urlValidation || !emailValidation || !phoneValidation) {
       setIsFilled(false);
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
@@ -64,6 +65,11 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
         }
         if (!emailValidation) {
           newErrorMessages.push("Invalid email address");
+        }
+        if (!phoneValidation) {
+          newErrorMessages.push(
+            "Phone suffix should be exactly 7 digits long.",
+          );
         }
         return [...prevState, ...newErrorMessages];
       });
@@ -110,11 +116,10 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Create Supplier</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Supplier Name"
@@ -152,6 +157,11 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
               type="text"
               placeholder="Office Phone"
               value={phoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <DropdownMultiselect
               optionsList={manufacturerList}

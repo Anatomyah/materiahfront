@@ -99,7 +99,7 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Order</Modal.Title>
+          <Modal.Title>Edit Order</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
@@ -150,8 +150,12 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
             )}
             {orderObj && (
               <>
+                <label htmlFor="order_file">
+                  Upload Order Receipt (pdf, jpg, png, gif)):
+                </label>
                 <input
                   type="file"
+                  id="order_file"
                   accept="application/pdf, image/*"
                   onChange={handleFileChange}
                   style={{ display: "none" }}

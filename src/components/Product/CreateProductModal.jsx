@@ -53,7 +53,6 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
         measurementUnit &&
         volume &&
         storageConditions &&
-        currentStock &&
         currentPrice &&
         productLink &&
         manufacturer &&
@@ -67,7 +66,6 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     measurementUnit,
     volume,
     storageConditions,
-    currentStock,
     currentPrice,
     productLink,
     manufacturer,
@@ -218,10 +216,15 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
               ))}
             </select>
             <input
-              type="number"
+              type="text"
               placeholder="Volume"
               id="volume"
               onChange={(e) => setVolume(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
               value={volume}
             />
             <select
@@ -238,18 +241,28 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
               ))}
             </select>
             <input
-              type="number"
+              type="text"
               placeholder="Current Stock"
               id="current_stock"
               onChange={(e) => setCurrentStock(e.target.value)}
               value={currentStock}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <input
-              type="number"
+              type="text"
               placeholder="Current Price"
               id="current_price"
               onChange={(e) => setCurrentPrice(e.target.value)}
               value={currentPrice}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
             <select
               value={manufacturer}
@@ -304,11 +317,15 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                 );
               })}
             </div>
+            <label htmlFor="product_images">
+              Upload Product Images (jpg, png, gif):
+            </label>
             <input
               type="file"
               multiple
               accept="image/*"
               id="product_images"
+              title="Accepted formats: jpg, png, gif"
               onChange={handeFileChange}
             />
           </form>

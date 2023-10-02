@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
-import {
-  valueIsPositive,
-  valueIsWhole,
-} from "../../config_and_helpers/helpers";
 
 const QuoteItemComponent = ({
   productList,
@@ -14,14 +10,13 @@ const QuoteItemComponent = ({
   handleItemDelete,
   showRemoveButton,
 }) => {
+  const [typingTimeout, setTypingTimeout] = useState(null);
   const [availableProducts, setAvailableProducts] = useState([]);
   const [product, setProduct] = useState(
     item ? productList.find((p) => p.value === item.product) : null,
   );
   const [quantity, setQuantity] = useState(item ? item.quantity : "");
   const [price, setPrice] = useState(item ? item.price : "");
-  const [isPositiveError, setIsPositiveError] = useState(false);
-  const [isWholeError, setIsWholeError] = useState(false);
 
   useEffect(() => {
     setProduct(item ? productList.find((p) => p.value === item.product) : null);
@@ -47,31 +42,20 @@ const QuoteItemComponent = ({
   };
 
   const handleQuantityChange = (value) => {
-    const positiveValidation = valueIsPositive(value);
-    const wholeValidation = valueIsWhole(value);
-    if (value === "" || (positiveValidation && wholeValidation)) {
-      setIsPositiveError(false);
-      setIsWholeError(false);
-      setQuantity(value);
-      onItemChange(index, "quantity", value);
-    } else {
-      if (!positiveValidation) {
-        setIsPositiveError(true);
-      }
-      if (!wholeValidation) {
-        setIsWholeError(true);
-      }
-    }
+    setQuantity(value);
+    onItemChange(index, "quantity", value);
   };
 
   const handlePriceChange = (value) => {
-    if (value === "" || valueIsPositive(value)) {
-      setIsPositiveError(false);
-      setPrice(value);
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    setPrice(value);
+
+    const newTimeout = setTimeout(() => {
       onItemChange(index, "price", value);
-    } else {
-      setIsPositiveError(true);
-    }
+    }, 300);
+
+    setTypingTimeout(newTimeout);
   };
 
   if (!productList) {
@@ -86,25 +70,29 @@ const QuoteItemComponent = ({
         setSelectedValue={handleProductChange}
       />
       <input
-        type="number"
+        type="text"
         placeholder="Quantity"
-        min="1"
-        step="1"
         id="item_quantity"
         onChange={(e) => handleQuantityChange(e.target.value)}
         value={quantity}
+        onKeyPress={(e) => {
+          if (e.key.match(/[^0-9]/)) {
+            e.preventDefault();
+          }
+        }}
       />
       <input
-        type="number"
+        type="text"
         placeholder="Price (Single unit, pre-VAT)"
-        min="1"
-        step="1"
         id="item_price"
         onChange={(e) => handlePriceChange(e.target.value)}
         value={price}
+        onKeyPress={(e) => {
+          if (e.key.match(/[^0-9]/)) {
+            e.preventDefault();
+          }
+        }}
       />
-      {isPositiveError && <span>Numbers must be positive</span>}
-      {isWholeError && <span>Quantity must be a whole number</span>}
       {!showRemoveButton && (
         <button
           onClick={(e) => {

@@ -1,17 +1,21 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { AppContext } from "../../App";
+import { AppContext, CartAppContext } from "../../App";
 import { deleteProduct, getProductDetails } from "../../clients/product_client";
 import DeleteButton from "../Generic/DeleteButton";
 import EditProductModal from "./EditProductModal";
+import { ButtonGroup } from "@mui/material";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 const ProductDetailComponent = () => {
   const { token } = useContext(AppContext);
+  const { cart, setCart } = useContext(CartAppContext);
   const { id } = useParams();
-  const location = useLocation();
-  const [product, setProduct] = useState(
-    location.state ? location.state.product : null,
-  );
+  const { state } = useLocation();
+  const shopView = state ? state.shopView : false;
+  const [productAmount, setProductAmount] = useState("");
+  const [product, setProduct] = useState(state ? state.product : null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
@@ -23,6 +27,47 @@ const ProductDetailComponent = () => {
       });
     }
   }, [id]);
+
+  const handleMinusClick = () => {
+    if (productAmount <= 1) {
+      setProductAmount("");
+    } else {
+      setProductAmount((prevState) => prevState - 1);
+    }
+  };
+
+  const handlePlusClick = () => {
+    if (productAmount === 0) {
+      setProductAmount(1);
+    } else {
+      setProductAmount((prevState) => Number(prevState) + 1);
+    }
+  };
+
+  const handleAddToCart = () => {
+    const itemExists = cart.some((item) => item.cat_num === product.cat_num);
+
+    if (itemExists) {
+      setCart((prevCart) => {
+        return prevCart.map((item) =>
+          item.cat_num === product.cat_num
+            ? { ...item, amount: item.amount + productAmount }
+            : item,
+        );
+      });
+    } else {
+      const newItem = {
+        cat_num: product.cat_num,
+        name: product.name,
+        image: product.images.length > 0 ? product.images[0].image : null,
+        supplier: product.supplier,
+        amount: productAmount,
+      };
+      setCart((prevCart) => {
+        return [...prevCart, newItem];
+      });
+    }
+  };
 
   if (!product) {
     return "Product details not available";
@@ -57,18 +102,55 @@ const ProductDetailComponent = () => {
       <a href={product.url} target="_blank" rel="noopener noreferrer">
         Product Details
       </a>
-      <DeleteButton
-        objectType="product"
-        objectName={product.name}
-        objectId={product.id}
-        deleteFetchFunc={deleteProduct}
-        returnLocation="inventory"
-      />
-      {product && (
-        <EditProductModal
-          productObj={product}
-          onSuccessfulUpdate={setProduct}
-        />
+      {!shopView && (
+        <>
+          <DeleteButton
+            objectType="product"
+            objectName={product.name}
+            objectId={product.id}
+            deleteFetchFunc={deleteProduct}
+            returnLocation="inventory"
+          />
+          {product && (
+            <EditProductModal
+              productObj={product}
+              onSuccessfulUpdate={setProduct}
+            />
+          )}
+        </>
+      )}
+      {shopView && (
+        <>
+          <ButtonGroup
+            disableElevation
+            variant="contained"
+            aria-label="Disabled elevation buttons"
+          >
+            <Button onClick={handleMinusClick}>-</Button>
+            <TextField
+              value={productAmount}
+              onChange={(e) => setProductAmount(e.target.value)}
+              id="outlined-number"
+              label="Amount"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+            <Button onClick={handlePlusClick}>+</Button>
+          </ButtonGroup>
+          <Button
+            variant="outlined"
+            onClick={handleAddToCart}
+            disabled={productAmount <= 0}
+          >
+            Add to Cart
+          </Button>
+        </>
       )}
       {errorMessages.length > 0 && (
         <ul>
@@ -82,5 +164,4 @@ const ProductDetailComponent = () => {
     </div>
   );
 };
-ProductDetailComponent.whyDidYouRender = true;
 export default ProductDetailComponent;

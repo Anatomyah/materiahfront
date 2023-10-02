@@ -131,11 +131,10 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Edit Quote</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <select
               value={supplier}
               onChange={(e) => setSupplier(e.target.value)}
@@ -156,8 +155,10 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
               onChange={(e) => setDate(e.target.value)}
               value={date}
             />
+            <label htmlFor="quote_file">Upload Quote File (pdf, docx):</label>
             <input
               type="file"
+              id="quote_file"
               accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleFileChange}
               style={{ display: "none" }}

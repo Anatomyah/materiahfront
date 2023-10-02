@@ -9,9 +9,14 @@ import { updateManufacturer } from "../../clients/manufacturer_client";
 
 const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
-  const [name, setName] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [relatedSuppliers, setRelatedSuppliers] = useState([]);
+  const [name, setName] = useState(manufacturerObj.name);
+  const [websiteUrl, setWebsiteUrl] = useState(manufacturerObj.website);
+  const [relatedSuppliers, setRelatedSuppliers] = useState(
+    manufacturerObj.suppliers.map((item) => ({
+      value: item.id,
+      label: item.name,
+    })),
+  );
   const [supplierList, setSupplierList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
@@ -24,16 +29,6 @@ const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
       }
     });
   }, []);
-
-  useEffect(() => {
-    setName(manufacturerObj.name);
-    setWebsiteUrl(manufacturerObj.website);
-    const formattedRelatedSuppliers = manufacturerObj.suppliers.map((item) => ({
-      value: item.id,
-      label: item.name,
-    }));
-    setRelatedSuppliers(formattedRelatedSuppliers);
-  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(name && websiteUrl && relatedSuppliers);
@@ -92,11 +87,10 @@ const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Edit Manufacturer</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Manufacturer Name"

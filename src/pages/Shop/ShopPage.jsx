@@ -27,28 +27,40 @@ const ShopPage = () => {
   }, [currentPage]);
 
   const goToProductDetails = (product) => {
-    nav(`/product-details/${product.id}`, { state: { product } });
+    nav(`/product-details/${product.id}`, {
+      state: { product, shopView: true },
+    });
   };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  if (!labInventory.length) {
+  if (labInventory.length === 0) {
     return "Loading...";
   }
   return (
     <div>
+      <br />
       {labInventory.map((product) => (
-        <span
+        <div
           key={product.id}
           className="text-decoration-underline text-primary"
           style={{ cursor: "pointer" }}
           onClick={() => goToProductDetails(product)}
         >
-          {product.cat_num}
-        </span>
+          {product.images.length > 0 && (
+            <img
+              src={product.images[0].image}
+              alt={`product-${product.cat_num}-image-${product.images[0].id}`}
+              width="200"
+            />
+          )}
+          <h1>{product.cat_num}</h1>
+          <h1>{product.name}</h1>
+        </div>
       ))}
+      <br />
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (

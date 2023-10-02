@@ -78,11 +78,10 @@ const CreateManufacturerModal = ({ onSuccessfulCreate }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>Create Manufacturer</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">
-            <legend>Create Product</legend>
             <input
               type="text"
               placeholder="Manufacturer Name"

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { validatePhoneSuffix } from "../../config_and_helpers/helpers";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
 import { updateUserProfile } from "../../clients/user_client";
@@ -9,21 +8,13 @@ import { updateUserProfile } from "../../clients/user_client";
 const EditAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phonePrefix, setPhonePrefix] = useState("");
-  const [phoneSuffix, setPhoneSuffix] = useState("");
+  const [firstName, setFirstName] = useState(userDetails.first_name);
+  const [lastName, setLastName] = useState(userDetails.last_name);
+  const [email, setEmail] = useState(userDetails.email);
+  const [phonePrefix, setPhonePrefix] = useState(userDetails.phone_prefix);
+  const [phoneSuffix, setPhoneSuffix] = useState(userDetails.phone_suffix);
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
-
-  useEffect(() => {
-    setFirstName(userDetails.first_name);
-    setLastName(userDetails.last_name);
-    setEmail(userDetails.email);
-    setPhonePrefix(userDetails.phone_prefix);
-    setPhoneSuffix(userDetails.phone_suffix);
-  }, [showModal]);
 
   useEffect(() => {
     setIsFilled(firstName && lastName && email && phonePrefix && phoneSuffix);
@@ -40,16 +31,19 @@ const EditAccountModal = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
-    const emailValidation = document.getElementById("email");
-    const phoneValidation = validatePhoneSuffix(phoneSuffix);
-    if (!phoneValidation.valid || !emailValidation.checkValidity()) {
+    const emailValidation = document.getElementById("email").checkValidity();
+    const phoneValidation = phoneSuffix.length === 7;
+
+    if (!phoneValidation || !emailValidation) {
       setErrorMessages((prevState) => {
         const newErrorMessages = [];
-        if (!emailValidation.checkValidity()) {
+        if (!emailValidation) {
           newErrorMessages.push("Invalid email format.");
         }
-        if (!phoneValidation.valid) {
-          newErrorMessages.push(phoneValidation.error);
+        if (!phoneValidation) {
+          newErrorMessages.push(
+            "Phone suffix should be exactly 7 digits long.",
+          );
         }
         return [...prevState, ...newErrorMessages];
       });
@@ -128,6 +122,11 @@ const EditAccountModal = () => {
               type="text"
               placeholder="phone"
               value={phoneSuffix}
+              onKeyPress={(e) => {
+                if (e.key.match(/[^0-9]/)) {
+                  e.preventDefault();
+                }
+              }}
             />
           </form>
           {errorMessages.length > 0 && (

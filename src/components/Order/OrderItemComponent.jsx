@@ -1,8 +1,4 @@
-import React, { useEffect, useState } from "react";
-import {
-  valueIsPositive,
-  valueIsWhole,
-} from "../../config_and_helpers/helpers";
+import React, { useState } from "react";
 
 const OrderItemComponent = ({ product, item, onItemChange, index }) => {
   const [typingTimeout, setTypingTimeout] = useState(null);
@@ -21,10 +17,6 @@ const OrderItemComponent = ({ product, item, onItemChange, index }) => {
   const [otherReasonDetails, setOtherReasonDetails] = useState(
     item.issue_detail ? item.issue_detail : "",
   );
-  const [isPositiveError, setIsPositiveError] = useState(false);
-  const [isWholeError, setIsWholeError] = useState(false);
-
-  console.log(item);
 
   const handleCheckbox = () => {
     setItemFulfilled((prevState) => !prevState);
@@ -39,26 +31,13 @@ const OrderItemComponent = ({ product, item, onItemChange, index }) => {
   const handleQuantityChange = (value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 
-    const positiveValidation = valueIsPositive(value);
-    const wholeValidation = valueIsWhole(value);
-    if (value === "" || (positiveValidation && wholeValidation)) {
-      setIsPositiveError(false);
-      setIsWholeError(false);
-      setQuantity(value);
+    setQuantity(value);
 
-      const newTimeout = setTimeout(() => {
-        onItemChange(index, "quantity", value);
-      }, 300);
+    const newTimeout = setTimeout(() => {
+      onItemChange(index, "quantity", value);
+    }, 300);
 
-      setTypingTimeout(newTimeout);
-    } else {
-      if (!positiveValidation) {
-        setIsPositiveError(true);
-      }
-      if (!wholeValidation) {
-        setIsWholeError(true);
-      }
-    }
+    setTypingTimeout(newTimeout);
   };
 
   const handleBatchChange = (value) => {
@@ -106,14 +85,17 @@ const OrderItemComponent = ({ product, item, onItemChange, index }) => {
     <div>
       <h2>{product.name}</h2>
       <input
-        type="number"
+        type="text"
         placeholder="Quantity"
-        min="1"
-        step="1"
         id="item_quantity"
         onChange={(e) => handleQuantityChange(e.target.value)}
         value={quantity}
         disabled={selectedReason !== "Different amount"}
+        onKeyPress={(e) => {
+          if (e.key.match(/[^0-9]/)) {
+            e.preventDefault();
+          }
+        }}
       />
       <input
         type="text"
@@ -126,11 +108,10 @@ const OrderItemComponent = ({ product, item, onItemChange, index }) => {
         type="date"
         placeholder="Select expiry date"
         id="expiry_date"
+        min={new Date().toISOString().split("T")[0]}
         onChange={(e) => handleExpiryDateChange(e.target.value)}
         value={expiryDate}
       />
-      {isPositiveError && <span>Numbers must be positive</span>}
-      {isWholeError && <span>Quantity must be a whole number</span>}
       <label>
         <input
           type="checkbox"

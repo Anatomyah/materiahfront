@@ -42,9 +42,6 @@ function TopNavBar() {
                 <Nav.Link as={Link} to="/inventory">
                   Inventory
                 </Nav.Link>
-                <Nav.Link as={Link} to="/shop">
-                  Shop
-                </Nav.Link>
                 <Nav.Link as={Link} to="/orders">
                   Orders
                 </Nav.Link>
@@ -59,6 +56,12 @@ function TopNavBar() {
                     Quotes
                   </NavDropdown.Item>
                 </NavDropdown>
+                <Nav.Link as={Link} to="/shop">
+                  Shop
+                </Nav.Link>
+                <Nav.Link as={Link} to="/shopping-cart">
+                  Cart
+                </Nav.Link>
               </>
             )}
           </Nav>
