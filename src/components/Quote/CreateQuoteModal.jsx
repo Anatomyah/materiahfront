@@ -50,9 +50,9 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
     setIsFilled(supplier && date && itemsValidation && quoteFile);
   }, [supplier, date, items, quoteFile]);
 
-  useEffect(() => {
-    setItems([{ product: "", quantity: "", price: "" }]);
-  }, [supplier]);
+  // useEffect(() => {
+  //   setItems([{ product: "", quantity: "", price: "" }]);
+  // }, [supplier]);
 
   const handleClose = () => {
     setErrorMessages([]);

@@ -169,6 +169,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
                       onItemChange={updateItem}
                       index={index}
                       item={item}
+                      quoteItem={relatedQuoteObj.items[index]}
                     />
                   ) : null,
                 )}

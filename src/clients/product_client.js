@@ -65,16 +65,19 @@ export const getLabInventory = async (
   setLabInventory,
   setTotalPages,
   page = 1,
+  searchInput = "",
 ) => {
+  let url = `${BACKEND_URL}products/?page_num=${page}`;
+  console.log(searchInput);
+  if (searchInput) {
+    url += `&search=${searchInput}`;
+  }
   try {
-    const response = await axios.get(
-      `${BACKEND_URL}products/?page_num=${page}`,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Token ${token}`,
       },
-    );
+    });
     setLabInventory(response.data.results);
     console.log(response.data.results);
     setTotalPages(response.data.total_pages);

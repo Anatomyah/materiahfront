@@ -4,23 +4,39 @@ import { AppContext } from "../../App";
 import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { useNavigate } from "react-router-dom";
 import CreateProductModal from "../../components/Product/CreateProductModal";
+import TextField from "@mui/material/TextField";
 
-const InventoryPage = () => {
+const ProductList = ({ isShopView = false }) => {
   const nav = useNavigate();
   const { token } = useContext(AppContext);
   const [labInventory, setLabInventory] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [errorMessages, setErrorMessages] = useState([]);
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
-  const fetchProducts = () => {
-    getLabInventory(token, setLabInventory, setTotalPages, currentPage).then(
-      (response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      },
-    );
+  const fetchProducts = (searchValue) => {
+    getLabInventory(
+      token,
+      setLabInventory,
+      setTotalPages,
+      currentPage,
+      searchValue,
+    ).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
+  };
+
+  const handleSearchInput = (value) => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    const newTimeout = setTimeout(() => {
+      fetchProducts(value);
+    }, 2000);
+
+    setTypingTimeout(newTimeout);
   };
 
   useEffect(() => {
@@ -28,7 +44,11 @@ const InventoryPage = () => {
   }, [currentPage]);
 
   const goToProductDetails = (product) => {
-    nav(`/product-details/${product.id}`, { state: { product } });
+    const state = { product };
+    if (isShopView) {
+      state.shopView = true;
+    }
+    nav(`/product-details/${product.id}`, { state });
   };
 
   const handlePageChange = (page) => {
@@ -40,18 +60,33 @@ const InventoryPage = () => {
   }
   return (
     <div>
-      <div>
-        <CreateProductModal onSuccessfulCreate={fetchProducts} />
-      </div>
+      {!isShopView && (
+        <div>
+          <CreateProductModal onSuccessfulCreate={fetchProducts} />
+        </div>
+      )}
+      <TextField
+        id="outlined-helperText"
+        label="Free text search"
+        onChange={(e) => handleSearchInput(e.target.value)}
+      />
       {labInventory.map((product) => (
-        <span
+        <div
           key={product.id}
           className="text-decoration-underline text-primary"
           style={{ cursor: "pointer" }}
           onClick={() => goToProductDetails(product)}
         >
-          {product.cat_num}
-        </span>
+          {product.images.length > 0 && (
+            <img
+              src={product.images[0].image}
+              alt={`product-${product.cat_num}-image-${product.images[0].id}`}
+              width="200"
+            />
+          )}
+          <h1>{product.cat_num}</h1>
+          <h1>{product.name}</h1>
+        </div>
       ))}
       {!errorMessages && (
         <ul>
@@ -62,7 +97,6 @@ const InventoryPage = () => {
           ))}
         </ul>
       )}
-
       <PaginatorComponent
         currentPage={currentPage}
         totalPages={totalPages}
@@ -71,4 +105,4 @@ const InventoryPage = () => {
     </div>
   );
 };
-export default InventoryPage;
+export default ProductList;

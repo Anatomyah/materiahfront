@@ -4,7 +4,7 @@ import LoginPage from "../pages/User/LoginPage";
 import HomePage from "../pages/HomePage";
 import AccountPage from "../pages/User/AccountPage";
 import SupplierCataloguePage from "../pages/Supplier/SupplierCataloguePage";
-import InventoryPage from "../pages/Product/InventoryPage";
+import ProductList from "../pages/Product/ProductList";
 import ShopPage from "../pages/Shop/ShopPage";
 import SuppliersPage from "../pages/Supplier/SuppliersPage";
 import ManufacturersPage from "../pages/Manufacturer/ManufacturersPage";
@@ -25,7 +25,7 @@ const SiteRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/supplier-catalogue" element={<SupplierCataloguePage />} />
-        <Route path="/inventory" element={<InventoryPage />} />
+        <Route path="/inventory" element={<ProductList />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shopping-cart" element={<ShoppingCart />} />
         <Route path="/orders" element={<OrdersPage />} />

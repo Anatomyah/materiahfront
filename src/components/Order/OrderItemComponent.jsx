@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 
-const OrderItemComponent = ({ product, item, onItemChange, index }) => {
+const OrderItemComponent = ({
+  product,
+  item,
+  onItemChange,
+  index,
+  quoteItem,
+}) => {
   const [typingTimeout, setTypingTimeout] = useState(null);
   const [quantity, setQuantity] = useState(item.quantity ? item.quantity : "");
   const [batch, setBatch] = useState(item.batch ? item.batch : "");
@@ -20,7 +26,9 @@ const OrderItemComponent = ({ product, item, onItemChange, index }) => {
 
   const handleCheckbox = () => {
     setItemFulfilled((prevState) => !prevState);
-    handleQuantityChange(item.quote_item.quantity);
+    handleQuantityChange(
+      quoteItem ? quoteItem.quantity : item.quote_item.quantity,
+    );
     handleReasonChange("OK");
     setShowOtherReasonTextBox(false);
     if (otherReasonDetails !== "") {

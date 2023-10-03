@@ -35,11 +35,8 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
   }, [arrivalDate, receivedBy, items]);
 
   const updateItem = (index, field, value) => {
-    console.log(index, field, value);
     const newItems = [...items];
-    console.log(newItems);
     newItems[index][field] = value;
-    console.log(newItems);
     setItems(newItems);
   };
 
