@@ -60,18 +60,30 @@ export const deleteProduct = async (token, productId) => {
   }
 };
 
-export const getLabInventory = async (
+export const getProducts = async (
   token,
   setLabInventory,
   setTotalPages,
   page = 1,
-  searchInput = "",
+  options = {},
 ) => {
+  console.log(options);
+  const {
+    searchInput = "",
+    supplierId = "",
+    supplierCatalogue = false,
+  } = options;
   let url = `${BACKEND_URL}products/?page_num=${page}`;
-  console.log(searchInput);
   if (searchInput) {
     url += `&search=${searchInput}`;
   }
+  if (supplierId) {
+    url += `&supplier_id=${supplierId}`;
+  }
+  if (supplierCatalogue) {
+    url += `&supplier_catalogue=${supplierCatalogue}`;
+  }
+
   try {
     const response = await axios.get(url, {
       headers: {

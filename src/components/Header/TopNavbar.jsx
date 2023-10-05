@@ -34,9 +34,11 @@ function TopNavBar() {
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
             {isSupplier ? (
-              <Nav.Link as={Link} to="/supplier_catalogue">
-                Catalogue
-              </Nav.Link>
+              <>
+                <Nav.Link as={Link} to="/supplier-catalogue">
+                  Catalogue
+                </Nav.Link>
+              </>
             ) : (
               <>
                 <Nav.Link as={Link} to="/inventory">

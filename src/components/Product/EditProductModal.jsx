@@ -36,6 +36,8 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
 
+  console.log(productObj);
+
   useEffect(() => {
     getManufacturerSelectList(token, setManufacturerList).then((response) => {
       if (response && !response.success) {
@@ -57,10 +59,10 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         measurementUnit &&
         volume &&
         storageConditions &&
-        price &&
+        (productObj.supplier_cat_item ? true : price) &&
         productLink &&
         manufacturer &&
-        supplier &&
+        (productObj.supplier_cat_item ? true : supplier) &&
         images,
     );
   }, [
@@ -105,9 +107,9 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
     setErrorMessages([]);
 
     const urlValidation = isValidURL(productLink);
-    const priceValidation = price <= 0;
-    const stockValidation = stock <= 0;
-    const volumeValidation = volume <= 0;
+    const priceValidation = price >= 0;
+    const stockValidation = stock >= 0;
+    const volumeValidation = volume >= 0;
 
     if (
       !urlValidation ||
@@ -150,7 +152,10 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
       formData.append("price", price);
       formData.append("url", productLink);
       formData.append("manufacturer", manufacturer);
-      formData.append("supplier", supplier);
+      const supplierValue = productObj.supplier_cat_item
+        ? productObj.supplier.id
+        : supplier;
+      formData.append("supplier", supplierValue);
       images.forEach((image, index) => {
         formData.append(`image${index + 1}`, image.file);
         for (var key of formData.entries()) {
@@ -262,18 +267,20 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
                 }
               }}
             />
-            <input
-              type="text"
-              placeholder="Current Price"
-              id="current_price"
-              onChange={(e) => setPrice(e.target.value)}
-              value={price}
-              onKeyPress={(e) => {
-                if (e.key.match(/[^0-9]/)) {
-                  e.preventDefault();
-                }
-              }}
-            />
+            {!productObj.supplier_cat_item && (
+              <input
+                type="text"
+                placeholder="Current Price"
+                id="current_price"
+                onChange={(e) => setPrice(e.target.value)}
+                value={price}
+                onKeyPress={(e) => {
+                  if (e.key.match(/[^0-9]/)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            )}
             <select
               value={manufacturer}
               onChange={(e) => setManufacturer(e.target.value)}
@@ -287,19 +294,21 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
                 </option>
               ))}
             </select>
-            <select
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
-            >
-              <option value="" disabled>
-                --Select Supplier--
-              </option>
-              {supplierList.map((choice, index) => (
-                <option key={index} value={choice.value}>
-                  {choice.label}
+            {!productObj.supplier_cat_item && (
+              <select
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+              >
+                <option value="" disabled>
+                  --Select Supplier--
                 </option>
-              ))}
-            </select>
+                {supplierList.map((choice, index) => (
+                  <option key={index} value={choice.value}>
+                    {choice.label}
+                  </option>
+                ))}
+              </select>
+            )}
             <input
               type="url"
               placeholder="Product Link"

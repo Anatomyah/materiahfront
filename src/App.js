@@ -52,7 +52,6 @@ function App() {
     if (cart.length === 0) {
       const storedCart = localStorage.getItem("cart");
       if (storedCart && storedCart !== "null") {
-        console.log("stored", storedCart);
         setCart(JSON.parse(storedCart));
       }
     }
@@ -61,7 +60,6 @@ function App() {
   useEffect(() => {
     setCartCount(cart.length);
     localStorage.setItem("cart", JSON.stringify(cart));
-    console.log(cart);
   }, [cart]);
 
   if (isLoading) {

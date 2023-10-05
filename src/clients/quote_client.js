@@ -1,7 +1,24 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
-export const createQuote = async (token, quoteData) => {
+export const createQuoteFromCart = async (token, cart_items) => {
+  try {
+    await axios.post(`${BACKEND_URL}quotes/`, JSON.stringify(cart_items), {
+      headers: {
+        Authorization: `Token ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const createQuoteManually = async (token, quoteData) => {
   try {
     await axios.post(`${BACKEND_URL}quotes/`, quoteData, {
       headers: {

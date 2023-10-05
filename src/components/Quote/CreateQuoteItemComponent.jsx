@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
 
-const QuoteItemComponent = ({
+const CreateQuoteItemComponent = ({
   productList,
   onItemChange,
   index,
@@ -105,4 +105,4 @@ const QuoteItemComponent = ({
     </div>
   );
 };
-export default QuoteItemComponent;
+export default CreateQuoteItemComponent;

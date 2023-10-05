@@ -44,6 +44,14 @@ const ProductDetailComponent = () => {
     }
   };
 
+  const handleInputChange = (value) => {
+    if (value < 1) {
+      setProductAmount("");
+    } else {
+      setProductAmount(value);
+    }
+  };
+
   const handleAddToCart = () => {
     const itemExists = cart.some((item) => item.cat_num === product.cat_num);
 
@@ -51,7 +59,7 @@ const ProductDetailComponent = () => {
       setCart((prevCart) => {
         return prevCart.map((item) =>
           item.cat_num === product.cat_num
-            ? { ...item, amount: item.amount + productAmount }
+            ? { ...item, amount: Number(item.amount) + Number(productAmount) }
             : item,
         );
       });
@@ -61,7 +69,7 @@ const ProductDetailComponent = () => {
         name: product.name,
         image: product.images.length > 0 ? product.images[0].image : null,
         supplier: product.supplier,
-        amount: productAmount,
+        amount: Number(productAmount),
       };
       setCart((prevCart) => {
         return [...prevCart, newItem];
@@ -129,7 +137,7 @@ const ProductDetailComponent = () => {
             <Button onClick={handleMinusClick}>-</Button>
             <TextField
               value={productAmount}
-              onChange={(e) => setProductAmount(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               id="outlined-number"
               label="Amount"
               InputLabelProps={{

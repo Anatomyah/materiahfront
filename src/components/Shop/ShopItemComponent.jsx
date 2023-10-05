@@ -3,7 +3,13 @@ import { ButtonGroup } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
-const ShopItemComponent = ({ onItemChange, index, item, handleItemDelete }) => {
+const ShopItemComponent = ({
+  index,
+  item,
+  supplierKey,
+  onItemChange,
+  handleItemDelete,
+}) => {
   const [quantity, setQuantity] = useState(item.amount);
 
   const handleMinusClick = () => {
@@ -19,7 +25,7 @@ const ShopItemComponent = ({ onItemChange, index, item, handleItemDelete }) => {
   };
 
   const handleInputChange = (value) => {
-    if (quantity <= 1 || quantity === 0) {
+    if (value < 1) {
       setQuantity("");
     } else {
       setQuantity(value);
@@ -27,7 +33,7 @@ const ShopItemComponent = ({ onItemChange, index, item, handleItemDelete }) => {
   };
 
   useEffect(() => {
-    onItemChange(index, "amount", quantity);
+    onItemChange(supplierKey, index, "amount", quantity);
   }, [quantity]);
 
   if (!item) {
@@ -67,7 +73,8 @@ const ShopItemComponent = ({ onItemChange, index, item, handleItemDelete }) => {
         </ButtonGroup>
         <button
           onClick={(e) => {
-            handleItemDelete(e, index);
+            console.log(supplierKey, index);
+            handleItemDelete(e, supplierKey, index);
           }}
         >
           Remove Item

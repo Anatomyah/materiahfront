@@ -12,8 +12,8 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
-const CreateProductModal = ({ onSuccessfulCreate }) => {
-  const { token } = useContext(AppContext);
+const CreateProductModal = ({ onSuccessfulCreate, refreshModal }) => {
+  const { token, isSupplier, userDetails } = useContext(AppContext);
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
   const [category, setCategory] = useState("");
@@ -53,10 +53,10 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
         measurementUnit &&
         volume &&
         storageConditions &&
-        currentPrice &&
+        (isSupplier ? true : currentPrice) &&
         productLink &&
         manufacturer &&
-        supplier &&
+        (isSupplier ? true : supplier) &&
         images,
     );
   }, [
@@ -92,9 +92,9 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     e.preventDefault();
     setErrorMessages([]);
     const urlValidation = isValidURL(productLink);
-    const priceValidation = currentPrice <= 0;
-    const stockValidation = currentStock <= 0;
-    const volumeValidation = volume <= 0;
+    const priceValidation = currentPrice >= 0;
+    const stockValidation = currentStock >= 0;
+    const volumeValidation = volume >= 0;
 
     if (
       !urlValidation ||
@@ -137,7 +137,11 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
       formData.append("price", currentPrice);
       formData.append("url", productLink);
       formData.append("manufacturer", manufacturer);
-      formData.append("supplier", supplier);
+      const supplierValue = isSupplier ? userDetails.supplier_id : supplier;
+      formData.append("supplier", supplierValue);
+      if (isSupplier) {
+        formData.append("supplier_cat_item", true);
+      }
       images.forEach((image, index) => {
         formData.append(`image${index + 1}`, image.file);
       });
@@ -252,18 +256,20 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                 }
               }}
             />
-            <input
-              type="text"
-              placeholder="Current Price"
-              id="current_price"
-              onChange={(e) => setCurrentPrice(e.target.value)}
-              value={currentPrice}
-              onKeyPress={(e) => {
-                if (e.key.match(/[^0-9]/)) {
-                  e.preventDefault();
-                }
-              }}
-            />
+            {!isSupplier && (
+              <input
+                type="text"
+                placeholder="Current Price"
+                id="current_price"
+                onChange={(e) => setCurrentPrice(e.target.value)}
+                value={currentPrice}
+                onKeyPress={(e) => {
+                  if (e.key.match(/[^0-9]/)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            )}
             <select
               value={manufacturer}
               onChange={(e) => setManufacturer(e.target.value)}
@@ -277,19 +283,21 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                 </option>
               ))}
             </select>
-            <select
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
-            >
-              <option value="" disabled>
-                --Select Supplier--
-              </option>
-              {supplierList.map((choice, index) => (
-                <option key={index} value={choice.value}>
-                  {choice.label}
+            {!isSupplier && (
+              <select
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+              >
+                <option value="" disabled>
+                  --Select Supplier--
                 </option>
-              ))}
-            </select>
+                {supplierList.map((choice, index) => (
+                  <option key={index} value={choice.value}>
+                    {choice.label}
+                  </option>
+                ))}
+              </select>
+            )}
             <input
               type="url"
               placeholder="Product Link"

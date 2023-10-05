@@ -172,7 +172,7 @@ export const getSupplierProducts = async (
 ) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}products/?page_num=${page}`,
+      `${BACKEND_URL}products/?page_num=${page}&catalogue_view=true`,
       {
         headers: {
           Authorization: `Token ${token}`,

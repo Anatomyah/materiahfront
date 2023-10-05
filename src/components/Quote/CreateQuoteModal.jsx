@@ -3,10 +3,10 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import QuoteItemComponent from "./QuoteItemComponent";
 import { getProductSelectList } from "../../clients/product_client";
 import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
-import { createQuote } from "../../clients/quote_client";
+import { createQuoteManually } from "../../clients/quote_client";
+import CreateQuoteItemComponent from "./CreateQuoteItemComponent";
 
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
@@ -14,9 +14,6 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const [supplier, setSupplier] = useState("");
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [productSelectList, setProductSelectList] = useState();
-  const [date, setDate] = useState(() => {
-    return new Date().toISOString().split("T")[0];
-  });
   const [quoteFile, setQuoteFile] = useState();
   const [items, setItems] = useState([
     { product: "", quantity: "", price: "" },
@@ -47,12 +44,8 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
 
   useEffect(() => {
     const itemsValidation = allQuoteItemsFilled(items);
-    setIsFilled(supplier && date && itemsValidation && quoteFile);
-  }, [supplier, date, items, quoteFile]);
-
-  // useEffect(() => {
-  //   setItems([{ product: "", quantity: "", price: "" }]);
-  // }, [supplier]);
+    setIsFilled(supplier && itemsValidation && quoteFile);
+  }, [supplier, items, quoteFile]);
 
   const handleClose = () => {
     setErrorMessages([]);
@@ -95,11 +88,10 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
 
     const formData = new FormData();
     formData.append("supplier", supplier);
-    formData.append("creation_date", date);
     formData.append("items", JSON.stringify(items));
-    formData.append("quote", quoteFile);
+    formData.append("quote_file", quoteFile);
 
-    createQuote(token, formData).then((response) => {
+    createQuoteManually(token, formData).then((response) => {
       if (response && response.success) {
         onSuccessfulCreate();
         handleClose();
@@ -137,13 +129,6 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
                 </option>
               ))}
             </select>
-            <input
-              type="date"
-              placeholder="Select Date"
-              id="quote_date"
-              onChange={(e) => setDate(e.target.value)}
-              value={date}
-            />
             <label htmlFor="quote_file">Upload Quote File (pdf, docx):</label>
             <input
               type="file"
@@ -180,7 +165,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
             {productSelectList ? (
               <>
                 {items.map((_, index) => (
-                  <QuoteItemComponent
+                  <CreateQuoteItemComponent
                     key={`${supplier}-${index}`}
                     productList={productSelectList}
                     onItemChange={updateItem}

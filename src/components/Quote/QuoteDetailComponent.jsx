@@ -34,7 +34,7 @@ const QuoteDetailComponent = () => {
     <div>
       <h1>{quote.id}</h1>
       <h1>{quote.creation_date}</h1>
-      <h1>Fulfilled: {quote.fulfilled ? "True" : "False"}</h1>
+      <h1>Status: {quote.status}</h1>
       <Link to={`/supplier-details/${quote.supplier.id}`}>
         {quote.supplier.name}
       </Link>
@@ -44,7 +44,7 @@ const QuoteDetailComponent = () => {
           <p>{item.price}</p>
         </div>
       ))}
-      <a href={quote.pdf} target="_blank" rel="noopener noreferrer">
+      <a href={quote.quote_file} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
       <EditQuoteModal

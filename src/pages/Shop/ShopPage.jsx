@@ -24,9 +24,9 @@ const ShopPage = () => {
         </Nav.Item>
       </Nav>
       {activeTab === "lab" ? (
-        <ProductList isShopView={true} />
+        <ProductList key="lab" isShopView={true} />
       ) : (
-        <SupplierCatalogue />
+        <ProductList key="supplier" isShopView={true} isCatalogueView={true} />
       )}
     </div>
   );
