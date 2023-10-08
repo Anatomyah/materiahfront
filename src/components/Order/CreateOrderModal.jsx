@@ -21,8 +21,8 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     return new Date().toISOString().split("T")[0];
   });
   const [items, setItems] = useState([]);
-  const [orderFile, setOrderFile] = useState();
-  const [receivedBy, setReceivedBy] = useState();
+  const [orderFile, setOrderFile] = useState("");
+  const [receivedBy, setReceivedBy] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -87,7 +87,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     formData.append("quote", relatedQuoteObj.id);
     formData.append("arrival_date", arrivalDate);
     formData.append("items", JSON.stringify(items));
-    formData.append("order_img", orderFile);
+    formData.append("receipt_img", orderFile);
     formData.append("received_by", receivedBy);
     createOrder(token, formData).then((response) => {
       if (response && response.success) {
@@ -142,15 +142,15 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
             {relatedQuoteObj && (
               <>
                 <span>
-                  {relatedQuoteObj.pdf.slice(
-                    relatedQuoteObj.pdf.lastIndexOf("/") + 1,
+                  {relatedQuoteObj.quote_file.slice(
+                    relatedQuoteObj.quote_file.lastIndexOf("/") + 1,
                   )}
                 </span>
                 <a
                   href={
-                    relatedQuoteObj.pdf instanceof Blob
-                      ? URL.createObjectURL(relatedQuoteObj.pdf)
-                      : relatedQuoteObj.pdf
+                    relatedQuoteObj.quote_file instanceof Blob
+                      ? URL.createObjectURL(relatedQuoteObj.quote_file)
+                      : relatedQuoteObj.quote_file
                   }
                   target="_blank"
                   rel="noopener noreferrer"

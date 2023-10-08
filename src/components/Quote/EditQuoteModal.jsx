@@ -9,7 +9,9 @@ import { updateQuote } from "../../clients/quote_client";
 const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
   const { token } = useContext(AppContext);
   const fileInput = useRef("");
-  const [quoteFile, setQuoteFile] = useState(quoteObj.quote_file);
+  const [quoteFile, setQuoteFile] = useState(
+    quoteObj.quote_file ? quoteObj.quote_file : "",
+  );
   const [items, setItems] = useState(() => {
     return quoteObj.items.map((item) => ({
       product: item.product.id,
@@ -20,8 +22,6 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
-
-  console.log(quoteObj);
 
   useEffect(() => {
     const itemsValidation = allQuoteItemsFilled(items);
@@ -89,7 +89,10 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Quote</Modal.Title>
+          <Modal.Title>
+            Edit Quote {quoteObj.id} ({quoteObj.supplier.name},{" "}
+            {quoteObj.request_date})
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <form className="form-control">

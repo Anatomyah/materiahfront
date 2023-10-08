@@ -10,7 +10,7 @@ import CreateQuoteItemComponent from "./CreateQuoteItemComponent";
 
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
-  const fileInput = useRef(null);
+  const fileInput = useRef("");
   const [supplier, setSupplier] = useState("");
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [productSelectList, setProductSelectList] = useState();

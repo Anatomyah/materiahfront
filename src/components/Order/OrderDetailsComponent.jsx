@@ -33,7 +33,7 @@ const OrderDetailsComponent = () => {
     <div>
       <h1>{order.id}</h1>
       <h1>{order.arrival_date}</h1>
-      <h1>Fulfilled: {order.quote.fulfilled ? "True" : "False"}</h1>
+      <h1>Status: {order.quote.status}</h1>
       <h1>{order.received_by}</h1>
       <Link to={`/supplier-details/${order.supplier.id}`}>
         {order.supplier.name}
@@ -46,7 +46,11 @@ const OrderDetailsComponent = () => {
         </div>
       ))}
       <Link to={`/quote-details/${order.quote.id}`}>{order.quote.id}</Link>
-      <a href={order.quote.pdf} target="_blank" rel="noopener noreferrer">
+      <a
+        href={order.quote.quote_file}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         Quote PDF
       </a>
       <a href={order.receipt_img} target="_blank" rel="noopener noreferrer">

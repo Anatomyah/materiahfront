@@ -111,15 +111,15 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
             {orderObj && (
               <>
                 <span>
-                  {orderObj.quote.pdf.slice(
-                    orderObj.quote.pdf.lastIndexOf("/") + 1,
+                  {orderObj.quote.quote_file.slice(
+                    orderObj.quote.quote_file.lastIndexOf("/") + 1,
                   )}
                 </span>
                 <a
                   href={
-                    orderObj.quote.pdf instanceof Blob
-                      ? URL.createObjectURL(orderObj.quote.pdf)
-                      : orderObj.quote.pdf
+                    orderObj.quote.quote_file instanceof Blob
+                      ? URL.createObjectURL(orderObj.quote.quote_file)
+                      : orderObj.quote.quote_file
                   }
                   target="_blank"
                   rel="noopener noreferrer"
