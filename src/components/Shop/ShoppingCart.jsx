@@ -4,6 +4,7 @@ import ShopItemComponent from "./ShopItemComponent";
 import Button from "@mui/material/Button";
 import { createQuoteFromCart } from "../../clients/quote_client";
 import { useNavigate } from "react-router-dom";
+import { deepDeleteProperties } from "../../config_and_helpers/helpers";
 
 const ShoppingCart = () => {
   const { token } = useContext(AppContext);
@@ -23,6 +24,10 @@ const ShoppingCart = () => {
     }, {});
     setGroupedCart(groupedBySupplier);
   }, []);
+
+  useEffect(() => {
+    console.log(groupedCart);
+  }, [groupedCart]);
 
   const onSuccessfulCreate = () => {
     setGroupedCart([]);
@@ -56,8 +61,13 @@ const ShoppingCart = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
+    const finalCart = deepDeleteProperties(
+      JSON.parse(JSON.stringify(groupedCart)),
+      ["name", "cat_num", "image", "supplier"],
+    );
+    console.log(finalCart);
 
-    createQuoteFromCart(token, groupedCart).then((response) => {
+    createQuoteFromCart(token, finalCart).then((response) => {
       if (response && response.success) {
         onSuccessfulCreate();
       } else {

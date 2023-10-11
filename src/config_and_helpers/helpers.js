@@ -99,39 +99,15 @@ export const valueIsWhole = (value) => {
   return Number.isInteger(Number(value));
 };
 
-// export function validateId(id) {
-//   id = String(id).trim();
-//   if (id.length > 9) {
-//     return {
-//       valid: false,
-//       error: "Invalid Id number: Too long.",
-//     };
-//   }
-//
-//   if (isNaN(id)) {
-//     return {
-//       valid: false,
-//       error: "Invalid Id number: Contains non-numeric characters.",
-//     };
-//   }
-//   id = id.length < 9 ? ("00000000" + id).slice(-9) : id;
-//
-//   const checksum = Array.from(id)
-//     .map(Number)
-//     .reduce((counter, digit, i) => {
-//       const step = digit * ((i % 2) + 1);
-//       return counter + (step > 9 ? step - 9 : step);
-//     });
-//
-//   if (checksum % 10 !== 0) {
-//     return {
-//       valid: false,
-//       error: "Invalid Israeli ID number. Please double-check.",
-//     };
-//   } else {
-//     return {
-//       valid: true,
-//       error: "",
-//     };
-//   }
-// }
+export function deepDeleteProperties(obj, propsToDelete) {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (propsToDelete.includes(key)) {
+        delete obj[key];
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        deepDeleteProperties(obj[key], propsToDelete);
+      }
+    }
+  }
+  return obj;
+}

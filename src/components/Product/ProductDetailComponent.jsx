@@ -59,17 +59,21 @@ const ProductDetailComponent = () => {
       setCart((prevCart) => {
         return prevCart.map((item) =>
           item.cat_num === product.cat_num
-            ? { ...item, amount: Number(item.amount) + Number(productAmount) }
+            ? {
+                ...item,
+                quantity: Number(item.quantity) + Number(productAmount),
+              }
             : item,
         );
       });
     } else {
       const newItem = {
+        product: product.id,
         cat_num: product.cat_num,
         name: product.name,
         image: product.images.length > 0 ? product.images[0].image : null,
         supplier: product.supplier,
-        amount: Number(productAmount),
+        quantity: Number(productAmount),
       };
       setCart((prevCart) => {
         return [...prevCart, newItem];

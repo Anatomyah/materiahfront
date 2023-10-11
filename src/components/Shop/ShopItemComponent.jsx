@@ -10,7 +10,7 @@ const ShopItemComponent = ({
   onItemChange,
   handleItemDelete,
 }) => {
-  const [quantity, setQuantity] = useState(item.amount);
+  const [quantity, setQuantity] = useState(item.quantity);
 
   const handleMinusClick = () => {
     if (quantity <= 1) {
@@ -33,7 +33,7 @@ const ShopItemComponent = ({
   };
 
   useEffect(() => {
-    onItemChange(supplierKey, index, "amount", quantity);
+    onItemChange(supplierKey, index, "quantity", quantity);
   }, [quantity]);
 
   if (!item) {
@@ -59,7 +59,7 @@ const ShopItemComponent = ({
             value={quantity}
             onChange={(e) => handleInputChange(e.target.value)}
             id="outlined-number"
-            label="Amount"
+            label="Quantity"
             InputLabelProps={{
               shrink: true,
             }}
