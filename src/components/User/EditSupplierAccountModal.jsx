@@ -12,8 +12,12 @@ const EditSupplierAccountModal = () => {
   const [firstName, setFirstName] = useState(userDetails.first_name);
   const [lastName, setLastName] = useState(userDetails.last_name);
   const [email, setEmail] = useState(userDetails.email);
-  const [phonePrefix, setPhonePrefix] = useState(userDetails.phone_prefix);
-  const [phoneSuffix, setPhoneSuffix] = useState(userDetails.phone_suffix);
+  const [contactPhonePrefix, setContactPhonePrefix] = useState(
+    userDetails.phone_prefix,
+  );
+  const [contactPhoneSuffix, setContactPhoneSuffix] = useState(
+    userDetails.phone_suffix,
+  );
   const [supplierEmail, setSupplierEmail] = useState(
     userDetails.supplier_email,
   );
@@ -34,8 +38,8 @@ const EditSupplierAccountModal = () => {
       firstName &&
         lastName &&
         email &&
-        phonePrefix &&
-        phoneSuffix &&
+        contactPhonePrefix &&
+        contactPhoneSuffix &&
         supplierEmail &&
         supplierPhonePrefix &&
         supplierPhoneSuffix,
@@ -45,8 +49,8 @@ const EditSupplierAccountModal = () => {
     lastName,
     email,
     supplierEmail,
-    phonePrefix,
-    phoneSuffix,
+    contactPhonePrefix,
+    contactPhoneSuffix,
     supplierPhonePrefix,
     supplierPhoneSuffix,
   ]);
@@ -66,7 +70,7 @@ const EditSupplierAccountModal = () => {
     const contactEmailValidation = document
       .getElementById("supplier_email")
       .checkValidity();
-    const phoneValidation = phoneSuffix.length === 7;
+    const phoneValidation = contactPhoneSuffix.length === 7;
     const contactPhoneValidation = supplierPhoneSuffix.length === 7;
 
     if (
@@ -96,38 +100,34 @@ const EditSupplierAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("email", supplierEmail);
-      formData.append("phone_prefix", supplierPhonePrefix);
-      formData.append("phone_suffix", supplierPhoneSuffix);
-      formData.append("website", supplierWebsite);
-      updateSupplier(token, userDetails.supplier_id, formData).then(
-        (response) => {
-          if (response && response.success) {
-            updateUserProfile(
-              token,
-              userDetails.user_id,
-              {
-                firstName,
-                lastName,
-                email,
-                phonePrefix,
-                phoneSuffix,
-              },
-              setUserDetails,
-              true,
-            ).then((response) => {
-              if (response && response.success) {
-                handleClose();
-              } else {
-                setErrorMessages((prevState) => [...prevState, response]);
-              }
-            });
-          } else {
-            setErrorMessages((prevState) => [...prevState, response]);
-          }
+      updateUserProfile(
+        token,
+        userDetails.user_id,
+        {
+          email: email,
+          first_name: firstName,
+          last_name: lastName,
+          supplieruserprofile: {
+            contact_phone_prefix: contactPhonePrefix,
+            contact_phone_suffix: contactPhoneSuffix,
+          },
+          supplier_data: {
+            supplier_id: userDetails.supplier_id,
+            email: supplierEmail,
+            phone_prefix: supplierPhonePrefix,
+            phone_suffix: supplierPhoneSuffix,
+            website: supplierWebsite,
+          },
         },
-      );
+        setUserDetails,
+        true,
+      ).then((response) => {
+        if (response && response.success) {
+          handleClose();
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
+        }
+      });
     }
   };
 
@@ -169,8 +169,8 @@ const EditSupplierAccountModal = () => {
             />
             <label htmlFor="phone">Phone</label>
             <select
-              value={phonePrefix}
-              onChange={(e) => setPhonePrefix(e.target.value)}
+              value={contactPhonePrefix}
+              onChange={(e) => setContactPhonePrefix(e.target.value)}
             >
               {PHONE_PREFIX_CHOICES.map((choice, index) => (
                 <option key={index} value={choice.value}>
@@ -180,10 +180,10 @@ const EditSupplierAccountModal = () => {
             </select>
             <input
               id="phone"
-              onChange={(e) => setPhoneSuffix(e.target.value)}
+              onChange={(e) => setContactPhoneSuffix(e.target.value)}
               type="text"
               placeholder="Contact Phone"
-              value={phoneSuffix}
+              value={contactPhoneSuffix}
               onKeyPress={(e) => {
                 if (e.key.match(/[^0-9]/)) {
                   e.preventDefault();

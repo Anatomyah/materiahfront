@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 import LoginPage from "./pages/User/LoginPage";
-import TopNavBar from "./components/Header/TopNavbar";
-import SiteRoutes from "./components/SiteRoutes";
+import TopNavBar from "./components/Navigation/TopNavbar";
+import SiteRoutes from "./components/Navigation/SiteRoutes";
 import { ToastContainer } from "react-toastify";
 import {
   createBeforeUnloadHandler,

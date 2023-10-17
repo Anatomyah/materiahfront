@@ -120,34 +120,11 @@ export const updateUserProfile = async (
   userId,
   updatedData,
   setUserDetails,
-  isSupplier = false,
 ) => {
-  let updatedUserData;
-  if (!isSupplier) {
-    updatedUserData = {
-      email: updatedData.email,
-      first_name: updatedData.firstName,
-      last_name: updatedData.lastName,
-      userprofile: {
-        phone_prefix: updatedData.phonePrefix,
-        phone_suffix: updatedData.phoneSuffix,
-      },
-    };
-  } else {
-    updatedUserData = {
-      email: updatedData.email,
-      first_name: updatedData.firstName,
-      last_name: updatedData.lastName,
-      supplieruserprofile: {
-        contact_phone_prefix: updatedData.contactPhonePrefix,
-        contact_phone_suffix: updatedData.contactPhoneSuffix,
-      },
-    };
-  }
   try {
     const response = await axios.patch(
       `${BACKEND_URL}users/${userId}/`,
-      updatedUserData,
+      updatedData,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -172,7 +149,7 @@ export const getSupplierProducts = async (
 ) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}products/?page_num=${page}&catalogue_view=true`,
+      `${BACKEND_URL}products/?page_num=${page}`,
       {
         headers: {
           Authorization: `Token ${token}`,

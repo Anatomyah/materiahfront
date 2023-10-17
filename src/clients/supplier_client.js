@@ -35,10 +35,13 @@ export const updateSupplier = async (
         },
       },
     );
-    setSupplier(response.data);
+    if (setSupplier) {
+      setSupplier(response.data);
+    }
     console.log(response.data);
     return { success: true };
   } catch (error) {
+    console.log(error);
     console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()

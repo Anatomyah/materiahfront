@@ -71,7 +71,6 @@ const SignupModal = () => {
       formData.append("first_name", firstName);
       formData.append("last_name", lastName);
       formData.append("password", password);
-      formData.append("confirm_password", confirmPassword);
       formData.append("phone_prefix", phonePrefix);
       formData.append("phone_suffix", phoneSuffix);
 

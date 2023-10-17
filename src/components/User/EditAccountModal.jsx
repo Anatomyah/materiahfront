@@ -52,11 +52,13 @@ const EditAccountModal = () => {
         token,
         userDetails.user_id,
         {
-          firstName,
-          lastName,
-          email,
-          phonePrefix,
-          phoneSuffix,
+          email: email,
+          first_name: firstName,
+          last_name: lastName,
+          userprofile: {
+            phone_prefix: phonePrefix,
+            phone_suffix: phoneSuffix,
+          },
         },
         setUserDetails,
       ).then((response) => {
