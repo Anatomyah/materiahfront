@@ -26,6 +26,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
+
   const fetchQuote = (quoteId) => {
     getQuoteDetails(token, quoteId, setRelatedQuoteObj).then((response) => {
       if (response && !response.success) {
@@ -56,7 +57,9 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
 
   useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
-    setIsFilled(relatedQuoteObj && arrivalDate && itemsValidation);
+    setIsFilled(
+      relatedQuoteObj && arrivalDate && receivedBy && itemsValidation,
+    );
   }, [relatedQuoteObj, arrivalDate, receivedBy, items]);
 
   const updateItem = (index, field, value) => {

@@ -3,3 +3,4 @@
 // todo - change date input to a datepicker component
 // todo - set up react-pdf
 // todo - change form data to a JSON where no file
+// todo - reset modal
