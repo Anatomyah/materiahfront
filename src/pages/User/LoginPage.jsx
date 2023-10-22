@@ -11,12 +11,12 @@ const LoginPage = () => {
   const [loginError, setLoginError] = useState(false);
   const nav = useNavigate();
   const {
-    token,
     setToken,
     rememberMe,
     setRememberMe,
     setUserDetails,
     setIsSupplier,
+    setNotifications,
   } = useContext(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,11 +25,11 @@ const LoginPage = () => {
       setToken,
       setUserDetails,
       setIsSupplier,
+      setNotifications,
       rememberMe,
     ).then((response) => {
       if (response && response.success) {
         setLoginError(false);
-        console.log(token);
         nav("/");
       } else {
         setLoginError(true);

@@ -4,6 +4,7 @@ export const initializeApp = async (
   setRememberMe,
   setToken,
   setUserDetails,
+  setNotifications,
   setIsSupplier,
   setIsLoading,
 ) => {
@@ -21,6 +22,7 @@ export const initializeApp = async (
   const savedToken =
     storage.getItem("token") === "null" ? null : storage.getItem("token");
   const savedUserDetails = JSON.parse(storage.getItem("userDetails"));
+  const savedNotifications = JSON.parse(storage.getItem("notifications"));
   const savedIsSupplier = storage.getItem("isSupplier") === "true";
 
   if (savedToken) {
@@ -33,6 +35,7 @@ export const initializeApp = async (
     } else {
       setToken(savedToken);
       setUserDetails(savedUserDetails);
+      setNotifications(savedNotifications);
       setIsSupplier(savedIsSupplier);
     }
   }
@@ -44,6 +47,7 @@ export const createBeforeUnloadHandler = (
   storageType,
   token,
   userDetails,
+  notifications,
   isSupplier,
   rememberMe,
 ) => {
@@ -53,15 +57,9 @@ export const createBeforeUnloadHandler = (
 
     storage.setItem("token", token);
     storage.setItem("userDetails", JSON.stringify(userDetails));
+    storage.setItem("notifications", JSON.stringify(notifications));
     storage.setItem("isSupplier", String(isSupplier));
     storage.setItem("rememberMe", String(rememberMe));
-
-    console.log({
-      token,
-      userDetails,
-      isSupplier,
-      rememberMe,
-    });
   };
 };
 

@@ -31,11 +31,30 @@ export const signup = async (userData) => {
   }
 };
 
+export const fetchNotifications = async (token, setNotifications) => {
+  try {
+    const res = await axios.get(`${BACKEND_URL}products/serve_notifications`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    console.log(res.data);
+    setNotifications(res.data);
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
 export const login = async (
   credentials,
   setToken,
   setUserDetails,
   setIsSupplier,
+  setNotifications,
   rememberMe,
 ) => {
   try {
@@ -52,12 +71,15 @@ export const login = async (
     if (res.status === 200 && res.data) {
       setToken(res.data.token);
       setUserDetails(res.data.user_details);
+      setNotifications(res.data.notifications);
       if (res.data.user_details.is_supplier) {
         setIsSupplier(true);
       }
+
       let storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", res.data.token);
       storage.setItem("userDetails", JSON.stringify(res.data.user_details));
+      storage.setItem("notifications", JSON.stringify(res.data.notifications));
       storage.setItem("isSupplier", String(res.data.user_details.is_supplier));
       storage.setItem("rememberMe", String(rememberMe));
     }

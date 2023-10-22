@@ -35,12 +35,36 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     });
   };
 
+  const resetModal = () => {
+    setRelatedQuoteObj(null);
+    setSupplier("");
+    setOpenQuotesSelectList([]);
+    setSelectedQuoteOption("");
+    setArrivalDate(new Date().toISOString().split("T")[0]);
+    setItems([]);
+    setOrderFile("");
+    setReceivedBy("");
+  };
+
   useEffect(() => {
     getOpenQuotesSelectList(token, setOpenQuotesSelectList).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
+    return () => {
+      setRelatedQuoteObj(null);
+      setSupplier("");
+      setOpenQuotesSelectList([]);
+      setSelectedQuoteOption("");
+      setArrivalDate(new Date().toISOString().split("T")[0]);
+      setItems([]);
+      setOrderFile("");
+      setReceivedBy("");
+      setShowModal(false);
+      setIsFilled(null);
+      setErrorMessages([]);
+    };
   }, []);
 
   useEffect(() => {
@@ -96,6 +120,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
       if (response && response.success) {
         onSuccessfulCreate();
         handleClose();
+        resetModal();
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }

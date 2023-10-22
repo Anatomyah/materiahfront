@@ -17,6 +17,7 @@ function App() {
   const [userDetails, setUserDetails] = useState({});
   const [isSupplier, setIsSupplier] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [cart, setCart] = useState([]);
   const [cartCount, setCartCount] = useState();
 
@@ -26,6 +27,7 @@ function App() {
         setRememberMe,
         setToken,
         setUserDetails,
+        setNotifications,
         setIsSupplier,
         setIsLoading,
       );
@@ -38,6 +40,7 @@ function App() {
       storageType,
       token,
       userDetails,
+      notifications,
       isSupplier,
       rememberMe,
     );
@@ -46,7 +49,7 @@ function App() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [token, userDetails, isSupplier, rememberMe]);
+  }, [token, userDetails, notifications, isSupplier, rememberMe]);
 
   useEffect(() => {
     if (cart.length === 0) {
@@ -79,6 +82,8 @@ function App() {
           setUserDetails,
           isSupplier,
           setIsSupplier,
+          notifications,
+          setNotifications,
         }}
       >
         <CartAppContext.Provider
