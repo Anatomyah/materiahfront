@@ -46,17 +46,15 @@ const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("website", websiteUrl);
-      formData.append(
-        "suppliers",
-        relatedSuppliers.map((supplier) => supplier.value).join(","),
-      );
+      const updatedData = {
+        name: name,
+        website: websiteUrl,
+        suppliers: relatedSuppliers.map((supplier) => supplier.value).join(","),
+      };
       updateManufacturer(
         token,
         manufacturerObj.id,
-        formData,
+        updatedData,
         onSuccessfulUpdate,
       ).then((response) => {
         if (response && response.success) {
@@ -73,6 +71,7 @@ const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
     setIsFilled(null);
     setShowModal(false);
   };
+
   const handleShow = () => setShowModal(true);
 
   if (!supplierList) {

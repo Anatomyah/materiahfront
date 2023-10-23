@@ -79,28 +79,29 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("name", supplierName);
-      formData.append("website", websiteUrl);
-      formData.append("email", email);
-      formData.append("phone_prefix", phonePrefix);
-      formData.append("phone_suffix", phoneSuffix);
-      formData.append(
-        "manufacturers",
-        relatedManufacturers
+      const updatedData = {
+        name: supplierName,
+        website: websiteUrl,
+        email: email,
+        phone_prefix: phonePrefix,
+        phone_suffix: phoneSuffix,
+        manufacturers: relatedManufacturers
           .map((manufacturer) => manufacturer.value)
           .join(","),
-      );
+      };
 
-      updateSupplier(token, supplierObj.id, formData, onSuccessfulUpdate).then(
-        (response) => {
-          if (response && response.success) {
-            handleClose();
-          } else {
-            setErrorMessages((prevState) => [...prevState, response]);
-          }
-        },
-      );
+      updateSupplier(
+        token,
+        supplierObj.id,
+        updatedData,
+        onSuccessfulUpdate,
+      ).then((response) => {
+        if (response && response.success) {
+          handleClose();
+        } else {
+          setErrorMessages((prevState) => [...prevState, response]);
+        }
+      });
     }
   }
 

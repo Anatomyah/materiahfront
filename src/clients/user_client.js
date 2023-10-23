@@ -19,7 +19,7 @@ export const signup = async (userData) => {
     console.log(userData);
     await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
     return { success: true };
@@ -49,14 +49,14 @@ export const fetchNotifications = async (token, setNotifications) => {
   }
 };
 
-export const login = async (
+export const login = async ({
   credentials,
   setToken,
   setUserDetails,
-  setIsSupplier,
-  setNotifications,
-  rememberMe,
-) => {
+  setIsSupplier = () => {},
+  setNotifications = () => {},
+  rememberMe = false,
+}) => {
   try {
     const userData = {
       username: credentials.username,
@@ -85,6 +85,7 @@ export const login = async (
     }
     return { success: true };
   } catch (error) {
+    console.error(error);
     console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()
@@ -156,6 +157,8 @@ export const updateUserProfile = async (
     setUserDetails(response.data);
     return { success: true };
   } catch (error) {
+    console.error(error);
+    console.error(error.response);
     console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()

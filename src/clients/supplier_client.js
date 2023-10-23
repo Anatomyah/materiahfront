@@ -6,7 +6,6 @@ export const createSupplier = async (token, supplierData) => {
     await axios.post(`${BACKEND_URL}suppliers/`, supplierData, {
       headers: {
         Authorization: `Token ${token}`,
-        "Content-Type": "multipart/form-data",
       },
     });
     return { success: true };
@@ -31,7 +30,6 @@ export const updateSupplier = async (
       {
         headers: {
           Authorization: `Token ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       },
     );

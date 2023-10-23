@@ -7,9 +7,8 @@ import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 
 const SignupModal = () => {
-  const { setToken, setUserDetails } = useContext(AppContext);
+  const { setToken, setUserDetails, setNotifications } = useContext(AppContext);
   const nav = useNavigate();
-  const [showModal, setShowModal] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -18,6 +17,7 @@ const SignupModal = () => {
   const [phoneSuffix, setPhoneSuffix] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
@@ -40,6 +40,25 @@ const SignupModal = () => {
     password,
     confirmPassword,
   ]);
+
+  const handleClose = () => {
+    setErrorMessages([]);
+    setIsFilled(null);
+    setShowModal(false);
+  };
+
+  const resetModal = () => {
+    setUsername("");
+    setEmail("");
+    setFirstName("");
+    setLastName("");
+    setPhonePrefix("050");
+    setPhoneSuffix("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleShow = () => setShowModal(true);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,40 +84,38 @@ const SignupModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("username", username);
-      formData.append("email", email);
-      formData.append("first_name", firstName);
-      formData.append("last_name", lastName);
-      formData.append("password", password);
-      formData.append("phone_prefix", phonePrefix);
-      formData.append("phone_suffix", phoneSuffix);
-
-      signup(formData).then((response) => {
+      const userData = {
+        username: username,
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        password: password,
+        userprofile: {
+          phone_prefix: phonePrefix,
+          phone_suffix: phoneSuffix,
+        },
+      };
+      signup(userData).then((response) => {
         if (response && response.success) {
-          login({ username, password }, setToken, setUserDetails).then(
-            (response) => {
-              if (response && response.success) {
-                handleClose();
-                nav("/");
-              } else {
-                setErrorMessages((prevState) => [...prevState, response]);
-              }
-            },
-          );
+          login({
+            credentials: { username: username, password: password },
+            setToken: setToken,
+            setUserDetails: setUserDetails,
+            setNotifications: setNotifications,
+          }).then((response) => {
+            if (response && response.success) {
+              handleClose();
+              nav("/");
+            } else {
+              setErrorMessages((prevState) => [...prevState, response]);
+            }
+          });
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }
   };
-
-  const handleClose = () => {
-    setErrorMessages([]);
-    setIsFilled(null);
-    setShowModal(false);
-  };
-  const handleShow = () => setShowModal(true);
 
   return (
     <>
@@ -183,6 +200,7 @@ const SignupModal = () => {
               placeholder="Confirm password"
               value={confirmPassword}
             />
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

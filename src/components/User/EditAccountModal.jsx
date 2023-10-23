@@ -48,18 +48,19 @@ const EditAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
+      const updatedData = {
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        userprofile: {
+          phone_prefix: phonePrefix,
+          phone_suffix: phoneSuffix,
+        },
+      };
       updateUserProfile(
         token,
         userDetails.user_id,
-        {
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          userprofile: {
-            phone_prefix: phonePrefix,
-            phone_suffix: phoneSuffix,
-          },
-        },
+        updatedData,
         setUserDetails,
       ).then((response) => {
         if (response && response.success) {

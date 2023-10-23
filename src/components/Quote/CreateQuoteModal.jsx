@@ -13,8 +13,8 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const fileInput = useRef("");
   const [supplier, setSupplier] = useState("");
   const [supplierSelectList, setSupplierSelectList] = useState([]);
-  const [productSelectList, setProductSelectList] = useState();
-  const [quoteFile, setQuoteFile] = useState();
+  const [productSelectList, setProductSelectList] = useState([]);
+  const [quoteFile, setQuoteFile] = useState("");
   const [items, setItems] = useState([
     { product: "", quantity: "", price: "" },
   ]);
@@ -52,6 +52,15 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
     setIsFilled(null);
     setShowModal(false);
   };
+
+  const resetModal = () => {
+    setSupplier("");
+    setSupplierSelectList([]);
+    setProductSelectList([]);
+    setQuoteFile("");
+    setItems([{ product: "", quantity: "", price: "" }]);
+  };
+
   const handleShow = () => setShowModal(true);
 
   const handleFileChange = (e) => {
@@ -95,6 +104,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
       if (response && response.success) {
         onSuccessfulCreate();
         handleClose();
+        resetModal();
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
@@ -186,6 +196,7 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
             ) : (
               <span>Choose a supplier to view it's related products</span>
             )}
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

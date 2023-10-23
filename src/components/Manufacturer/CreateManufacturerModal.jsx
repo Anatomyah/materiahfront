@@ -24,10 +24,24 @@ const CreateManufacturerModal = ({ onSuccessfulCreate }) => {
       }
     });
   }, []);
-
   useEffect(() => {
     setIsFilled(name && websiteUrl && relatedSuppliers);
   }, [name, websiteUrl, relatedSuppliers]);
+
+  const handleClose = () => {
+    setErrorMessages([]);
+    setIsFilled(null);
+    setShowModal(false);
+  };
+
+  const resetModal = () => {
+    setName("");
+    setWebsiteUrl("");
+    setRelatedSuppliers([]);
+    setSupplierList([]);
+  };
+
+  const handleShow = () => setShowModal(true);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -41,30 +55,23 @@ const CreateManufacturerModal = ({ onSuccessfulCreate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("website", websiteUrl);
-      formData.append(
-        "suppliers",
-        relatedSuppliers.map((supplier) => supplier.value).join(","),
-      );
-      createManufacturer(token, formData).then((response) => {
+      const manufacturerData = {
+        name: name,
+        website: websiteUrl,
+        suppliers: relatedSuppliers.map((supplier) => supplier.value).join(","),
+      };
+
+      createManufacturer(token, manufacturerData).then((response) => {
         if (response && response.success) {
           onSuccessfulCreate();
           handleClose();
+          resetModal();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }
   }
-
-  const handleClose = () => {
-    setErrorMessages([]);
-    setIsFilled(null);
-    setShowModal(false);
-  };
-  const handleShow = () => setShowModal(true);
 
   if (!supplierList) {
     return "Loading...";
@@ -102,6 +109,7 @@ const CreateManufacturerModal = ({ onSuccessfulCreate }) => {
               setSelectedValues={setRelatedSuppliers}
               placeholder="Suppliers"
             />
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

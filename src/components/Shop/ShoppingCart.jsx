@@ -65,7 +65,6 @@ const ShoppingCart = () => {
       JSON.parse(JSON.stringify(groupedCart)),
       ["name", "cat_num", "image", "supplier"],
     );
-    console.log(finalCart);
 
     createQuoteFromCart(token, finalCart).then((response) => {
       if (response && response.success) {

@@ -66,7 +66,7 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
       status: item.status,
       issue_detail: item.issue_detail,
     }));
-    console.log("final", finalItems);
+
     const formData = new FormData();
     formData.append("quote", orderObj.quote.id);
     formData.append("arrival_date", arrivalDate);

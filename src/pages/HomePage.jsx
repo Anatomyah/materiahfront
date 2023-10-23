@@ -4,7 +4,6 @@ import { AppContext } from "../App";
 const HomePage = () => {
   const { notifications } = useContext(AppContext);
 
-  console.log(typeof notifications, notifications);
   return (
     <div>
       <h1>HOME</h1>

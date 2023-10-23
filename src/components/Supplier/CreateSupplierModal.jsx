@@ -47,6 +47,24 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
     relatedManufacturers,
   ]);
 
+  const handleClose = () => {
+    setErrorMessages([]);
+    setIsFilled(null);
+    setShowModal(false);
+  };
+
+  const resetModal = () => {
+    setSupplierName("");
+    setWebsiteUrl("");
+    setEmail("");
+    setPhoneSuffix("050");
+    setPhoneSuffix("");
+    setRelatedManufacturers([]);
+    setManufacturerList([]);
+  };
+
+  const handleShow = () => setShowModal(true);
+
   function handleSubmit(e) {
     e.preventDefault();
     setErrorMessages([]);
@@ -74,35 +92,28 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const formData = new FormData();
-      formData.append("name", supplierName);
-      formData.append("website", websiteUrl);
-      formData.append("email", email);
-      formData.append("phone_prefix", phonePrefix);
-      formData.append("phone_suffix", phoneSuffix);
-      formData.append(
-        "manufacturers",
-        relatedManufacturers
+      const supplierData = {
+        name: supplierName,
+        website: websiteUrl,
+        email: email,
+        phone_prefix: phonePrefix,
+        phone_suffix: phoneSuffix,
+        manufacturers: relatedManufacturers
           .map((manufacturer) => manufacturer.value)
           .join(","),
-      );
-      createSupplier(token, formData).then((response) => {
+      };
+
+      createSupplier(token, supplierData).then((response) => {
         if (response && response.success) {
           onSuccessfulCreate();
           handleClose();
+          resetModal();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }
   }
-
-  const handleClose = () => {
-    setErrorMessages([]);
-    setIsFilled(null);
-    setShowModal(false);
-  };
-  const handleShow = () => setShowModal(true);
 
   if (!manufacturerList) {
     return "Loading...";
@@ -169,6 +180,7 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
               setSelectedValues={setRelatedManufacturers}
               placeholder="Manufacturers"
             />
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

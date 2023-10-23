@@ -21,8 +21,13 @@ export const initializeApp = async (
 
   const savedToken =
     storage.getItem("token") === "null" ? null : storage.getItem("token");
+
   const savedUserDetails = JSON.parse(storage.getItem("userDetails"));
-  const savedNotifications = JSON.parse(storage.getItem("notifications"));
+  const savedNotifications =
+    storage.getItem("notifications") === "undefined"
+      ? null
+      : JSON.parse(storage.getItem("notifications"));
+
   const savedIsSupplier = storage.getItem("isSupplier") === "true";
 
   if (savedToken) {

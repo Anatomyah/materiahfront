@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import SupplierCatalogue from "../../components/Shop/SupplierCatalogue";
 import Nav from "react-bootstrap/Nav";
 import ProductList from "../Product/ProductList";
 

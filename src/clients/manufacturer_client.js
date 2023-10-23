@@ -6,7 +6,6 @@ export const createManufacturer = async (token, manufacturerData) => {
     await axios.post(`${BACKEND_URL}manufacturers/`, manufacturerData, {
       headers: {
         Authorization: `Token ${token}`,
-        "Content-Type": "multipart/form-data",
       },
     });
     return { success: true };
@@ -31,12 +30,10 @@ export const updateManufacturer = async (
       {
         headers: {
           Authorization: `Token ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       },
     );
     setManufacturer(response.data);
-    console.log(response.data);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
@@ -77,8 +74,11 @@ export const getManufacturers = async (
         },
       },
     );
-    setManufacturers(response.data.results);
-    console.log(response.data.results);
+    setManufacturers((prevManufacturers) => [
+      ...prevManufacturers,
+      ...response.data.results,
+    ]);
+    console.log("total pages", response.data.total_pages);
     setTotalPages(response.data.total_pages);
     return { success: true };
   } catch (error) {

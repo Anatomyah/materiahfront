@@ -35,17 +35,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     });
   };
 
-  const resetModal = () => {
-    setRelatedQuoteObj(null);
-    setSupplier("");
-    setOpenQuotesSelectList([]);
-    setSelectedQuoteOption("");
-    setArrivalDate(new Date().toISOString().split("T")[0]);
-    setItems([]);
-    setOrderFile("");
-    setReceivedBy("");
-  };
-
   useEffect(() => {
     getOpenQuotesSelectList(token, setOpenQuotesSelectList).then((response) => {
       if (response && !response.success) {
@@ -104,6 +93,18 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     setIsFilled(null);
     setShowModal(false);
   };
+
+  const resetModal = () => {
+    setRelatedQuoteObj(null);
+    setSupplier("");
+    setOpenQuotesSelectList([]);
+    setSelectedQuoteOption("");
+    setArrivalDate(new Date().toISOString().split("T")[0]);
+    setItems([]);
+    setOrderFile("");
+    setReceivedBy("");
+  };
+
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (e) => {
@@ -251,6 +252,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
               onChange={(e) => setReceivedBy(e.target.value)}
               value={receivedBy}
             />
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

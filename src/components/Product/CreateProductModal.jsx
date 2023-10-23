@@ -88,6 +88,31 @@ const CreateProductModal = ({ onSuccessfulCreate, refreshModal }) => {
     setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
   }
 
+  const handleClose = () => {
+    setErrorMessages([]);
+    setIsFilled(null);
+    setShowModal(false);
+  };
+
+  const resetModal = () => {
+    setProductName("");
+    setCatalogueNumber("");
+    setCategory("");
+    setMeasurementUnit("");
+    setVolume("");
+    setStorageConditions("");
+    setCurrentStock("");
+    setCurrentPrice("");
+    setProductLink("");
+    setManufacturerList(null);
+    setManufacturer("");
+    setSupplierList(null);
+    setSupplier("");
+    setImages([]);
+  };
+
+  const handleShow = () => setShowModal(true);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessages([]);
@@ -149,18 +174,13 @@ const CreateProductModal = ({ onSuccessfulCreate, refreshModal }) => {
         if (response && response.success) {
           onSuccessfulCreate();
           handleClose();
+          resetModal();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
       });
     }
   };
-  const handleClose = () => {
-    setErrorMessages([]);
-    setIsFilled(null);
-    setShowModal(false);
-  };
-  const handleShow = () => setShowModal(true);
 
   if (!manufacturerList || !supplierList) {
     return "Loading...";
@@ -336,6 +356,7 @@ const CreateProductModal = ({ onSuccessfulCreate, refreshModal }) => {
               title="Accepted formats: jpg, png, gif"
               onChange={handeFileChange}
             />
+            <button onClick={resetModal}>Reset form</button>
           </form>
           {errorMessages.length > 0 && (
             <ul>

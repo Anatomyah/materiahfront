@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import CreateProductModal from "../../components/Product/CreateProductModal";
 import TextField from "@mui/material/TextField";
 import { getSupplierSelectList } from "../../clients/supplier_client";
+import ScrollingPagination from "../../components/Generic/ScrollingPagination";
 
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const nav = useNavigate();
@@ -16,6 +17,8 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const [errorMessages, setErrorMessages] = useState([]);
   const [searchInput, setSearchInput] = useState();
   const [typingTimeout, setTypingTimeout] = useState(null);
@@ -38,6 +41,12 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
+
+    if (currentPage >= totalPages) {
+      setHasMore(false);
+    } else {
+      setHasMore(true);
+    }
   };
 
   useEffect(() => {
@@ -66,9 +75,9 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     nav(`/product-details/${product.id}`, { state });
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  // const handlePageChange = (page) => {
+  //   setCurrentPage(page);
+  // };
 
   if (!productsList) {
     return "Loading...";
@@ -97,26 +106,48 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         ))}
       </select>
       <button onClick={() => setSupplier("")}>Reset Supplier</button>
-      {!productsList.length
-        ? `No products related to this supplier`
-        : productsList.map((product) => (
-            <div
-              key={product.id}
-              className="text-decoration-underline text-primary"
-              style={{ cursor: "pointer" }}
-              onClick={() => goToProductDetails(product)}
-            >
-              {product.images.length > 0 && (
-                <img
-                  src={product.images[0].image}
-                  alt={`product-${product.cat_num}-image-${product.images[0].id}`}
-                  width="200"
-                />
-              )}
-              <h1>{product.cat_num}</h1>
-              <h1>{product.name}</h1>
-            </div>
-          ))}
+      {/*{!productsList.length*/}
+      {/*  ? `No products related to this supplier`*/}
+      {/*  : productsList.map((product) => (*/}
+      {/*      <div*/}
+      {/*        key={product.id}*/}
+      {/*        className="text-decoration-underline text-primary"*/}
+      {/*        style={{ cursor: "pointer" }}*/}
+      {/*        onClick={() => goToProductDetails(product)}*/}
+      {/*      >*/}
+      {/*        {product.images.length > 0 && (*/}
+      {/*          <img*/}
+      {/*            src={product.images[0].image}*/}
+      {/*            alt={`product-${product.cat_num}-image-${product.images[0].id}`}*/}
+      {/*            width="200"*/}
+      {/*          />*/}
+      {/*        )}*/}
+      {/*        <h1>{product.cat_num}</h1>*/}
+      {/*        <h1>{product.name}</h1>*/}
+      {/*      </div>*/}
+      {/*    ))}*/}
+      <ScrollingPagination fetchItems={fetchProducts} hasMore={hasMore}>
+        {!productsList.length
+          ? `No products related to this supplier`
+          : productsList.map((product) => (
+              <div
+                key={product.id}
+                className="text-decoration-underline text-primary"
+                style={{ cursor: "pointer" }}
+                onClick={() => goToProductDetails(product)}
+              >
+                {product.images.length > 0 && (
+                  <img
+                    src={product.images[0].image}
+                    alt={`product-${product.cat_num}-image-${product.images[0].id}`}
+                    width="200"
+                  />
+                )}
+                <h1>{product.cat_num}</h1>
+                <h1>{product.name}</h1>
+              </div>
+            ))}
+      </ScrollingPagination>
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
@@ -126,11 +157,11 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           ))}
         </ul>
       )}
-      <PaginatorComponent
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {/*<PaginatorComponent*/}
+      {/*  currentPage={currentPage}*/}
+      {/*  totalPages={totalPages}*/}
+      {/*  onPageChange={handlePageChange}*/}
+      {/*/>*/}
     </div>
   );
 };

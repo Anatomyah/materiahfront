@@ -20,14 +20,14 @@ const LoginPage = () => {
   } = useContext(AppContext);
   const handleSubmit = (e) => {
     e.preventDefault();
-    login(
-      { username, password },
-      setToken,
-      setUserDetails,
-      setIsSupplier,
-      setNotifications,
-      rememberMe,
-    ).then((response) => {
+    login({
+      credentials: { username: username, password: password },
+      setToken: setToken,
+      setUserDetails: setUserDetails,
+      setIsSupplier: setIsSupplier,
+      setNotifications: setNotifications,
+      rememberMe: rememberMe,
+    }).then((response) => {
       if (response && response.success) {
         setLoginError(false);
         nav("/");

@@ -43,6 +43,7 @@ const ManufacturersPage = () => {
 
   return (
     <div>
+      <CreateManufacturerModal onSuccessfulCreate={fetchManufacturers} />
       {manufacturers.map((manufacturer) => (
         <span
           key={manufacturer.id}
@@ -68,7 +69,6 @@ const ManufacturersPage = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      <CreateManufacturerModal onSuccessfulCreate={fetchManufacturers} />
     </div>
   );
 };

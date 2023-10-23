@@ -100,25 +100,26 @@ const EditSupplierAccountModal = () => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
+      const updatedData = {
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        supplieruserprofile: {
+          contact_phone_prefix: contactPhonePrefix,
+          contact_phone_suffix: contactPhoneSuffix,
+        },
+        supplier_data: {
+          supplier_id: userDetails.supplier_id,
+          email: supplierEmail,
+          phone_prefix: supplierPhonePrefix,
+          phone_suffix: supplierPhoneSuffix,
+          website: supplierWebsite,
+        },
+      };
       updateUserProfile(
         token,
         userDetails.user_id,
-        {
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          supplieruserprofile: {
-            contact_phone_prefix: contactPhonePrefix,
-            contact_phone_suffix: contactPhoneSuffix,
-          },
-          supplier_data: {
-            supplier_id: userDetails.supplier_id,
-            email: supplierEmail,
-            phone_prefix: supplierPhonePrefix,
-            phone_suffix: supplierPhoneSuffix,
-            website: supplierWebsite,
-          },
-        },
+        updatedData,
         setUserDetails,
         true,
       ).then((response) => {
