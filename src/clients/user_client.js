@@ -165,30 +165,3 @@ export const updateUserProfile = async (
       : "Something went wrong";
   }
 };
-
-export const getSupplierProducts = async (
-  token,
-  setSupplierCatalogue,
-  setTotalPages,
-  page = 1,
-) => {
-  try {
-    const response = await axios.get(
-      `${BACKEND_URL}products/?page_num=${page}`,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      },
-    );
-    console.log(response.data.results);
-    setSupplierCatalogue(response.data.results);
-    setTotalPages(response.data.total_pages);
-    return { success: true };
-  } catch (error) {
-    console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
-  }
-};

@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "../../pages/User/LoginPage";
 import HomePage from "../../pages/HomePage";
 import AccountPage from "../../pages/User/AccountPage";
-import SupplierCataloguePage from "../../pages/Supplier/SupplierCataloguePage";
 import ProductList from "../../pages/Product/ProductList";
 import ShopPage from "../../pages/Shop/ShopPage";
 import SuppliersPage from "../../pages/Supplier/SuppliersPage";
@@ -32,7 +31,8 @@ const SiteRoutes = () => {
           path="/supplier-catalogue"
           element={
             isSupplier ? (
-              <SupplierCataloguePage />
+              // <SupplierCataloguePage />
+              <ProductList />
             ) : (
               <Navigate to="/not-authorized" />
             )

@@ -4,39 +4,61 @@ import { AppContext } from "../../App";
 import { getSuppliers } from "../../clients/supplier_client";
 import { useNavigate } from "react-router-dom";
 import CreateSupplierModal from "../../components/Supplier/CreateSupplierModal";
+import TextField from "@mui/material/TextField";
+import InfiniteScroll from "react-infinite-scroller";
 
 const SuppliersPage = () => {
   const nav = useNavigate();
   const { token } = useContext(AppContext);
-  const [suppliers, setSuppliers] = useState();
+  const [suppliers, setSuppliers] = useState([]);
   const [errorMessages, setErrorMessages] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [searchInput, setSearchInput] = useState("");
+  const [typingTimeout, setTypingTimeout] = useState(null);
 
-  const fetchSuppliers = () => {
-    getSuppliers(token, setSuppliers, setTotalPages, currentPage).then(
-      (response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
+  const fetchSuppliers = ({ searchValue = "", nextPage = null } = {}) => {
+    getSuppliers(token, setSuppliers, {
+      searchInput: searchValue,
+      nextPage: nextPage,
+    }).then((response) => {
+      if (response && response.success) {
+        if (response.reachedEnd) {
+          setHasMore(false);
+        } else {
+          setNextPageUrl(response.nextPage);
+          setHasMore(true);
         }
-      },
-    );
+      } else {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   useEffect(() => {
-    fetchSuppliers();
-  }, [currentPage]);
+    fetchSuppliers({
+      searchValue: searchInput,
+      nextPage: null,
+    });
+  }, [searchInput]);
 
   const goToSupplierDetails = (supplier) => {
     nav(`/supplier-details/${supplier.id}`, {
       state: { supplier },
     });
   };
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+
+  const handleSearchInput = (value) => {
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    const newTimeout = setTimeout(() => {
+      setSearchInput(value);
+    }, 2000);
+    setNextPageUrl(null);
+    setTypingTimeout(newTimeout);
   };
 
-  if (!suppliers) {
+  if (!suppliers.length) {
     return "Loading...";
   }
 
@@ -45,16 +67,37 @@ const SuppliersPage = () => {
       <div>
         <CreateSupplierModal onSuccessfulCreate={fetchSuppliers} />
       </div>
-      {suppliers.map((supplier) => (
-        <span
-          key={supplier.id}
-          className="text-decoration-underline text-primary"
-          style={{ cursor: "pointer" }}
-          onClick={() => goToSupplierDetails(supplier)}
-        >
-          {supplier.name}
-        </span>
-      ))}
+      <TextField
+        id="outlined-helperText"
+        label="Free text search"
+        onChange={(e) => handleSearchInput(e.target.value)}
+      />
+      <InfiniteScroll
+        pageStart={0}
+        loadMore={() => {
+          fetchSuppliers({
+            searchValue: searchInput,
+            nextPage: nextPageUrl,
+          });
+        }}
+        hasMore={hasMore}
+        loader={
+          <div className="loader" key={0}>
+            Loading ...
+          </div>
+        }
+      >
+        {suppliers.map((supplier) => (
+          <span
+            key={supplier.id}
+            className="text-decoration-underline text-primary"
+            style={{ cursor: "pointer", minHeight: 500, display: "block" }}
+            onClick={() => goToSupplierDetails(supplier)}
+          >
+            {supplier.name}
+          </span>
+        ))}
+      </InfiniteScroll>
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
@@ -64,12 +107,6 @@ const SuppliersPage = () => {
           ))}
         </ul>
       )}
-
-      <PaginatorComponent
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
     </div>
   );
 };

@@ -60,20 +60,16 @@ export const deleteProduct = async (token, productId) => {
   }
 };
 
-export const getProducts = async (
-  token,
-  setLabInventory,
-  setTotalPages,
-  page = 1,
-  options = {},
-) => {
-  console.log(options);
+export const getProducts = async (token, setProducts, options = {}) => {
   const {
     searchInput = "",
     supplierId = "",
     supplierCatalogue = false,
+    nextPage = null,
   } = options;
-  let url = `${BACKEND_URL}products/?page_num=${page}`;
+
+  let url = nextPage ? nextPage : `${BACKEND_URL}products/?page_num=1`;
+
   if (searchInput) {
     url += `&search=${searchInput}`;
   }
@@ -84,16 +80,40 @@ export const getProducts = async (
     url += `&supplier_catalogue=${supplierCatalogue}`;
   }
 
+  console.log(url);
   try {
     const response = await axios.get(url, {
       headers: {
         Authorization: `Token ${token}`,
       },
     });
-    setLabInventory(response.data.results);
-    console.log(response.data.results);
-    setTotalPages(response.data.total_pages);
-    return { success: true };
+
+    console.log(response.data);
+
+    const nextCursor = response.data.next;
+
+    if (!nextCursor) {
+      if (nextPage) {
+        setProducts((prevManufacturers) => [
+          ...prevManufacturers,
+          ...response.data.results,
+        ]);
+      } else {
+        setProducts(response.data.results);
+      }
+      return { success: true, reachedEnd: true };
+    }
+
+    if (!nextPage) {
+      setProducts(response.data.results);
+    } else {
+      setProducts((prevProducts) => [
+        ...prevProducts,
+        ...response.data.results,
+      ]);
+    }
+
+    return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
     return error.response

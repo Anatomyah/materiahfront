@@ -1,24 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { getProducts } from "../../clients/product_client";
 import { AppContext } from "../../App";
-import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { useNavigate } from "react-router-dom";
 import CreateProductModal from "../../components/Product/CreateProductModal";
 import TextField from "@mui/material/TextField";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import ScrollingPagination from "../../components/Generic/ScrollingPagination";
+import InfiniteScroll from "react-infinite-scroller";
 
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const nav = useNavigate();
-  const { token } = useContext(AppContext);
-  const [productsList, setProductsList] = useState(null);
+  const { token, isSupplier } = useContext(AppContext);
+  const [products, setProducts] = useState([]);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState("");
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-
   const [errorMessages, setErrorMessages] = useState([]);
   const [searchInput, setSearchInput] = useState();
   const [typingTimeout, setTypingTimeout] = useState(null);
@@ -31,22 +27,28 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     });
   }, []);
 
-  const fetchProducts = ({ searchValue = "", supplierId = "" } = {}) => {
-    getProducts(token, setProductsList, setTotalPages, currentPage, {
+  const fetchProducts = ({
+    searchValue = "",
+    supplierId = "",
+    nextPage = null,
+  } = {}) => {
+    getProducts(token, setProducts, {
       searchInput: searchValue,
       supplierId: supplierId,
       supplierCatalogue: isCatalogueView,
+      nextPage: nextPage,
     }).then((response) => {
-      if (response && !response.success) {
+      if (response && response.success) {
+        if (response.reachedEnd) {
+          setHasMore(false);
+        } else {
+          setNextPageUrl(response.nextPage);
+          setHasMore(true);
+        }
+      } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
-
-    if (currentPage >= totalPages) {
-      setHasMore(false);
-    } else {
-      setHasMore(true);
-    }
   };
 
   useEffect(() => {
@@ -54,8 +56,9 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
       supplierId: supplier,
       searchValue: searchInput,
       supplierCatalogue: isCatalogueView,
+      nextPage: null,
     });
-  }, [currentPage, supplier, searchInput]);
+  }, [supplier, searchInput]);
 
   const handleSearchInput = (value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
@@ -75,11 +78,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     nav(`/product-details/${product.id}`, { state });
   };
 
-  // const handlePageChange = (page) => {
-  //   setCurrentPage(page);
-  // };
-
-  if (!productsList) {
+  if (!products.length && !supplier) {
     return "Loading...";
   }
 
@@ -95,45 +94,51 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         label="Free text search"
         onChange={(e) => handleSearchInput(e.target.value)}
       />
-      <select value={supplier} onChange={(e) => setSupplier(e.target.value)}>
-        <option value="" disabled>
-          --Select Supplier--
-        </option>
-        {supplierSelectList.map((choice, index) => (
-          <option key={index} value={choice.value}>
-            {choice.label}
-          </option>
-        ))}
-      </select>
-      <button onClick={() => setSupplier("")}>Reset Supplier</button>
-      {/*{!productsList.length*/}
-      {/*  ? `No products related to this supplier`*/}
-      {/*  : productsList.map((product) => (*/}
-      {/*      <div*/}
-      {/*        key={product.id}*/}
-      {/*        className="text-decoration-underline text-primary"*/}
-      {/*        style={{ cursor: "pointer" }}*/}
-      {/*        onClick={() => goToProductDetails(product)}*/}
-      {/*      >*/}
-      {/*        {product.images.length > 0 && (*/}
-      {/*          <img*/}
-      {/*            src={product.images[0].image}*/}
-      {/*            alt={`product-${product.cat_num}-image-${product.images[0].id}`}*/}
-      {/*            width="200"*/}
-      {/*          />*/}
-      {/*        )}*/}
-      {/*        <h1>{product.cat_num}</h1>*/}
-      {/*        <h1>{product.name}</h1>*/}
-      {/*      </div>*/}
-      {/*    ))}*/}
-      <ScrollingPagination fetchItems={fetchProducts} hasMore={hasMore}>
-        {!productsList.length
+      {!isSupplier && (
+        <>
+          <select
+            value={supplier}
+            onChange={(e) => {
+              setNextPageUrl(null);
+              setSupplier(e.target.value);
+            }}
+          >
+            <option value="" disabled>
+              --Select Supplier--
+            </option>
+            {supplierSelectList.map((choice, index) => (
+              <option key={index} value={choice.value}>
+                {choice.label}
+              </option>
+            ))}
+          </select>
+          <button onClick={() => setSupplier("")}>Reset Supplier</button>
+        </>
+      )}
+      <InfiniteScroll
+        pageStart={0}
+        loadMore={() => {
+          fetchProducts({
+            supplierId: supplier,
+            searchValue: searchInput,
+            supplierCatalogue: isCatalogueView,
+            nextPage: nextPageUrl,
+          });
+        }}
+        hasMore={hasMore}
+        loader={
+          <div className="loader" key={0}>
+            Loading ...
+          </div>
+        }
+      >
+        {!products.length && supplier
           ? `No products related to this supplier`
-          : productsList.map((product) => (
+          : products.map((product) => (
               <div
                 key={product.id}
                 className="text-decoration-underline text-primary"
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", minHeight: 500, display: "block" }}
                 onClick={() => goToProductDetails(product)}
               >
                 {product.images.length > 0 && (
@@ -147,7 +152,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
                 <h1>{product.name}</h1>
               </div>
             ))}
-      </ScrollingPagination>
+      </InfiniteScroll>
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
@@ -157,11 +162,6 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           ))}
         </ul>
       )}
-      {/*<PaginatorComponent*/}
-      {/*  currentPage={currentPage}*/}
-      {/*  totalPages={totalPages}*/}
-      {/*  onPageChange={handlePageChange}*/}
-      {/*/>*/}
     </div>
   );
 };
