@@ -12,7 +12,7 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
-const CreateProductModal = ({ onSuccessfulCreate, refreshModal }) => {
+const CreateProductModal = ({ onSuccessfulCreate }) => {
   const { token, isSupplier, userDetails } = useContext(AppContext);
   const [productName, setProductName] = useState("");
   const [catalogueNumber, setCatalogueNumber] = useState("");
