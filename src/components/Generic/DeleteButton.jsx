@@ -3,7 +3,6 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
-import { deleteProduct } from "../../clients/product_client";
 
 const DeleteButton = ({
   objectType,
@@ -26,7 +25,9 @@ const DeleteButton = ({
     deleteFetchFunc(token, objectId).then((response) => {
       if (response && response.success) {
         handleClose();
-        nav(`/${returnLocation}`);
+        setTimeout(() => {
+          nav(`/${returnLocation}`);
+        }, 1000);
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }

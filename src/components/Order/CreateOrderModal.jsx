@@ -21,11 +21,15 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     return new Date().toISOString().split("T")[0];
   });
   const [items, setItems] = useState([]);
-  const [orderFile, setOrderFile] = useState("");
+  const [images, setImages] = useState([]);
   const [receivedBy, setReceivedBy] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
+
+  useEffect(() => {
+    console.log(relatedQuoteObj);
+  }, [relatedQuoteObj]);
 
   const fetchQuote = (quoteId) => {
     getQuoteDetails(token, quoteId, setRelatedQuoteObj).then((response) => {
@@ -41,19 +45,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });
-    return () => {
-      setRelatedQuoteObj(null);
-      setSupplier("");
-      setOpenQuotesSelectList([]);
-      setSelectedQuoteOption("");
-      setArrivalDate(new Date().toISOString().split("T")[0]);
-      setItems([]);
-      setOrderFile("");
-      setReceivedBy("");
-      setShowModal(false);
-      setIsFilled(null);
-      setErrorMessages([]);
-    };
   }, []);
 
   useEffect(() => {
@@ -62,18 +53,24 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
       setItems(() => {
         return relatedQuoteObj.items.map((item) => ({
           quote_item_id: item.id,
+          cat_num: item.product.cat_num,
           quantity: item.quantity,
+          status: "OK",
         }));
       });
     }
   }, [relatedQuoteObj]);
 
   useEffect(() => {
+    console.log(items);
+  }, [items]);
+
+  useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
     setIsFilled(
-      relatedQuoteObj && arrivalDate && receivedBy && itemsValidation,
+      relatedQuoteObj && arrivalDate && receivedBy && itemsValidation && images,
     );
-  }, [relatedQuoteObj, arrivalDate, receivedBy, items]);
+  }, [relatedQuoteObj, arrivalDate, receivedBy, items, images]);
 
   const updateItem = (index, field, value) => {
     const newItems = [...items];
@@ -81,12 +78,20 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     setItems(newItems);
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setOrderFile(selectedFile);
-    }
+  const handleFileChange = (event) => {
+    const allFiles = Array.from(event.target.files);
+
+    const newImages = allFiles.map((file) => ({
+      file,
+      id: `temp-${Date.now()}-${Math.random()}`,
+    }));
+
+    setImages((prevState) => [...prevState, ...newImages]);
   };
+
+  function handleDeleteImage(imageId) {
+    setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
+  }
 
   const handleClose = () => {
     setErrorMessages([]);
@@ -101,7 +106,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     setSelectedQuoteOption("");
     setArrivalDate(new Date().toISOString().split("T")[0]);
     setItems([]);
-    setOrderFile("");
+    setImages([]);
     setReceivedBy("");
   };
 
@@ -115,11 +120,15 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     formData.append("quote", relatedQuoteObj.id);
     formData.append("arrival_date", arrivalDate);
     formData.append("items", JSON.stringify(items));
-    formData.append("receipt_img", orderFile);
     formData.append("received_by", receivedBy);
+    images.forEach((image, index) => {
+      formData.append(`image${index + 1}`, image.file);
+    });
     createOrder(token, formData).then((response) => {
       if (response && response.success) {
-        onSuccessfulCreate();
+        setTimeout(() => {
+          onSuccessfulCreate();
+        }, 1000);
         handleClose();
         resetModal();
       } else {
@@ -229,22 +238,33 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
                 </button>
               </>
             )}
-            {orderFile && (
-              <>
-                <span>{orderFile.name}</span>
-                <a
-                  href={
-                    orderFile instanceof Blob
-                      ? URL.createObjectURL(orderFile)
-                      : orderFile
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View File
-                </a>
-              </>
-            )}
+            <div>
+              {images.map((image) => {
+                let imageUrl = image.image || URL.createObjectURL(image.file);
+                return (
+                  <div key={image.id}>
+                    <a
+                      href={imageUrl}
+                      key={image.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`order-quote-${relatedQuoteObj.id}-image-${image.id}`}
+                        width="200"
+                      />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(image.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
             <input
               type="text"
               placeholder="Received by"

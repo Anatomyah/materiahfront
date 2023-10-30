@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getQuotes } from "../../clients/quote_client";
 import { useNavigate } from "react-router-dom";
@@ -52,10 +51,6 @@ const QuotesPage = () => {
     setNextPageUrl(null);
     setTypingTimeout(newTimeout);
   };
-
-  if (!quotes.length) {
-    return "Loading...";
-  }
 
   return (
     <div>

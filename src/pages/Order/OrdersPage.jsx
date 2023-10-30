@@ -58,10 +58,6 @@ const OrdersPage = () => {
     });
   };
 
-  if (!orders.length) {
-    return "Loading...";
-  }
-
   return (
     <div>
       <CreateOrderModal onSuccessfulCreate={fetchOrders} />

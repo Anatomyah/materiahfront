@@ -53,9 +53,22 @@ const OrderDetailsComponent = () => {
       >
         Quote PDF
       </a>
-      <a href={order.receipt_img} target="_blank" rel="noopener noreferrer">
-        Receipt
-      </a>
+      <div>
+        {order.images.map((image) => (
+          <a
+            href={image.image}
+            key={image.id}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={image.image}
+              alt={`order-${order.id}-image-${image.id}`}
+              width="200"
+            />
+          </a>
+        ))}
+      </div>
       <EditOrderModal
         orderObj={order}
         onSuccessfulUpdate={setOrder}

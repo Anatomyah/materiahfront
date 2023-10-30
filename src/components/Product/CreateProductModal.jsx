@@ -73,7 +73,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     images,
   ]);
 
-  const handeFileChange = (event) => {
+  const handleFileChange = (event) => {
     const allFiles = Array.from(event.target.files);
 
     const newImages = allFiles.map((file) => ({
@@ -172,7 +172,9 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
       });
       createProduct(token, formData).then((response) => {
         if (response && response.success) {
-          onSuccessfulCreate();
+          setTimeout(() => {
+            onSuccessfulCreate();
+          }, 1000);
           handleClose();
           resetModal();
         } else {
@@ -330,11 +332,18 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                 let imageUrl = image.image || URL.createObjectURL(image.file);
                 return (
                   <div key={image.id}>
-                    <img
-                      src={imageUrl}
-                      alt={`product-${catalogueNumber}-image-${image.id}`}
-                      width="200"
-                    />
+                    <a
+                      href={imageUrl}
+                      key={image.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`product-${catalogueNumber}-image-${image.id}`}
+                        width="200"
+                      />
+                    </a>
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(image.id)}
@@ -354,7 +363,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
               accept="image/*"
               id="product_images"
               title="Accepted formats: jpg, png, gif"
-              onChange={handeFileChange}
+              onChange={handleFileChange}
             />
             <button onClick={resetModal}>Reset form</button>
           </form>

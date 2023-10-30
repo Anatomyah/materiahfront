@@ -61,10 +61,6 @@ const ManufacturersPage = () => {
     setTypingTimeout(newTimeout);
   };
 
-  if (!manufacturers.length) {
-    return "Loading...";
-  }
-
   return (
     <div>
       <CreateManufacturerModal onSuccessfulCreate={fetchManufacturers} />

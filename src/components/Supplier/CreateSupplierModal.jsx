@@ -105,7 +105,9 @@ const CreateSupplierModal = ({ onSuccessfulCreate }) => {
 
       createSupplier(token, supplierData).then((response) => {
         if (response && response.success) {
-          onSuccessfulCreate();
+          setTimeout(() => {
+            onSuccessfulCreate();
+          }, 1000);
           handleClose();
           resetModal();
         } else {

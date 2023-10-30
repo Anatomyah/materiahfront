@@ -78,10 +78,6 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     nav(`/product-details/${product.id}`, { state });
   };
 
-  if (!products.length && !supplier) {
-    return "Loading...";
-  }
-
   return (
     <div>
       {!isShopView && (

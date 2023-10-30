@@ -90,12 +90,19 @@ const ProductDetailComponent = () => {
       <h1>{product.name}</h1>
       <div>
         {product.images.map((image) => (
-          <img
+          <a
+            href={image.image}
             key={image.id}
-            src={image.image}
-            alt={`product-${product.cat_num}-image-${image.id}`}
-            width="200"
-          />
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              key={image.id}
+              src={image.image}
+              alt={`product-${product.cat_num}-image-${image.id}`}
+              width="200"
+            />
+          </a>
         ))}
       </div>
       <p>{product.cat_num}</p>

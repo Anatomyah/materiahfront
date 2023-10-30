@@ -25,11 +25,15 @@ const OrderItemComponent = ({
   );
 
   const handleCheckbox = () => {
+    if (itemFulfilled) {
+      handleReasonChange("Did not arrive");
+    } else {
+      handleReasonChange("OK");
+    }
     setItemFulfilled((prevState) => !prevState);
     handleQuantityChange(
       quoteItem ? quoteItem.quantity : item.quote_item.quantity,
     );
-    handleReasonChange("OK");
     setShowOtherReasonTextBox(false);
     if (otherReasonDetails !== "") {
       handleOtherReasonChange("");
@@ -70,6 +74,8 @@ const OrderItemComponent = ({
     onItemChange(index, "status", value);
     if (value === "Other") {
       setShowOtherReasonTextBox(true);
+    } else {
+      setShowOtherReasonTextBox(false);
     }
   };
 

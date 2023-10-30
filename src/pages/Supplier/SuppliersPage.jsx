@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import PaginatorComponent from "../../components/Generic/PaginatorComponent";
 import { AppContext } from "../../App";
 import { getSuppliers } from "../../clients/supplier_client";
 import { useNavigate } from "react-router-dom";
@@ -57,10 +56,6 @@ const SuppliersPage = () => {
     setNextPageUrl(null);
     setTypingTimeout(newTimeout);
   };
-
-  if (!suppliers.length) {
-    return "Loading...";
-  }
 
   return (
     <div>

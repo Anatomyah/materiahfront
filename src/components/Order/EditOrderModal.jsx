@@ -23,16 +23,20 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
       issue_detail: item.issue_detail,
     }));
   });
-  const [orderFile, setOrderFile] = useState(orderObj.receipt_img);
+  const [images, setImages] = useState(orderObj.images);
   const [receivedBy, setReceivedBy] = useState(orderObj.received_by);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
+    console.log(images);
+  }, [images]);
+
+  useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
-    setIsFilled(arrivalDate && itemsValidation);
-  }, [arrivalDate, receivedBy, items]);
+    setIsFilled(arrivalDate && itemsValidation && images);
+  }, [arrivalDate, receivedBy, items, images]);
 
   const updateItem = (index, field, value) => {
     const newItems = [...items];
@@ -40,12 +44,20 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
     setItems(newItems);
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setOrderFile(selectedFile);
-    }
+  const handeFileChange = (event) => {
+    const allFiles = Array.from(event.target.files);
+
+    const newImages = allFiles.map((file) => ({
+      file,
+      id: `temp-${Date.now()}-${Math.random()}`,
+    }));
+
+    setImages((prevState) => [...prevState, ...newImages]);
   };
+
+  function handleDeleteImage(imageId) {
+    setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
+  }
 
   const handleClose = () => {
     setErrorMessages([]);
@@ -67,12 +79,19 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
       issue_detail: item.issue_detail,
     }));
 
+    const imageIds = images
+      .filter((image) => !image.file)
+      .map((image) => image.id);
+
     const formData = new FormData();
     formData.append("quote", orderObj.quote.id);
     formData.append("arrival_date", arrivalDate);
     formData.append("items", JSON.stringify(finalItems));
-    formData.append("order_img", orderFile);
+    formData.append("images_to_keep", imageIds);
     formData.append("received_by", receivedBy);
+    images.forEach((image, index) => {
+      formData.append(`image${index + 1}`, image.file);
+    });
     updateOrder(token, orderObj.id, formData, onSuccessfulUpdate).then(
       (response) => {
         if (response && response.success) {
@@ -154,7 +173,7 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
                   type="file"
                   id="order_file"
                   accept="application/pdf, image/*"
-                  onChange={handleFileChange}
+                  onChange={handeFileChange}
                   style={{ display: "none" }}
                   ref={fileInput}
                 />
@@ -168,22 +187,33 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
                 </button>
               </>
             )}
-            {orderFile && (
-              <>
-                <span>{orderFile.name}</span>
-                <a
-                  href={
-                    orderFile instanceof Blob
-                      ? URL.createObjectURL(orderFile)
-                      : orderFile
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View File
-                </a>
-              </>
-            )}
+            <div>
+              {images.map((image) => {
+                let imageUrl = image.image || URL.createObjectURL(image.file);
+                return (
+                  <div key={image.id}>
+                    <a
+                      href={imageUrl}
+                      key={image.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`order-${orderObj.id}-image-${image.id}`}
+                        width="200"
+                      />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(image.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
             <input
               type="text"
               placeholder="Received by"

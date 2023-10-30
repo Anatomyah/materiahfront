@@ -102,7 +102,9 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
 
     createQuoteManually(token, formData).then((response) => {
       if (response && response.success) {
-        onSuccessfulCreate();
+        setTimeout(() => {
+          onSuccessfulCreate();
+        }, 1000);
         handleClose();
         resetModal();
       } else {

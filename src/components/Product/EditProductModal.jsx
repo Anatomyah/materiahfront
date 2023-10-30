@@ -36,8 +36,6 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
   const [isFilled, setIsFilled] = useState(true);
   const [errorMessages, setErrorMessages] = useState([]);
 
-  console.log(productObj);
-
   useEffect(() => {
     getManufacturerSelectList(token, setManufacturerList).then((response) => {
       if (response && !response.success) {
@@ -141,6 +139,10 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
+      const imageIds = images
+        .filter((image) => !image.file)
+        .map((image) => image.id);
+
       const formData = new FormData();
       formData.append("name", productName);
       formData.append("cat_num", catalogueNumber);
@@ -156,11 +158,9 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         ? productObj.supplier.id
         : supplier;
       formData.append("supplier", supplierValue);
+      formData.append("images_to_keep", imageIds);
       images.forEach((image, index) => {
         formData.append(`image${index + 1}`, image.file);
-        for (var key of formData.entries()) {
-          console.log(key[0] + ", " + key[1]);
-        }
       });
       updateProduct(token, productObj.id, formData, onSuccessfulUpdate).then(
         (response) => {
@@ -321,11 +321,18 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
                 let imageUrl = image.image || URL.createObjectURL(image.file);
                 return (
                   <div key={image.id}>
-                    <img
-                      src={imageUrl}
-                      alt={`product-${catalogueNumber}-image-${image.id}`}
-                      width="200"
-                    />
+                    <a
+                      href={imageUrl}
+                      key={image.id}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`product-${catalogueNumber}-image-${image.id}`}
+                        width="200"
+                      />
+                    </a>
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(image.id)}
