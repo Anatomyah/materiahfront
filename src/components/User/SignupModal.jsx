@@ -9,6 +9,8 @@ import * as formik from "formik";
 import * as yup from "yup";
 import { Col, Form, Row } from "react-bootstrap";
 import "font-awesome/css/font-awesome.min.css";
+import "./UserComponentStyle.css";
+import ShowPassword from "../Generic/ShowPassword";
 
 const schema = yup.object({
   username: yup
@@ -77,10 +79,6 @@ const SignupModal = () => {
   const { Formik } = formik;
   const formikRef = useRef();
   const [showPasswords, setShowPasswords] = useState(false);
-
-  const togglePassword = () => {
-    setShowPasswords(!showPasswords);
-  };
 
   const checkmarkIcon = (
     <i className="fa fa-check-circle" style={{ color: "green" }}></i>
@@ -167,11 +165,11 @@ const SignupModal = () => {
         Signup to Materiah
       </Button>
 
-      <Modal show={showModal} onHide={handleClose} size="lg">
+      <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title>Enter user details</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="d-flex flex-column align-items-center">
+        <Modal.Body className="d-flex flex-column p-4">
           <Formik
             innerRef={formikRef}
             initialValues={{
@@ -196,88 +194,94 @@ const SignupModal = () => {
               handleBlur,
               touched,
               errors,
+              setFieldTouched,
               isValid,
-              isSubmitting,
             }) => (
               <Form noValidate onSubmit={handleSubmit}>
-                <Row>
-                  <Form.Group as={Col} md="6" controlId="signupUsername">
-                    <Form.Label>Username</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="username"
-                      value={values.username}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={touched.username && !!errors.username}
-                      isValid={touched.username && !errors.username}
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.username}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} md="6" controlId="signupEmail">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="email"
-                      value={values.email}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={touched.email && !!errors.email}
-                      isValid={touched.email && !errors.email}
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.email}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
-                <Row>
-                  <Form.Group as={Col} md="6" controlId="signupFirstName">
-                    <Form.Label>First Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="firstName"
-                      value={values.firstName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={touched.firstName && !!errors.firstName}
-                      isValid={touched.firstName && !errors.firstName}
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.firstName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} md="6" controlId="signupLastName">
-                    <Form.Label>Last name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="lastName"
-                      value={values.lastName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={touched.lastName && !!errors.lastName}
-                      isValid={touched.lastName && !errors.lastName}
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.lastName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
-                <Row>
-                  <Form.Group as={Col} md="6" controlId="signupPhonePrefix">
+                <Form.Group controlId="signupUsername" className="field-margin">
+                  <Form.Label>Username</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="username"
+                    value={values.username}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("username", true)}
+                    onBlur={handleBlur}
+                    isInvalid={touched.username && !!errors.username}
+                    isValid={touched.username && !errors.username}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.username}
+                  </Form.Control.Feedback>
+                  <Form.Text className="text-muted">
+                    150 characters or fewer. Letters, digits and @.+-_ only.
+                  </Form.Text>
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId="signupEmail" className="field-margin">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("email", true)}
+                    onBlur={handleBlur}
+                    isInvalid={touched.email && !!errors.email}
+                    isValid={touched.email && !errors.email}
+                  />
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.email}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group
+                  controlId="signupFirstName"
+                  className="field-margin"
+                >
+                  <Form.Label>First Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="firstName"
+                    value={values.firstName}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("firstName", true)}
+                    onBlur={handleBlur}
+                    isInvalid={touched.firstName && !!errors.firstName}
+                    isValid={touched.firstName && !errors.firstName}
+                  />
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.firstName}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Form.Group controlId="signupLastName" className="field-margin">
+                  <Form.Label>Last name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="lastName"
+                    value={values.lastName}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("lastName", true)}
+                    onBlur={handleBlur}
+                    isInvalid={touched.lastName && !!errors.lastName}
+                    isValid={touched.lastName && !errors.lastName}
+                  />
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.lastName}
+                  </Form.Control.Feedback>
+                </Form.Group>
+                <Row className="field-margin">
+                  <Form.Group as={Col} md="3" controlId="signupPhonePrefix">
                     <Form.Label>Phone prefix</Form.Label>
                     <Form.Select
                       name="phonePrefix"
@@ -294,13 +298,14 @@ const SignupModal = () => {
                       {errors.phonePrefix}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group as={Col} md="6" controlId="signupPhoneSuffix">
+                  <Form.Group as={Col} md="9" controlId="signupPhoneSuffix">
                     <Form.Label>Phone Suffix</Form.Label>
                     <Form.Control
                       type="text"
                       name="phoneSuffix"
                       value={values.phoneSuffix}
                       onChange={handleChange}
+                      onFocus={() => setFieldTouched("phoneSuffix", true)}
                       onBlur={handleBlur}
                       isInvalid={touched.phoneSuffix && !!errors.phoneSuffix}
                       isValid={touched.phoneSuffix && !errors.phoneSuffix}
@@ -313,64 +318,71 @@ const SignupModal = () => {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Row>
-                <Row>
-                  <Form.Group as={Col} md="6" controlId="signupPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                      type={showPasswords ? "text" : "password"}
-                      name="password"
-                      value={values.password}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={touched.password && !!errors.password}
-                      isValid={touched.password && !errors.password}
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.password === "Password is required"
-                        ? errors.password
-                        : null}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} md="6" controlId="signupConfirmPassword">
-                    <Form.Label>Confirm password</Form.Label>
-                    <Form.Control
-                      type={showPasswords ? "text" : "password"}
-                      name="confirmPassword"
-                      value={values.confirmPassword}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      isInvalid={
-                        touched.confirmPassword && !!errors.confirmPassword
-                      }
-                      isValid={
-                        touched.confirmPassword && !errors.confirmPassword
-                      }
-                    />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.confirmPassword}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
-                {touched.password && (
-                  <div>
-                    <ul>
-                      {passwordRequirements.map((req) => (
-                        <li key={req.id}>
-                          {req.validate(values.password)
-                            ? checkmarkIcon
-                            : invalidIcon}{" "}
-                          {req.text}
-                        </li>
-                      ))}
-                    </ul>
+                <Form.Group controlId="signupPassword">
+                  <div className="d-flex flex-row">
+                    <Form.Label className="me-2">Password </Form.Label>
+                    <Form.Label>
+                      <ShowPassword
+                        showPassword={showPasswords}
+                        setShowPassword={setShowPasswords}
+                      />
+                    </Form.Label>
                   </div>
-                )}
+                  <Form.Control
+                    type={showPasswords ? "text" : "password"}
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("password", true)}
+                    onBlur={handleBlur}
+                    isInvalid={touched.password && !!errors.password}
+                    isValid={touched.password && !errors.password}
+                    className="field-margin"
+                  />
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.password === "Password is required"
+                      ? errors.password
+                      : null}
+                  </Form.Control.Feedback>
+                  <Form.Text className="text-muted">
+                    <div className="w-auto">
+                      <ul>
+                        {passwordRequirements.map((req) => (
+                          <li key={req.id}>
+                            {req.validate(values.password)
+                              ? checkmarkIcon
+                              : invalidIcon}{" "}
+                            {req.text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Form.Text>
+                </Form.Group>
+                <Form.Group controlId="signupConfirmPassword">
+                  <Form.Label>Confirm password</Form.Label>
+                  <Form.Control
+                    type={showPasswords ? "text" : "password"}
+                    name="confirmPassword"
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onFocus={() => setFieldTouched("confirmPassword", true)}
+                    onBlur={handleBlur}
+                    isInvalid={
+                      touched.confirmPassword && !!errors.confirmPassword
+                    }
+                    isValid={touched.confirmPassword && !errors.confirmPassword}
+                  />
+                  <Form.Control.Feedback type="valid">
+                    Looks good!
+                  </Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.confirmPassword}
+                  </Form.Control.Feedback>
+                </Form.Group>
               </Form>
             )}
           </Formik>
