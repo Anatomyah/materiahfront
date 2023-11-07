@@ -1,7 +1,7 @@
-export const BACKEND_URL = "http://localhost:8000/v1/";
+// export const BACKEND_URL = "http://localhost:8000/v1/";
 
-// export const BACKEND_URL =
-//   "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
+export const BACKEND_URL =
+  "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
 
 export const PHONE_PREFIX_CHOICES = [
   { value: "050", label: "050" },
