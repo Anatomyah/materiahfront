@@ -44,10 +44,6 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
     setItems(newItems);
   };
 
-  useEffect(() => {
-    console.log(images);
-  }, [images]);
-
   const handeFileChange = (event) => {
     const allFiles = Array.from(event.target.files);
 
@@ -208,6 +204,7 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
                 </label>
                 <input
                   type="file"
+                  multiple
                   id="order_file"
                   accept="application/pdf, image/*"
                   onChange={handeFileChange}

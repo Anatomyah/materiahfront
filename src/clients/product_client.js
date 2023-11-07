@@ -62,7 +62,7 @@ export const uploadImagesToS3 = async (presignedUrls, files) => {
         throw new Error(`File ${index} upload failed: ${response.statusText}`);
       }
     });
-    console.log(uploadStatuses);
+
     return { uploadStatuses: uploadStatuses };
   } catch (error) {
     console.error("Error uploading files:", error);

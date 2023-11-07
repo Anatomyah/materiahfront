@@ -182,7 +182,6 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
       createProduct(token, formData).then((response) => {
         if (response && response.success) {
           if (response.success && response.preSignedUrls) {
-            console.log(response);
             uploadImagesToS3(response.preSignedUrls, images).then(
               (response) => {
                 if (response && response.uploadStatuses) {

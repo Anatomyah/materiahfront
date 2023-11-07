@@ -122,7 +122,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
         id: image.id,
         type: image.file.type,
       }));
-      console.log(imageInfo);
       formData.append("images", JSON.stringify(imageInfo));
     }
 
@@ -240,6 +239,7 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
                 </label>
                 <input
                   type="file"
+                  multiple
                   id="order_file"
                   accept="application/pdf, image/*"
                   onChange={handleFileChange}

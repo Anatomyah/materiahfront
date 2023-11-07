@@ -105,7 +105,6 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
         handleClose();
         resetModal();
       } else {
-        console.log("update", response);
         setErrorMessages((prevState) => [...prevState, response]);
       }
     });

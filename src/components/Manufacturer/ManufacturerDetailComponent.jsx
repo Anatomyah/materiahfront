@@ -23,7 +23,6 @@ const ManufacturerDetailComponent = () => {
         if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
-        console.log("Initial manufacturer data fetched:", manufacturer);
       });
     }
   }, [id]);

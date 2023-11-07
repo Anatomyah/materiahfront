@@ -141,7 +141,7 @@ export const getSupplierDetails = async (
       },
     });
     setSupplierDetails(response.data);
-    console.log(response.data);
+
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
