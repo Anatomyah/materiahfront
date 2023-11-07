@@ -5,7 +5,11 @@ import { AppContext } from "../../App";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { getProductSelectList } from "../../clients/product_client";
 import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
-import { createQuoteManually } from "../../clients/quote_client";
+import {
+  createQuoteManually,
+  finalizeQuoteUploadStatus,
+  uploadQuoteFileToS3,
+} from "../../clients/quote_client";
 import CreateQuoteItemComponent from "./CreateQuoteItemComponent";
 
 const CreateQuoteModal = ({ onSuccessfulCreate }) => {
@@ -98,10 +102,34 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
     const formData = new FormData();
     formData.append("supplier", supplier);
     formData.append("items", JSON.stringify(items));
-    formData.append("quote_file", quoteFile);
+
+    if (quoteFile) {
+      formData.append("quote_file_type", quoteFile.type);
+    }
 
     createQuoteManually(token, formData).then((response) => {
       if (response && response.success) {
+        if (response.success && response.preSignedUrl && response.quoteId) {
+          uploadQuoteFileToS3(
+            response.preSignedUrl,
+            response.quoteId,
+            quoteFile,
+          ).then((response) => {
+            if (response && response.uploadStatus) {
+              finalizeQuoteUploadStatus(
+                token,
+                response.quoteId,
+                response.uploadStatus,
+              ).then((response) => {
+                if (response && !response.success) {
+                  setErrorMessages((prevState) => [...prevState, response]);
+                }
+              });
+            } else {
+              setErrorMessages((prevState) => [...prevState, response]);
+            }
+          });
+        }
         setTimeout(() => {
           onSuccessfulCreate();
         }, 1000);

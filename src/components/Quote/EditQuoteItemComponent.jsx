@@ -12,7 +12,6 @@ const EditQuoteItemComponent = ({
   const [quantity, setQuantity] = useState(item ? item.quantity : "");
   const [price, setPrice] = useState(item ? item.price : "");
 
-  console.log(item);
   const handleQuantityChange = (value) => {
     setQuantity(value);
     onItemChange(index, "quantity", value);
@@ -30,7 +29,6 @@ const EditQuoteItemComponent = ({
     setTypingTimeout(newTimeout);
   };
 
-  console.log(item);
   if (!item) {
     return <div>Loading...</div>;
   }

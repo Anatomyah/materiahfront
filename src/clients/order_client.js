@@ -1,15 +1,43 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
+  try {
+    await axios.post(
+      `${BACKEND_URL}orders/update_image_upload_status/`,
+      uploadStatuses,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
 export const createOrder = async (token, orderData) => {
   try {
-    await axios.post(`${BACKEND_URL}orders/`, orderData, {
+    const response = await axios.post(`${BACKEND_URL}orders/`, orderData, {
       headers: {
         Authorization: `Token ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
-    return { success: true };
+
+    let result = { success: true };
+
+    if (response.data.presigned_urls) {
+      result.preSignedUrls = response.data.presigned_urls;
+    }
+
+    return result;
   } catch (error) {
     console.error(error.response.data);
     return error.response
@@ -35,9 +63,16 @@ export const updateOrder = async (
         },
       },
     );
+
     setOrder(response.data);
-    console.log(response.data);
-    return { success: true };
+
+    let result = { success: true };
+
+    if (response.data.presigned_urls) {
+      result.preSignedUrls = response.data.presigned_urls;
+    }
+
+    return result;
   } catch (error) {
     console.error(error.response.data);
     return error.response
@@ -78,8 +113,6 @@ export const getOrders = async (token, setOrders, options = {}) => {
       },
     });
 
-    console.log(response.data);
-
     const nextCursor = response.data.next;
     if (!nextCursor) {
       if (nextPage) {
@@ -119,7 +152,7 @@ export const getOrderDetails = async (token, orderId, setOrderDetails) => {
       },
     });
     setOrderDetails(response.data);
-    console.log(response.data);
+
     return { success: true };
   } catch (error) {
     console.error(error.response.data);

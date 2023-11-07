@@ -18,24 +18,11 @@ const SupplierDetailComponent = () => {
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    console.log("Supplier state updated:", supplier); // <-- Add this
-  }, [supplier]);
-
-  useEffect(() => {
-    console.log("Supplier Component has mounted");
-
-    return () => {
-      console.log("Supplier Component will unmount");
-    };
-  }, []);
-
-  useEffect(() => {
     if (!supplier) {
       getSupplierDetails(token, id, setSupplier).then((response) => {
         if (response && !response.success) {
           setErrorMessages((prevState) => [...prevState, response]);
         }
-        console.log("Initial supplier data fetched:", supplier);
       });
     }
   }, [id]);

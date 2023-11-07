@@ -36,7 +36,6 @@ const QuotesPage = () => {
   }, [searchInput]);
 
   const goToQuoteDetails = (quote) => {
-    console.log(quote);
     nav(`/quote-details/${quote.id}`, {
       state: { quote },
     });

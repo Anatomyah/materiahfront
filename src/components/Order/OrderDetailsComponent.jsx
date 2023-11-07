@@ -46,23 +46,19 @@ const OrderDetailsComponent = () => {
         </div>
       ))}
       <Link to={`/quote-details/${order.quote.id}`}>{order.quote.id}</Link>
-      <a
-        href={order.quote.quote_file}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <a href={order.quote.quote_url} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
       <div>
         {order.images.map((image) => (
           <a
-            href={image.image}
+            href={image.image_url}
             key={image.id}
             target="_blank"
             rel="noopener noreferrer"
           >
             <img
-              src={image.image}
+              src={image.image_url}
               alt={`order-${order.id}-image-${image.id}`}
               width="200"
             />

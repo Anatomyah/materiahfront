@@ -94,14 +94,6 @@ export const allOrderItemsFilled = (items) => {
   });
 };
 
-export const valueIsPositive = (value) => {
-  return value > 0;
-};
-
-export const valueIsWhole = (value) => {
-  return Number.isInteger(Number(value));
-};
-
 export function deepDeleteProperties(obj, propsToDelete) {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {

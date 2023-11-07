@@ -1,18 +1,93 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const finalizeProductImageUploadStatus = async (
+  token,
+  uploadStatuses,
+) => {
+  try {
+    await axios.post(
+      `${BACKEND_URL}products/update_image_upload_status/`,
+      uploadStatuses,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const uploadImagesToS3 = async (presignedUrls, files) => {
+  if (presignedUrls.length !== files.length) {
+    throw new Error(
+      "The number of presigned URLs must match the number of files.",
+    );
+  }
+
+  const uploadStatuses = {};
+  const uploadPromises = presignedUrls.map((presignedPostData) => {
+    const file = files.find((f) => f.id === presignedPostData.frontend_id);
+    const formData = new FormData();
+
+    Object.keys(presignedPostData.fields).forEach((key) => {
+      if (key !== "image_id") {
+        formData.append(key, presignedPostData.fields[key]);
+      }
+    });
+
+    formData.append("file", file.file);
+
+    return axios.post(presignedPostData.url, formData).then((response) => {
+      uploadStatuses[presignedPostData.image_id] =
+        response.status >= 200 && response.status < 300
+          ? "completed"
+          : "failed";
+      return response;
+    });
+  });
+
+  try {
+    const responses = await Promise.all(uploadPromises);
+
+    responses.forEach((response, index) => {
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`File ${index} upload failed: ${response.statusText}`);
+      }
+    });
+    console.log(uploadStatuses);
+    return { uploadStatuses: uploadStatuses };
+  } catch (error) {
+    console.error("Error uploading files:", error);
+    return { error: error.message || "Something went wrong" };
+  }
+};
+
 export const createProduct = async (token, productData) => {
   try {
-    await axios.post(`${BACKEND_URL}products/`, productData, {
+    const response = await axios.post(`${BACKEND_URL}products/`, productData, {
       headers: {
         Authorization: `Token ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
-    return { success: true };
+
+    let result = { success: true };
+
+    if (response.data.presigned_urls) {
+      result.preSignedUrls = response.data.presigned_urls;
+    }
+
+    return result;
   } catch (error) {
-    console.error(error.response.data);
-    alert(error);
+    console.error(error.response);
     return error.response ? error.response.data.detail : "Something went wrong";
   }
 };
@@ -35,7 +110,13 @@ export const updateProduct = async (
       },
     );
     setProduct(response.data);
-    return { success: true };
+    let result = { success: true };
+
+    if (response.data.presigned_urls) {
+      result.preSignedUrls = response.data.presigned_urls;
+    }
+
+    return result;
   } catch (error) {
     console.error(error.response.data);
     return error.response
@@ -80,15 +161,12 @@ export const getProducts = async (token, setProducts, options = {}) => {
     url += `&supplier_catalogue=${supplierCatalogue}`;
   }
 
-  console.log(url);
   try {
     const response = await axios.get(url, {
       headers: {
         Authorization: `Token ${token}`,
       },
     });
-
-    console.log(response.data);
 
     const nextCursor = response.data.next;
 
@@ -133,8 +211,9 @@ export const getProductDetails = async (
         Authorization: `Token ${token}`,
       },
     });
+
     setProductDetails(response.data);
-    console.log(response.data);
+
     return { success: true };
   } catch (error) {
     console.error(error.response.data);

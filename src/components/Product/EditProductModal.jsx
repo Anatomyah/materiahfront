@@ -9,7 +9,11 @@ import {
 } from "../../config_and_helpers/config";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import { updateProduct } from "../../clients/product_client";
+import {
+  finalizeProductImageUploadStatus,
+  updateProduct,
+  uploadImagesToS3,
+} from "../../clients/product_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
 const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
@@ -139,9 +143,11 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         return [...prevState, ...newErrorMessages];
       });
     } else {
-      const imageIds = images
-        .filter((image) => !image.file)
-        .map((image) => image.id);
+      const imagesToDelete = productObj.images
+        .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
+        .map((obj) => obj.id);
+
+      const newImages = images.filter((image) => image.file);
 
       const formData = new FormData();
       formData.append("name", productName);
@@ -158,14 +164,48 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         ? productObj.supplier.id
         : supplier;
       formData.append("supplier", supplierValue);
-      formData.append("images_to_keep", imageIds);
-      images.forEach((image, index) => {
-        formData.append(`image${index + 1}`, image.file);
-      });
+
+      if (imagesToDelete) {
+        formData.append("images_to_delete", imagesToDelete);
+      }
+
+      if (newImages.length) {
+        const imageInfo = newImages.map((image) => ({
+          id: image.id,
+          type: image.file.type,
+        }));
+        formData.append("images", JSON.stringify(imageInfo));
+      }
+
       updateProduct(token, productObj.id, formData, onSuccessfulUpdate).then(
         (response) => {
           if (response && response.success) {
+            if (response.success && response.preSignedUrls) {
+              uploadImagesToS3(response.preSignedUrls, newImages).then(
+                (response) => {
+                  if (response && response.uploadStatuses) {
+                    finalizeProductImageUploadStatus(
+                      token,
+                      response.uploadStatuses,
+                    ).then((response) => {
+                      if (response && !response.success) {
+                        setErrorMessages((prevState) => [
+                          ...prevState,
+                          response,
+                        ]);
+                      }
+                    });
+                  } else {
+                    setErrorMessages((prevState) => [...prevState, response]);
+                  }
+                },
+              );
+            }
+            setTimeout(() => {
+              onSuccessfulUpdate();
+            }, 1000);
             handleClose();
+            // resetModal();
           } else {
             setErrorMessages((prevState) => [...prevState, response]);
           }
@@ -318,7 +358,8 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
             />
             <div>
               {images.map((image) => {
-                let imageUrl = image.image || URL.createObjectURL(image.file);
+                let imageUrl =
+                  image.image_url || URL.createObjectURL(image.file);
                 return (
                   <div key={image.id}>
                     <a

@@ -139,7 +139,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
               >
                 {product.images.length > 0 && (
                   <img
-                    src={product.images[0].image}
+                    src={product.images[0].image_url}
                     alt={`product-${product.cat_num}-image-${product.images[0].id}`}
                     width="200"
                   />

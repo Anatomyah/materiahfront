@@ -47,10 +47,6 @@ const ManufacturersPage = () => {
     });
   };
 
-  useEffect(() => {
-    console.log(manufacturers);
-  }, [manufacturers]);
-
   const handleSearchInput = (value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 

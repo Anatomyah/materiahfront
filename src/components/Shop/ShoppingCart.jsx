@@ -25,10 +25,6 @@ const ShoppingCart = () => {
     setGroupedCart(groupedBySupplier);
   }, []);
 
-  useEffect(() => {
-    console.log(groupedCart);
-  }, [groupedCart]);
-
   const onSuccessfulCreate = () => {
     setGroupedCart([]);
     setCart([]);

@@ -4,7 +4,11 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
 import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
-import { updateOrder } from "../../clients/order_client";
+import {
+  finalizeOrderImageUploadStatus,
+  updateOrder,
+} from "../../clients/order_client";
+import { uploadImagesToS3 } from "../../clients/product_client";
 
 const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
   const { token } = useContext(AppContext);
@@ -30,10 +34,6 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    console.log(images);
-  }, [images]);
-
-  useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
     setIsFilled(arrivalDate && itemsValidation && images);
   }, [arrivalDate, receivedBy, items, images]);
@@ -43,6 +43,10 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
     newItems[index][field] = value;
     setItems(newItems);
   };
+
+  useEffect(() => {
+    console.log(images);
+  }, [images]);
 
   const handeFileChange = (event) => {
     const allFiles = Array.from(event.target.files);
@@ -79,23 +83,56 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
       issue_detail: item.issue_detail,
     }));
 
-    const imageIds = images
-      .filter((image) => !image.file)
-      .map((image) => image.id);
+    const imagesToDelete = orderObj.images
+      .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
+      .map((obj) => obj.id);
+
+    const newImages = images.filter((image) => image.file);
 
     const formData = new FormData();
     formData.append("quote", orderObj.quote.id);
     formData.append("arrival_date", arrivalDate);
     formData.append("items", JSON.stringify(finalItems));
-    formData.append("images_to_keep", imageIds);
     formData.append("received_by", receivedBy);
-    images.forEach((image, index) => {
-      formData.append(`image${index + 1}`, image.file);
-    });
+
+    if (imagesToDelete) {
+      formData.append("images_to_delete", imagesToDelete);
+    }
+
+    if (newImages.length) {
+      const imageInfo = newImages.map((image) => ({
+        id: image.id,
+        type: image.file.type,
+      }));
+      formData.append("images", JSON.stringify(imageInfo));
+    }
+
     updateOrder(token, orderObj.id, formData, onSuccessfulUpdate).then(
       (response) => {
         if (response && response.success) {
+          if (response.success && response.preSignedUrls) {
+            uploadImagesToS3(response.preSignedUrls, newImages).then(
+              (response) => {
+                if (response && response.uploadStatuses) {
+                  finalizeOrderImageUploadStatus(
+                    token,
+                    response.uploadStatuses,
+                  ).then((response) => {
+                    if (response && !response.success) {
+                      setErrorMessages((prevState) => [...prevState, response]);
+                    }
+                  });
+                } else {
+                  setErrorMessages((prevState) => [...prevState, response]);
+                }
+              },
+            );
+          }
+          setTimeout(() => {
+            onSuccessfulUpdate();
+          }, 1000);
           handleClose();
+          resetModal();
         } else {
           setErrorMessages((prevState) => [...prevState, response]);
         }
@@ -130,15 +167,15 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
             {orderObj && (
               <>
                 <span>
-                  {orderObj.quote.quote_file.slice(
-                    orderObj.quote.quote_file.lastIndexOf("/") + 1,
+                  {orderObj.quote.quote_url.slice(
+                    orderObj.quote.quote_url.lastIndexOf("/") + 1,
                   )}
                 </span>
                 <a
                   href={
-                    orderObj.quote.quote_file instanceof Blob
-                      ? URL.createObjectURL(orderObj.quote.quote_file)
-                      : orderObj.quote.quote_file
+                    orderObj.quote.quote_url instanceof Blob
+                      ? URL.createObjectURL(orderObj.quote.quote_url)
+                      : orderObj.quote.quote_url
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -189,7 +226,8 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
             )}
             <div>
               {images.map((image) => {
-                let imageUrl = image.image || URL.createObjectURL(image.file);
+                let imageUrl =
+                  image.image_url || URL.createObjectURL(image.file);
                 return (
                   <div key={image.id}>
                     <a

@@ -36,10 +36,8 @@ export const updateSupplier = async (
     if (setSupplier) {
       setSupplier(response.data);
     }
-    console.log(response.data);
     return { success: true };
   } catch (error) {
-    console.log(error);
     console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()
@@ -78,7 +76,6 @@ export const getSuppliers = async (token, setSuppliers, options = {}) => {
         Authorization: `Token ${token}`,
       },
     });
-    console.log(response.data);
 
     const nextCursor = response.data.next;
 

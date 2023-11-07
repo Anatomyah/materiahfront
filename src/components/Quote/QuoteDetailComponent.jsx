@@ -44,7 +44,7 @@ const QuoteDetailComponent = () => {
           <p>{item.price}</p>
         </div>
       ))}
-      <a href={quote.quote_file} target="_blank" rel="noopener noreferrer">
+      <a href={quote.quote_url} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
       <EditQuoteModal

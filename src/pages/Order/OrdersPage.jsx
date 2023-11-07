@@ -52,7 +52,6 @@ const OrdersPage = () => {
   };
 
   const goToOrderDetails = (order) => {
-    console.log(order);
     nav(`/order-details/${order.id}`, {
       state: { order },
     });

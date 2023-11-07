@@ -16,7 +16,6 @@ export const validateToken = async (token) => {
 
 export const signup = async (userData) => {
   try {
-    console.log(userData);
     await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
         "Content-Type": "application/json",
@@ -38,8 +37,9 @@ export const fetchNotifications = async (token, setNotifications) => {
         Authorization: `Token ${token}`,
       },
     });
-    console.log(res.data);
+
     setNotifications(res.data);
+
     return { success: true };
   } catch (error) {
     console.error(error.response.data);

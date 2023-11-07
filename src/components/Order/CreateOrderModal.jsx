@@ -8,7 +8,11 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
 import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
-import { createOrder } from "../../clients/order_client";
+import {
+  createOrder,
+  finalizeOrderImageUploadStatus,
+} from "../../clients/order_client";
+import { uploadImagesToS3 } from "../../clients/product_client";
 
 const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);
@@ -26,10 +30,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
-
-  useEffect(() => {
-    console.log(relatedQuoteObj);
-  }, [relatedQuoteObj]);
 
   const fetchQuote = (quoteId) => {
     getQuoteDetails(token, quoteId, setRelatedQuoteObj).then((response) => {
@@ -60,10 +60,6 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
       });
     }
   }, [relatedQuoteObj]);
-
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
 
   useEffect(() => {
     const itemsValidation = allOrderItemsFilled(items);
@@ -121,11 +117,33 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
     formData.append("arrival_date", arrivalDate);
     formData.append("items", JSON.stringify(items));
     formData.append("received_by", receivedBy);
-    images.forEach((image, index) => {
-      formData.append(`image${index + 1}`, image.file);
-    });
+    if (images.length) {
+      const imageInfo = images.map((image) => ({
+        id: image.id,
+        type: image.file.type,
+      }));
+      console.log(imageInfo);
+      formData.append("images", JSON.stringify(imageInfo));
+    }
+
     createOrder(token, formData).then((response) => {
       if (response && response.success) {
+        if (response.success && response.preSignedUrls) {
+          uploadImagesToS3(response.preSignedUrls, images).then((response) => {
+            if (response && response.uploadStatuses) {
+              finalizeOrderImageUploadStatus(
+                token,
+                response.uploadStatuses,
+              ).then((response) => {
+                if (response && !response.success) {
+                  setErrorMessages((prevState) => [...prevState, response]);
+                }
+              });
+            } else {
+              setErrorMessages((prevState) => [...prevState, response]);
+            }
+          });
+        }
         setTimeout(() => {
           onSuccessfulCreate();
         }, 1000);
@@ -180,15 +198,15 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
             {relatedQuoteObj && (
               <>
                 <span>
-                  {relatedQuoteObj.quote_file.slice(
-                    relatedQuoteObj.quote_file.lastIndexOf("/") + 1,
+                  {relatedQuoteObj.quote_url.slice(
+                    relatedQuoteObj.quote_url.lastIndexOf("/") + 1,
                   )}
                 </span>
                 <a
                   href={
-                    relatedQuoteObj.quote_file instanceof Blob
-                      ? URL.createObjectURL(relatedQuoteObj.quote_file)
-                      : relatedQuoteObj.quote_file
+                    relatedQuoteObj.quote_url instanceof Blob
+                      ? URL.createObjectURL(relatedQuoteObj.quote_url)
+                      : relatedQuoteObj.quote_url
                   }
                   target="_blank"
                   rel="noopener noreferrer"

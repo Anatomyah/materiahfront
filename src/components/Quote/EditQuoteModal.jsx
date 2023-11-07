@@ -4,7 +4,11 @@ import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import EditQuoteItemComponent from "./EditQuoteItemComponent";
 import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
-import { updateQuote } from "../../clients/quote_client";
+import {
+  finalizeQuoteUploadStatus,
+  updateQuote,
+  uploadQuoteFileToS3,
+} from "../../clients/quote_client";
 
 const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
   const { token } = useContext(AppContext);
@@ -19,6 +23,7 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
       price: item.price || "",
     }));
   });
+  const [fileChanged, setFileChanged] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isFilled, setIsFilled] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
@@ -42,6 +47,7 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
     if (selectedFile) {
       setQuoteFile(selectedFile);
     }
+    setFileChanged(true);
   };
 
   const updateItem = (index, field, value) => {
@@ -65,17 +71,44 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
     setErrorMessages([]);
     const formData = new FormData();
     formData.append("items", JSON.stringify(items));
-    formData.append("quote_file", quoteFile);
 
-    updateQuote(token, quoteObj.id, formData, onSuccessfulUpdate).then(
-      (response) => {
-        if (response && response.success) {
-          handleClose();
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
+    if (fileChanged) {
+      formData.append("quote_file_type", quoteFile.type);
+    }
+
+    updateQuote(token, quoteObj.id, formData).then((response) => {
+      if (response && response.success) {
+        if (response.success && response.preSignedUrl && response.quoteId) {
+          uploadQuoteFileToS3(
+            response.preSignedUrl,
+            response.quoteId,
+            quoteFile,
+          ).then((response) => {
+            if (response && response.uploadStatus) {
+              finalizeQuoteUploadStatus(
+                token,
+                response.quoteId,
+                response.uploadStatus,
+              ).then((response) => {
+                if (response && !response.success) {
+                  setErrorMessages((prevState) => [...prevState, response]);
+                }
+              });
+            } else {
+              setErrorMessages((prevState) => [...prevState, response]);
+            }
+          });
         }
-      },
-    );
+        setTimeout(() => {
+          onSuccessfulUpdate();
+        }, 1500);
+        handleClose();
+        resetModal();
+      } else {
+        console.log("update", response);
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
   if (!quoteObj) {
     return "Loading...";

@@ -91,14 +91,14 @@ const ProductDetailComponent = () => {
       <div>
         {product.images.map((image) => (
           <a
-            href={image.image}
+            href={image.image_url}
             key={image.id}
             target="_blank"
             rel="noopener noreferrer"
           >
             <img
               key={image.id}
-              src={image.image}
+              src={image.image_url}
               alt={`product-${product.cat_num}-image-${image.id}`}
               width="200"
             />

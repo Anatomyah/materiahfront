@@ -73,7 +73,6 @@ const ShopItemComponent = ({
         </ButtonGroup>
         <button
           onClick={(e) => {
-            console.log(supplierKey, index);
             handleItemDelete(e, supplierKey, index);
           }}
         >

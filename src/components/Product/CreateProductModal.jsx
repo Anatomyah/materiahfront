@@ -7,7 +7,11 @@ import {
   PRODUCT_STORAGE_OPTIONS,
 } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
-import { createProduct } from "../../clients/product_client";
+import {
+  createProduct,
+  finalizeProductImageUploadStatus,
+  uploadImagesToS3,
+} from "../../clients/product_client";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
@@ -104,9 +108,9 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     setCurrentStock("");
     setCurrentPrice("");
     setProductLink("");
-    setManufacturerList(null);
+    // setManufacturerList(null);
     setManufacturer("");
-    setSupplierList(null);
+    // setSupplierList(null);
     setSupplier("");
     setImages([]);
   };
@@ -167,11 +171,35 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
       if (isSupplier) {
         formData.append("supplier_cat_item", true);
       }
-      images.forEach((image, index) => {
-        formData.append(`image${index + 1}`, image.file);
-      });
+      if (images.length) {
+        const imageInfo = images.map((image) => ({
+          id: image.id,
+          type: image.file.type,
+        }));
+        formData.append("images", JSON.stringify(imageInfo));
+      }
+
       createProduct(token, formData).then((response) => {
         if (response && response.success) {
+          if (response.success && response.preSignedUrls) {
+            console.log(response);
+            uploadImagesToS3(response.preSignedUrls, images).then(
+              (response) => {
+                if (response && response.uploadStatuses) {
+                  finalizeProductImageUploadStatus(
+                    token,
+                    response.uploadStatuses,
+                  ).then((response) => {
+                    if (response && !response.success) {
+                      setErrorMessages((prevState) => [...prevState, response]);
+                    }
+                  });
+                } else {
+                  setErrorMessages((prevState) => [...prevState, response]);
+                }
+              },
+            );
+          }
           setTimeout(() => {
             onSuccessfulCreate();
           }, 1000);

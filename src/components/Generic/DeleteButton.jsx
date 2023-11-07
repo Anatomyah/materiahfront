@@ -27,7 +27,7 @@ const DeleteButton = ({
         handleClose();
         setTimeout(() => {
           nav(`/${returnLocation}`);
-        }, 1000);
+        }, 1500);
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }

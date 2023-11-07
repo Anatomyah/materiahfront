@@ -79,8 +79,6 @@ export const getManufacturers = async (
       },
     });
 
-    console.log(response.data);
-
     const nextCursor = response.data.next;
 
     if (!nextCursor) {

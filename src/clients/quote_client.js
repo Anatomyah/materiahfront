@@ -1,6 +1,54 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 
+export const finalizeQuoteUploadStatus = async (
+  token,
+  quoteId,
+  uploadStatus,
+) => {
+  try {
+    await axios.post(
+      `${BACKEND_URL}quotes/update_quote_upload_status/`,
+      { quote_id: quoteId, status: uploadStatus },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const uploadQuoteFileToS3 = async (presignedPostData, quoteId, file) => {
+  const formData = new FormData();
+
+  Object.keys(presignedPostData.fields).forEach((key) => {
+    formData.append(key, presignedPostData.fields[key]);
+  });
+
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post(presignedPostData.url, formData);
+
+    if (response.status >= 200 && response.status < 300) {
+      return { quoteId: quoteId, uploadStatus: "completed" };
+    } else {
+      return { quoteId: quoteId, uploadStatus: "failed" };
+    }
+  } catch (error) {
+    console.log(error);
+    return { error: error.message || "Something went wrong" };
+  }
+};
+
 export const createQuoteFromCart = async (token, cart_items) => {
   try {
     await axios.post(`${BACKEND_URL}quotes/`, JSON.stringify(cart_items), {
@@ -20,27 +68,33 @@ export const createQuoteFromCart = async (token, cart_items) => {
 
 export const createQuoteManually = async (token, quoteData) => {
   try {
-    await axios.post(`${BACKEND_URL}quotes/`, quoteData, {
+    const response = await axios.post(`${BACKEND_URL}quotes/`, quoteData, {
       headers: {
         Authorization: `Token ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
-    return { success: true };
+
+    let result = { success: true };
+
+    if (response.data.presigned_url) {
+      result.preSignedUrl = response.data.presigned_url;
+    }
+
+    if (response.data.id) {
+      result.quoteId = response.data.id;
+    }
+
+    return result;
   } catch (error) {
-    console.error(error.response.data);
+    console.log(error);
     return error.response
       ? Object.values(error.response.data).flat()
       : "Something went wrong";
   }
 };
 
-export const updateQuote = async (
-  token,
-  quoteId,
-  updatedQuoteData,
-  setQuote,
-) => {
+export const updateQuote = async (token, quoteId, updatedQuoteData) => {
   try {
     const response = await axios.patch(
       `${BACKEND_URL}quotes/${quoteId}/`,
@@ -52,9 +106,18 @@ export const updateQuote = async (
         },
       },
     );
-    setQuote(response.data);
-    console.log(response.data);
-    return { success: true };
+
+    let result = { success: true };
+
+    if (response.data.presigned_url) {
+      result.preSignedUrl = response.data.presigned_url;
+    }
+
+    if (response.data.id) {
+      result.quoteId = response.data.id;
+    }
+
+    return result;
   } catch (error) {
     console.error(error.response.data);
     return error.response
@@ -97,8 +160,6 @@ export const getQuotes = async (
         Authorization: `Token ${token}`,
       },
     });
-
-    console.log(response.data);
 
     const nextCursor = response.data.next;
 
