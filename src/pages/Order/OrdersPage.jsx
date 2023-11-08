@@ -51,10 +51,8 @@ const OrdersPage = () => {
     setTypingTimeout(newTimeout);
   };
 
-  const goToOrderDetails = (order) => {
-    nav(`/order-details/${order.id}`, {
-      state: { order },
-    });
+  const goToOrderDetails = (orderId) => {
+    nav(`/order-details/${orderId}`);
   };
 
   return (
@@ -85,7 +83,7 @@ const OrdersPage = () => {
             key={order.id}
             className="text-decoration-underline text-primary"
             style={{ cursor: "pointer", minHeight: 500, display: "block" }}
-            onClick={() => goToOrderDetails(order)}
+            onClick={() => goToOrderDetails(order.id)}
           >
             {order.id}
           </span>

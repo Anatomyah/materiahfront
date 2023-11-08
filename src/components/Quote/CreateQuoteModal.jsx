@@ -60,7 +60,6 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
   const resetModal = () => {
     setSupplier("");
     setSupplierSelectList([]);
-    setProductSelectList([]);
     setQuoteFile("");
     setItems([{ product: "", quantity: "", price: "" }]);
   };
@@ -107,32 +106,11 @@ const CreateQuoteModal = ({ onSuccessfulCreate }) => {
       formData.append("quote_file_type", quoteFile.type);
     }
 
-    createQuoteManually(token, formData).then((response) => {
+    createQuoteManually(token, formData, quoteFile).then((response) => {
       if (response && response.success) {
-        if (response.success && response.preSignedUrl && response.quoteId) {
-          uploadQuoteFileToS3(
-            response.preSignedUrl,
-            response.quoteId,
-            quoteFile,
-          ).then((response) => {
-            if (response && response.uploadStatus) {
-              finalizeQuoteUploadStatus(
-                token,
-                response.quoteId,
-                response.uploadStatus,
-              ).then((response) => {
-                if (response && !response.success) {
-                  setErrorMessages((prevState) => [...prevState, response]);
-                }
-              });
-            } else {
-              setErrorMessages((prevState) => [...prevState, response]);
-            }
-          });
-        }
         setTimeout(() => {
           onSuccessfulCreate();
-        }, 1000);
+        }, 1500);
         handleClose();
         resetModal();
       } else {

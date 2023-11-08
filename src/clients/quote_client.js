@@ -26,7 +26,7 @@ export const finalizeQuoteUploadStatus = async (
   }
 };
 
-export const uploadQuoteFileToS3 = async (presignedPostData, quoteId, file) => {
+export const uploadQuoteFileToS3 = async (presignedPostData, file) => {
   const formData = new FormData();
 
   Object.keys(presignedPostData.fields).forEach((key) => {
@@ -39,9 +39,9 @@ export const uploadQuoteFileToS3 = async (presignedPostData, quoteId, file) => {
     const response = await axios.post(presignedPostData.url, formData);
 
     if (response.status >= 200 && response.status < 300) {
-      return { quoteId: quoteId, uploadStatus: "completed" };
+      return { uploadStatus: "completed" };
     } else {
-      return { quoteId: quoteId, uploadStatus: "failed" };
+      return { uploadStatus: "failed" };
     }
   } catch (error) {
     console.log(error);
@@ -66,7 +66,7 @@ export const createQuoteFromCart = async (token, cart_items) => {
   }
 };
 
-export const createQuoteManually = async (token, quoteData) => {
+export const createQuoteManually = async (token, quoteData, quoteFile) => {
   try {
     const response = await axios.post(`${BACKEND_URL}quotes/`, quoteData, {
       headers: {
@@ -77,12 +77,27 @@ export const createQuoteManually = async (token, quoteData) => {
 
     let result = { success: true };
 
-    if (response.data.presigned_url) {
-      result.preSignedUrl = response.data.presigned_url;
-    }
+    if (quoteFile) {
+      const presignedUrl = response.data.presigned_url;
+      const quoteId = response.data.id;
 
-    if (response.data.id) {
-      result.quoteId = response.data.id;
+      if (response && presignedUrl && quoteId) {
+        uploadQuoteFileToS3(presignedUrl, quoteFile).then((r) => {
+          if (r && r.uploadStatus) {
+            finalizeQuoteUploadStatus(token, quoteId, r.uploadStatus).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -94,7 +109,12 @@ export const createQuoteManually = async (token, quoteData) => {
   }
 };
 
-export const updateQuote = async (token, quoteId, updatedQuoteData) => {
+export const updateQuote = async (
+  token,
+  quoteId,
+  updatedQuoteData,
+  quoteFile,
+) => {
   try {
     const response = await axios.patch(
       `${BACKEND_URL}quotes/${quoteId}/`,
@@ -109,12 +129,27 @@ export const updateQuote = async (token, quoteId, updatedQuoteData) => {
 
     let result = { success: true };
 
-    if (response.data.presigned_url) {
-      result.preSignedUrl = response.data.presigned_url;
-    }
+    if (quoteFile) {
+      const presignedUrl = response.data.presigned_url;
+      const quoteId = response.data.id;
 
-    if (response.data.id) {
-      result.quoteId = response.data.id;
+      if (response && presignedUrl && quoteId) {
+        uploadQuoteFileToS3(presignedUrl, quoteFile).then((r) => {
+          if (r && r.uploadStatus) {
+            finalizeQuoteUploadStatus(token, quoteId, r.uploadStatus).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -128,7 +163,7 @@ export const updateQuote = async (token, quoteId, updatedQuoteData) => {
 
 export const deleteQuote = async (token, quoteId) => {
   try {
-    await axios.delete(`${BACKEND_URL}quotes/${quoteId}`, {
+    await axios.delete(`${BACKEND_URL}quotes/${quoteId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -195,7 +230,7 @@ export const getQuotes = async (
 
 export const getQuoteDetails = async (token, quoteId, setQuoteDetails) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}quotes/${quoteId}`, {
+    const response = await axios.get(`${BACKEND_URL}quotes/${quoteId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },

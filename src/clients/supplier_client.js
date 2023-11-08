@@ -47,7 +47,7 @@ export const updateSupplier = async (
 
 export const deleteSupplier = async (token, supplierId) => {
   try {
-    await axios.delete(`${BACKEND_URL}suppliers/${supplierId}`, {
+    await axios.delete(`${BACKEND_URL}suppliers/${supplierId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -135,7 +135,7 @@ export const getSupplierDetails = async (
   setSupplierDetails,
 ) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}suppliers/${supplierId}`, {
+    const response = await axios.get(`${BACKEND_URL}suppliers/${supplierId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },

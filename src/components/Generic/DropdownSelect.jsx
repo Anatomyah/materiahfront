@@ -23,6 +23,7 @@ const DropdownSelect = ({
         setSelectedValue(newValue ? newValue : null);
       }}
       renderInput={(params) => <TextField {...params} label={label} />}
+      disableClearable
     />
   );
 };

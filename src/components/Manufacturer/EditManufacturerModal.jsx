@@ -70,6 +70,18 @@ const EditManufacturerModal = ({ manufacturerObj, onSuccessfulUpdate }) => {
     setErrorMessages([]);
     setIsFilled(null);
     setShowModal(false);
+    resetModal();
+  };
+
+  const resetModal = () => {
+    setName(manufacturerObj.name);
+    setWebsiteUrl(manufacturerObj.website);
+    setRelatedSuppliers(
+      manufacturerObj.suppliers.map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    );
   };
 
   const handleShow = () => setShowModal(true);

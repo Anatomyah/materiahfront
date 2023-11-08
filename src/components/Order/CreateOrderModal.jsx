@@ -125,27 +125,11 @@ const CreateOrderModal = ({ onSuccessfulCreate }) => {
       formData.append("images", JSON.stringify(imageInfo));
     }
 
-    createOrder(token, formData).then((response) => {
+    createOrder(token, formData, images).then((response) => {
       if (response && response.success) {
-        if (response.success && response.preSignedUrls) {
-          uploadImagesToS3(response.preSignedUrls, images).then((response) => {
-            if (response && response.uploadStatuses) {
-              finalizeOrderImageUploadStatus(
-                token,
-                response.uploadStatuses,
-              ).then((response) => {
-                if (response && !response.success) {
-                  setErrorMessages((prevState) => [...prevState, response]);
-                }
-              });
-            } else {
-              setErrorMessages((prevState) => [...prevState, response]);
-            }
-          });
-        }
         setTimeout(() => {
           onSuccessfulCreate();
-        }, 1000);
+        }, 1500);
         handleClose();
         resetModal();
       } else {

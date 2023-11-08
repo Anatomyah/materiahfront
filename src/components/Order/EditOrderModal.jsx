@@ -10,7 +10,7 @@ import {
 } from "../../clients/order_client";
 import { uploadImagesToS3 } from "../../clients/product_client";
 
-const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
+const EditOrderModal = ({ orderObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
   const fileInput = useRef(null);
   const [arrivalDate, setArrivalDate] = useState(orderObj.arrival_date);
@@ -65,6 +65,26 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
     setShowModal(false);
     resetModal();
   };
+
+  const resetModal = () => {
+    setArrivalDate(orderObj.arrival_date);
+    setItems(() => {
+      return orderObj.items.map((item) => ({
+        quote_item: {
+          id: item.quote_item.id,
+          quantity: item.quote_item.quantity,
+        },
+        quantity: item.quantity,
+        batch: item.batch,
+        expiry: item.expiry,
+        status: item.status,
+        issue_detail: item.issue_detail,
+      }));
+    });
+    setImages(orderObj.images);
+    setReceivedBy(orderObj.received_by);
+  };
+
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (e) => {
@@ -103,37 +123,16 @@ const EditOrderModal = ({ orderObj, onSuccessfulUpdate, key, resetModal }) => {
       formData.append("images", JSON.stringify(imageInfo));
     }
 
-    updateOrder(token, orderObj.id, formData, onSuccessfulUpdate).then(
-      (response) => {
-        if (response && response.success) {
-          if (response.success && response.preSignedUrls) {
-            uploadImagesToS3(response.preSignedUrls, newImages).then(
-              (response) => {
-                if (response && response.uploadStatuses) {
-                  finalizeOrderImageUploadStatus(
-                    token,
-                    response.uploadStatuses,
-                  ).then((response) => {
-                    if (response && !response.success) {
-                      setErrorMessages((prevState) => [...prevState, response]);
-                    }
-                  });
-                } else {
-                  setErrorMessages((prevState) => [...prevState, response]);
-                }
-              },
-            );
-          }
-          setTimeout(() => {
-            onSuccessfulUpdate();
-          }, 1000);
-          handleClose();
-          resetModal();
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      },
-    );
+    updateOrder(token, orderObj.id, formData, newImages).then((response) => {
+      if (response && response.success) {
+        setTimeout(() => {
+          onSuccessfulUpdate();
+        }, 1500);
+        handleClose();
+      } else {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   if (!orderObj) {

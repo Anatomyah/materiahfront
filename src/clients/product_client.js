@@ -70,7 +70,7 @@ export const uploadImagesToS3 = async (presignedUrls, files) => {
   }
 };
 
-export const createProduct = async (token, productData) => {
+export const createProduct = async (token, productData, images) => {
   try {
     const response = await axios.post(`${BACKEND_URL}products/`, productData, {
       headers: {
@@ -81,8 +81,26 @@ export const createProduct = async (token, productData) => {
 
     let result = { success: true };
 
-    if (response.data.presigned_urls) {
-      result.preSignedUrls = response.data.presigned_urls;
+    if (images.length) {
+      const presignedUrls = response.data.presigned_urls;
+
+      if (response && presignedUrls) {
+        uploadImagesToS3(presignedUrls, images).then((r) => {
+          if (r && r.uploadStatuses) {
+            finalizeProductImageUploadStatus(token, r.uploadStatuses).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -96,7 +114,7 @@ export const updateProduct = async (
   token,
   productId,
   productData,
-  setProduct,
+  newImages,
 ) => {
   try {
     const response = await axios.patch(
@@ -109,11 +127,29 @@ export const updateProduct = async (
         },
       },
     );
-    setProduct(response.data);
+
     let result = { success: true };
 
-    if (response.data.presigned_urls) {
-      result.preSignedUrls = response.data.presigned_urls;
+    if (newImages.length) {
+      const presignedUrls = response.data.presigned_urls;
+
+      if (response && presignedUrls) {
+        uploadImagesToS3(presignedUrls, newImages).then((r) => {
+          if (r && r.uploadStatuses) {
+            finalizeProductImageUploadStatus(token, r.uploadStatuses).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -127,7 +163,7 @@ export const updateProduct = async (
 
 export const deleteProduct = async (token, productId) => {
   try {
-    await axios.delete(`${BACKEND_URL}products/${productId}`, {
+    await axios.delete(`${BACKEND_URL}products/${productId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -206,7 +242,7 @@ export const getProductDetails = async (
   setProductDetails,
 ) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}products/${productId}`, {
+    const response = await axios.get(`${BACKEND_URL}products/${productId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -230,7 +266,7 @@ export const getProductSelectList = async (
 ) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}products/names/?supplier_id=${supplierId}`,
+      `${BACKEND_URL}products/names/?supplier_id=${supplierId}/`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -239,6 +275,26 @@ export const getProductSelectList = async (
     );
     setProductSelectList(response.data);
     return { success: true };
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkCatNum = async (token, value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}products/check_cat_num/?value=${value}/`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
     return error.response

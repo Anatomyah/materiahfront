@@ -35,10 +35,8 @@ const QuotesPage = () => {
     fetchQuotes();
   }, [searchInput]);
 
-  const goToQuoteDetails = (quote) => {
-    nav(`/quote-details/${quote.id}`, {
-      state: { quote },
-    });
+  const goToQuoteDetails = (quoteId) => {
+    nav(`/quote-details/${quoteId}`);
   };
 
   const handleSearchInput = (value) => {
@@ -74,7 +72,7 @@ const QuotesPage = () => {
             key={quote.id}
             className="text-decoration-underline text-primary"
             style={{ cursor: "pointer", minHeight: 500, display: "block" }}
-            onClick={() => goToQuoteDetails(quote)}
+            onClick={() => goToQuoteDetails(quote.id)}
           >
             {quote.id}
           </span>

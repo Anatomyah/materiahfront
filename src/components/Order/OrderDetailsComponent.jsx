@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { deleteOrder, getOrderDetails } from "../../clients/order_client";
 import EditOrderModal from "./EditOrderModal";
@@ -8,22 +8,26 @@ import DeleteButton from "../Generic/DeleteButton";
 const OrderDetailsComponent = () => {
   const { token } = useContext(AppContext);
   const { id } = useParams();
-  const location = useLocation();
-  const [modalKey, setModalKey] = useState(0);
-  const [order, setOrder] = useState(
-    location.state ? location.state.quote : null,
-  );
+  const [order, setOrder] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
     if (!order) {
-      getOrderDetails(token, id, setOrder).then((response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+      fetchOrder();
     }
-  }, [id]);
+  }, [id, order]);
+
+  const fetchOrder = () => {
+    getOrderDetails(token, id, setOrder).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
+  };
+
+  useEffect(() => {
+    console.log(order);
+  }, [order]);
 
   if (!order) {
     return "Order details not available";
@@ -50,27 +54,38 @@ const OrderDetailsComponent = () => {
         Quote PDF
       </a>
       <div>
-        {order.images.map((image) => (
-          <a
-            href={image.image_url}
-            key={image.id}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src={image.image_url}
-              alt={`order-${order.id}-image-${image.id}`}
-              width="200"
-            />
-          </a>
-        ))}
+        {order.images.map((image) => {
+          // Check if the file is a PDF by looking at the URL extension
+          const isPdf = image.image_url.toLowerCase().endsWith(".pdf");
+
+          return isPdf ? (
+            // Render a link for a PDF file
+            <a
+              href={image.image_url}
+              key={image.id}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View PDF
+            </a>
+          ) : (
+            // Render an image tag for image files
+            <a
+              href={image.image_url}
+              key={image.id}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={image.image_url}
+                alt={`order-${order.id}-image-${image.id}`}
+                width="200"
+              />
+            </a>
+          );
+        })}
       </div>
-      <EditOrderModal
-        orderObj={order}
-        onSuccessfulUpdate={setOrder}
-        key={modalKey}
-        resetModal={() => setModalKey((prevKey) => prevKey + 1)}
-      />
+      <EditOrderModal orderObj={order} onSuccessfulUpdate={fetchOrder} />
       <DeleteButton
         objectType="order"
         objectName={order.id}

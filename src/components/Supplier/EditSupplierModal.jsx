@@ -109,7 +109,23 @@ const EditSupplierModal = ({ supplierObj, onSuccessfulUpdate }) => {
     setErrorMessages([]);
     setIsFilled(null);
     setShowModal(false);
+    resetModal();
   };
+
+  const resetModal = () => {
+    setSupplierName(supplierObj.name);
+    setWebsiteUrl(supplierObj.website);
+    setEmail(supplierObj.email);
+    setPhonePrefix(supplierObj.phone_prefix);
+    setPhoneSuffix(supplierObj.phone_suffix);
+    setRelatedManufacturers(
+      supplierObj.manufacturers.map((item) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    );
+  };
+
   const handleShow = () => setShowModal(true);
 
   if (!manufacturerList || !supplierObj) {

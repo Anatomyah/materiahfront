@@ -15,18 +15,22 @@ const ProductDetailComponent = () => {
   const { state } = useLocation();
   const shopView = state ? state.shopView : false;
   const [productAmount, setProductAmount] = useState("");
-  const [product, setProduct] = useState(state ? state.product : null);
+  const [product, setProduct] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
     if (!product) {
-      getProductDetails(token, id, setProduct).then((response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+      fetchProduct();
     }
-  }, [id]);
+  }, [id, product]);
+
+  const fetchProduct = () => {
+    getProductDetails(token, id, setProduct).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
+  };
 
   const handleMinusClick = () => {
     if (productAmount <= 1) {
@@ -105,7 +109,7 @@ const ProductDetailComponent = () => {
           </a>
         ))}
       </div>
-      <p>{product.cat_num}</p>
+      <p>CAT NUM {product.cat_num}</p>
       <p>{product.category}</p>
       <Link to={`/manufacturer-details/${product.manufacturer.id}`}>
         {product.manufacturer.name}
@@ -133,7 +137,7 @@ const ProductDetailComponent = () => {
           {product && (
             <EditProductModal
               productObj={product}
-              onSuccessfulUpdate={setProduct}
+              onSuccessfulUpdate={fetchProduct}
             />
           )}
         </>

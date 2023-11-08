@@ -9,11 +9,7 @@ import {
 } from "../../config_and_helpers/config";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
-import {
-  finalizeProductImageUploadStatus,
-  updateProduct,
-  uploadImagesToS3,
-} from "../../clients/product_client";
+import { updateProduct } from "../../clients/product_client";
 import { isValidURL } from "../../config_and_helpers/helpers";
 
 const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
@@ -100,6 +96,22 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
     setShowModal(false);
     setErrorMessages([]);
     setIsFilled(true);
+    resetModal();
+  };
+
+  const resetModal = () => {
+    setProductName(productObj.name);
+    setCatalogueNumber(productObj.cat_num);
+    setCategory(productObj.category);
+    setMeasurementUnit(productObj.unit);
+    setVolume(productObj.volume);
+    setStorageConditions(productObj.storage);
+    setStock(productObj.stock);
+    setPrice(productObj.price);
+    setProductLink(productObj.url);
+    setManufacturer(productObj.manufacturer);
+    setSupplier(productObj.supplier);
+    setImages(productObj.images);
   };
 
   const handleShow = () => setShowModal(true);
@@ -177,35 +189,13 @@ const EditProductModal = ({ productObj, onSuccessfulUpdate }) => {
         formData.append("images", JSON.stringify(imageInfo));
       }
 
-      updateProduct(token, productObj.id, formData, onSuccessfulUpdate).then(
+      updateProduct(token, productObj.id, formData, newImages).then(
         (response) => {
           if (response && response.success) {
-            if (response.success && response.preSignedUrls) {
-              uploadImagesToS3(response.preSignedUrls, newImages).then(
-                (response) => {
-                  if (response && response.uploadStatuses) {
-                    finalizeProductImageUploadStatus(
-                      token,
-                      response.uploadStatuses,
-                    ).then((response) => {
-                      if (response && !response.success) {
-                        setErrorMessages((prevState) => [
-                          ...prevState,
-                          response,
-                        ]);
-                      }
-                    });
-                  } else {
-                    setErrorMessages((prevState) => [...prevState, response]);
-                  }
-                },
-              );
-            }
             setTimeout(() => {
               onSuccessfulUpdate();
-            }, 1000);
-            handleClose();
-            // resetModal();
+              handleClose();
+            }, 1500);
           } else {
             setErrorMessages((prevState) => [...prevState, response]);
           }

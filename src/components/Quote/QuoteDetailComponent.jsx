@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { getQuoteDetails } from "../../clients/quote_client";
 import EditQuoteModal from "./EditQuoteModal";
@@ -9,22 +9,22 @@ import { deleteQuote } from "../../clients/quote_client";
 const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);
   const { id } = useParams();
-  const location = useLocation();
-  const [modalKey, setModalKey] = useState(0);
-  const [quote, setQuote] = useState(
-    location.state ? location.state.quote : null,
-  );
+  const [quote, setQuote] = useState(null);
   const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
     if (!quote) {
-      getQuoteDetails(token, id, setQuote).then((response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+      fetchQuote();
     }
-  }, [id]);
+  }, [id, quote]);
+
+  const fetchQuote = () => {
+    getQuoteDetails(token, id, setQuote).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
+  };
 
   if (!quote) {
     return "Quote details not available";
@@ -44,15 +44,13 @@ const QuoteDetailComponent = () => {
           <p>{item.price}</p>
         </div>
       ))}
+
       <a href={quote.quote_url} target="_blank" rel="noopener noreferrer">
         Quote PDF
       </a>
-      <EditQuoteModal
-        quoteObj={quote}
-        onSuccessfulUpdate={setQuote}
-        key={modalKey}
-        resetModal={() => setModalKey((prevKey) => prevKey + 1)}
-      />
+
+      <EditQuoteModal quoteObj={quote} onSuccessfulUpdate={fetchQuote} />
+
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (
@@ -62,6 +60,7 @@ const QuoteDetailComponent = () => {
           ))}
         </ul>
       )}
+
       <DeleteButton
         objectType="quote"
         objectName={quote.id}

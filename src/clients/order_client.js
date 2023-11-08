@@ -1,5 +1,9 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import {
+  finalizeProductImageUploadStatus,
+  uploadImagesToS3,
+} from "./product_client";
 
 export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
   try {
@@ -22,7 +26,7 @@ export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
   }
 };
 
-export const createOrder = async (token, orderData) => {
+export const createOrder = async (token, orderData, images) => {
   try {
     const response = await axios.post(`${BACKEND_URL}orders/`, orderData, {
       headers: {
@@ -33,8 +37,26 @@ export const createOrder = async (token, orderData) => {
 
     let result = { success: true };
 
-    if (response.data.presigned_urls) {
-      result.preSignedUrls = response.data.presigned_urls;
+    if (images.length) {
+      const presignedUrls = response.data.presigned_urls;
+
+      if (response && presignedUrls) {
+        uploadImagesToS3(presignedUrls, images).then((r) => {
+          if (r && r.uploadStatuses) {
+            finalizeOrderImageUploadStatus(token, r.uploadStatuses).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -50,7 +72,7 @@ export const updateOrder = async (
   token,
   orderId,
   updatedOrderData,
-  setOrder,
+  newImages,
 ) => {
   try {
     const response = await axios.patch(
@@ -64,12 +86,28 @@ export const updateOrder = async (
       },
     );
 
-    setOrder(response.data);
-
     let result = { success: true };
 
-    if (response.data.presigned_urls) {
-      result.preSignedUrls = response.data.presigned_urls;
+    if (newImages.length) {
+      const presignedUrls = response.data.presigned_urls;
+
+      if (response && presignedUrls) {
+        uploadImagesToS3(presignedUrls, newImages).then((r) => {
+          if (r && r.uploadStatuses) {
+            finalizeOrderImageUploadStatus(token, r.uploadStatuses).then(
+              (r) => {
+                if (r && !response.success) {
+                  result.success = false;
+                }
+              },
+            );
+          } else {
+            result.success = false;
+          }
+        });
+      } else {
+        result.success = false;
+      }
     }
 
     return result;
@@ -83,7 +121,7 @@ export const updateOrder = async (
 
 export const deleteOrder = async (token, orderId) => {
   try {
-    await axios.delete(`${BACKEND_URL}orders/${orderId}`, {
+    await axios.delete(`${BACKEND_URL}orders/${orderId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -146,7 +184,7 @@ export const getOrders = async (token, setOrders, options = {}) => {
 
 export const getOrderDetails = async (token, orderId, setOrderDetails) => {
   try {
-    const response = await axios.get(`${BACKEND_URL}orders/${orderId}`, {
+    const response = await axios.get(`${BACKEND_URL}orders/${orderId}/`, {
       headers: {
         Authorization: `Token ${token}`,
       },

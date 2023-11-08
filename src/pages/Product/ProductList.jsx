@@ -70,12 +70,12 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     setTypingTimeout(newTimeout);
   };
 
-  const goToProductDetails = (product) => {
-    const state = { product };
+  const goToProductDetails = (productId) => {
+    const state = { shopView: false };
     if (isShopView) {
       state.shopView = true;
     }
-    nav(`/product-details/${product.id}`, { state });
+    nav(`/product-details/${productId}`, { state });
   };
 
   return (
@@ -135,7 +135,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
                 key={product.id}
                 className="text-decoration-underline text-primary"
                 style={{ cursor: "pointer", minHeight: 500, display: "block" }}
-                onClick={() => goToProductDetails(product)}
+                onClick={() => goToProductDetails(product.id)}
               >
                 {product.images.length > 0 && (
                   <img

@@ -4,13 +4,9 @@ import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import EditQuoteItemComponent from "./EditQuoteItemComponent";
 import { allQuoteItemsFilled } from "../../config_and_helpers/helpers";
-import {
-  finalizeQuoteUploadStatus,
-  updateQuote,
-  uploadQuoteFileToS3,
-} from "../../clients/quote_client";
+import { updateQuote } from "../../clients/quote_client";
 
-const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
+const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate }) => {
   const { token } = useContext(AppContext);
   const fileInput = useRef("");
   const [quoteFile, setQuoteFile] = useState(
@@ -38,6 +34,18 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
     setIsFilled(null);
     setShowModal(false);
     resetModal();
+  };
+
+  const resetModal = () => {
+    setQuoteFile(quoteObj.quote_file ? quoteObj.quote_file : "");
+    setItems(() => {
+      return quoteObj.items.map((item) => ({
+        product: item.product.id,
+        quantity: item.quantity,
+        price: item.price || "",
+      }));
+    });
+    setFileChanged(false);
   };
 
   const handleShow = () => setShowModal(true);
@@ -76,34 +84,17 @@ const EditQuoteModal = ({ quoteObj, onSuccessfulUpdate, key, resetModal }) => {
       formData.append("quote_file_type", quoteFile.type);
     }
 
-    updateQuote(token, quoteObj.id, formData).then((response) => {
+    updateQuote(
+      token,
+      quoteObj.id,
+      formData,
+      fileChanged ? quoteFile : null,
+    ).then((response) => {
       if (response && response.success) {
-        if (response.success && response.preSignedUrl && response.quoteId) {
-          uploadQuoteFileToS3(
-            response.preSignedUrl,
-            response.quoteId,
-            quoteFile,
-          ).then((response) => {
-            if (response && response.uploadStatus) {
-              finalizeQuoteUploadStatus(
-                token,
-                response.quoteId,
-                response.uploadStatus,
-              ).then((response) => {
-                if (response && !response.success) {
-                  setErrorMessages((prevState) => [...prevState, response]);
-                }
-              });
-            } else {
-              setErrorMessages((prevState) => [...prevState, response]);
-            }
-          });
-        }
         setTimeout(() => {
           onSuccessfulUpdate();
         }, 1500);
         handleClose();
-        resetModal();
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
