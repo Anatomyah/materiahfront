@@ -138,7 +138,7 @@ export const updateProduct = async (
           if (r && r.uploadStatuses) {
             finalizeProductImageUploadStatus(token, r.uploadStatuses).then(
               (r) => {
-                if (r && !response.success) {
+                if (r && !r.success) {
                   result.success = false;
                 }
               },
@@ -266,7 +266,7 @@ export const getProductSelectList = async (
 ) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}products/names/?supplier_id=${supplierId}/`,
+      `${BACKEND_URL}products/names/?supplier_id=${supplierId}`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -286,7 +286,7 @@ export const getProductSelectList = async (
 export const checkCatNum = async (token, value) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}products/check_cat_num/?value=${value}/`,
+      `${BACKEND_URL}products/check_cat_num/?value=${value}`,
       {
         headers: {
           Authorization: `Token ${token}`,

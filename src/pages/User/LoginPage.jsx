@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../clients/user_client";
 import { AppContext } from "../../App";
-import SignupModal from "../../components/User/SignupModal";
+import AccountModal from "../../components/User/AccountModal";
 import ResetPasswordModal from "../../components/User/ResetPasswordModal";
 import Image from "react-bootstrap/Image";
 import logo from "../../assets/materiah_logo.png";
@@ -117,7 +117,7 @@ const LoginPage = () => {
           )}
         </Formik>
         <div className="d-flex justify-content-between align-items-end">
-          <SignupModal />
+          <AccountModal isSignUp={true} />
           <ResetPasswordModal />
         </div>
       </div>

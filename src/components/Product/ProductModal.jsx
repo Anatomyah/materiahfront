@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import {
@@ -7,7 +7,11 @@ import {
   PRODUCT_STORAGE_OPTIONS,
 } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
-import { checkCatNum, createProduct } from "../../clients/product_client";
+import {
+  checkCatNum,
+  createProduct,
+  updateProduct,
+} from "../../clients/product_client";
 import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import * as yup from "yup";
@@ -18,9 +22,7 @@ import "font-awesome/css/font-awesome.min.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import debounce from "lodash/debounce";
 
-const debouncedCheckCatNum = debounce(checkCatNum, 2000);
-
-const createFormSchema = ({ token, isSupplier }) =>
+const createFormSchema = ({ isSupplier }) =>
   yup.object().shape({
     productName: yup
       .string()
@@ -43,22 +45,7 @@ const createFormSchema = ({ token, isSupplier }) =>
         (value) => {
           return /^[a-zA-Z0-9\s]+$/.test(value);
         },
-      )
-      .test("unique", "This CAT# is already taken", async (value, context) => {
-        if (!value) return true;
-        try {
-          // Await the debounced function. Note that this won't wait for 2 seconds.
-          // It only ensures that calls to this function are debounced
-          const isUnique = await debouncedCheckCatNum(token, value);
-          console.log(isUnique);
-          return isUnique; // Return true if unique, false otherwise
-        } catch (error) {
-          console.error("Error checking uniqueness", error);
-          return context.createError({
-            message: "Unable to check uniqueness at the moment",
-          });
-        }
-      }),
+      ),
     category: yup.string().required("Product category is required"),
     measurementUnit: yup.string().required("Measurement unit is required"),
     volume: yup
@@ -66,13 +53,15 @@ const createFormSchema = ({ token, isSupplier }) =>
       .required("Volume is required")
       .matches(/^\d+$/, "Volume must be a number"),
     storageConditions: yup.string().required("Storage condition is required"),
-    currentStock: yup
+    stock: yup
       .string()
       .matches(/^\d+$/, "Current stock must be a number")
       .notRequired(),
-    currentPrice: yup.lazy((value) =>
+    price: yup.lazy((value) =>
       !isSupplier
-        ? yup.string().matches(/^\d+$/, "Current price must be a number")
+        ? yup
+            .string()
+            .matches(/^\d+(\.\d+)?$/, "Current price must be a valid number")
         : yup.mixed().notRequired(),
     ),
     manufacturer: yup.string().required("Manufacturer is required"),
@@ -87,12 +76,17 @@ const createFormSchema = ({ token, isSupplier }) =>
       .required("Product link is required"),
   });
 
-const CreateProductModal = ({ onSuccessfulCreate }) => {
+const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   const { token, isSupplier, userDetails } = useContext(AppContext);
-  const formSchema = createFormSchema({ token, isSupplier });
+  const formSchema = createFormSchema({
+    isSupplier,
+  });
+  const [isCatNumUnique, setIsCatNumUnique] = useState(true);
+  const [catalogueNumber, setCatalogueNumber] = useState("");
+  const [isCheckingCatNum, setIsCheckingCatNum] = useState(false);
   const [manufacturerList, setManufacturerList] = useState(null);
   const [supplierList, setSupplierList] = useState(null);
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState(productObj ? productObj.images : []);
   const [showModal, setShowModal] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
 
@@ -109,10 +103,40 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     });
   }, []);
 
-  const handleFileChange = (event) => {
-    const allFiles = Array.from(event.target.files);
+  const catalogueNumberUniqueValidator = {
+    id: "unique",
+    text: "This CAT# is already taken.",
+    validate: () => (isCheckingCatNum ? true : isCatNumUnique),
+  };
 
-    const newImages = allFiles.map((file) => ({
+  useEffect(() => {
+    if (productObj) {
+      setImages(productObj.images);
+    }
+  }, [productObj]);
+
+  const validateCatNum = async (value) => {
+    const response = await checkCatNum(token, value);
+    setIsCheckingCatNum(false);
+    setIsCatNumUnique(response);
+  };
+
+  const debouncedCheckCatNum = useCallback(debounce(validateCatNum, 1500), []);
+
+  useEffect(() => {
+    if (
+      catalogueNumber &&
+      productObj &&
+      catalogueNumber !== productObj.cat_num
+    ) {
+      debouncedCheckCatNum(catalogueNumber);
+    } else {
+      setIsCheckingCatNum(false);
+    }
+  }, [catalogueNumber, debouncedCheckCatNum]);
+
+  const handleFileChange = (files) => {
+    const newImages = files.map((file) => ({
       file,
       id: `temp-${Date.now()}-${Math.random()}`,
     }));
@@ -127,13 +151,14 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
   const handleClose = () => {
     setErrorMessages([]);
     setShowModal(false);
-    setImages([]);
+    setImages(productObj ? productObj.images : []);
   };
 
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
     setErrorMessages([]);
+    let imagesToDelete = null;
 
     const formData = new FormData();
     formData.append("name", values.productName);
@@ -142,31 +167,50 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     formData.append("unit", values.measurementUnit);
     formData.append("volume", values.volume);
     formData.append("storage", values.storageConditions);
-    formData.append("stock", values.currentStock);
-    formData.append("price", values.currentPrice);
+    formData.append("stock", values.stock);
+    formData.append("price", values.price);
     formData.append("url", values.productUrl);
     formData.append("manufacturer", values.manufacturer);
+
     const supplierValue = isSupplier
       ? userDetails.supplier_id
       : values.supplier;
     formData.append("supplier", supplierValue);
+
     if (isSupplier) {
       formData.append("supplier_cat_item", true);
     }
-    if (images.length) {
-      const imageInfo = images.map((image) => ({
+
+    if (productObj) {
+      imagesToDelete = productObj.images
+        .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
+        .map((obj) => obj.id);
+      if (imagesToDelete) {
+        formData.append("images_to_delete", imagesToDelete);
+      }
+    }
+
+    const newImages = images.filter((image) => image.file);
+
+    if (newImages.length) {
+      const imageInfo = newImages.map((image) => ({
         id: image.id,
         type: image.file.type,
       }));
       formData.append("images", JSON.stringify(imageInfo));
     }
 
-    createProduct(token, formData, images).then((response) => {
+    const productPromise =
+      productObj !== null
+        ? updateProduct(token, productObj.id, formData, newImages)
+        : createProduct(token, formData, newImages);
+
+    productPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
-          onSuccessfulCreate();
+          onSuccessfulSubmit();
           handleClose();
-        }, 1500);
+        }, 2500);
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
@@ -180,33 +224,53 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
   return (
     <>
       <Button variant="link" onClick={handleShow}>
-        Add Product
+        {productObj ? "Edit" : "Create"} Product
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Product</Modal.Title>
+          <Modal.Title>{[productObj] ? "Edit" : "Create"} Product</Modal.Title>
         </Modal.Header>
 
         <Formik
           initialValues={{
-            productName: "",
-            CatalogueNumber: "",
-            category: "",
-            measurementUnit: "",
-            volume: "",
-            storageConditions: "",
-            currentStock: "",
-            currentPrice: "",
-            manufacturer: "",
-            supplier: "",
-            productLink: "",
+            productName: productObj ? productObj.name : "",
+            catalogueNumber: productObj ? productObj.cat_num : "",
+            category: productObj ? productObj.category : "",
+            measurementUnit: productObj ? productObj.unit : "",
+            volume: productObj ? productObj.volume : "",
+            storageConditions: productObj ? productObj.storage : "",
+            stock: productObj ? productObj.stock : "",
+            price: productObj ? productObj.price : "",
+            manufacturer: productObj ? productObj.manufacturer.name : "",
+            supplier: productObj ? productObj.supplier.name : "",
+            productUrl: productObj ? productObj.url : "",
             productImages: null,
           }}
           validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);
           }}
+          initialTouched={
+            productObj
+              ? {
+                  productName: true,
+                  catalogueNumber: true,
+                  category: true,
+                  measurementUnit: true,
+                  volume: true,
+                  storageConditions: true,
+                  stock: true,
+                  price: true,
+                  manufacturer: true,
+                  supplier: true,
+                  productUrl: true,
+                  productImages: true,
+                }
+              : {}
+          }
+          validateOnMount={!!productObj}
+          enableReinitialize={true}
         >
           {({
             handleSubmit,
@@ -221,10 +285,10 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
             setFieldValue,
           }) => {
             return (
-              <Form noValidate onSubmit={handleSubmit}>
+              <Form id="productForm" noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
                   <Form.Group
-                    controlId="createProductName"
+                    controlId="formProductName"
                     className="field-margin"
                   >
                     <Form.Label>Product Name</Form.Label>
@@ -246,7 +310,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="createCatalogueNumber"
+                    controlId="formCatalogueNumber"
                     className="field-margin"
                   >
                     <Form.Label>Catalogue Number</Form.Label>
@@ -254,27 +318,43 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                       type="text"
                       name="catalogueNumber"
                       value={values.catalogueNumber}
-                      onChange={handleChange}
+                      onChange={(event) => {
+                        const { value } = event.target;
+                        setIsCheckingCatNum(true);
+                        setCatalogueNumber(value);
+                        setFieldValue("catalogueNumber", value);
+                      }}
                       onFocus={() => setFieldTouched("catalogueNumber", true)}
                       onBlur={handleBlur}
                       isInvalid={
-                        touched.catalogueNumber && !!errors.catalogueNumber
+                        (touched.catalogueNumber && !!errors.catalogueNumber) ||
+                        !catalogueNumberUniqueValidator.validate()
                       }
                       isValid={
-                        touched.catalogueNumber && !errors.catalogueNumber
+                        touched.catalogueNumber &&
+                        !errors.catalogueNumber &&
+                        catalogueNumberUniqueValidator.validate() &&
+                        !isCheckingCatNum
                       }
                     />
-                    <Form.Control.Feedback type="valid">
-                      Looks good!
-                    </Form.Control.Feedback>
+                    {catalogueNumberUniqueValidator.validate() &&
+                      !isCheckingCatNum && (
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                      )}
                     <Form.Control.Feedback type="invalid">
                       {errors.catalogueNumber}
+                      {!catalogueNumberUniqueValidator.validate() &&
+                        !isCheckingCatNum &&
+                        catalogueNumberUniqueValidator.text}
                     </Form.Control.Feedback>
+                    {isCheckingCatNum && <Form.Text>Checking...</Form.Text>}
                   </Form.Group>
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="createProductCatgeory"
+                    controlId="formProductCatgeory"
                     className="field-margin"
                   >
                     <Form.Label>Product Category</Form.Label>
@@ -299,7 +379,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="createProductUnit"
+                    controlId="formProductUnit"
                     className="field-margin"
                   >
                     <Form.Label>Measurement Unit</Form.Label>
@@ -322,7 +402,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="createProductVolume"
+                    controlId="formProductVolume"
                     className="field-margin"
                   >
                     <Form.Label>Volume</Form.Label>
@@ -346,7 +426,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="createProductStorage"
+                    controlId="formProductStorage"
                     className="field-margin"
                   >
                     <Form.Label>Storage Conditions</Form.Label>
@@ -369,69 +449,57 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="createProductStock"
+                    controlId="formProductStock"
                     className="field-margin"
                   >
                     <Form.Label>Stock</Form.Label>
                     <Form.Control
                       type="text"
-                      name="currentStock"
-                      value={values.currentStock}
+                      name="stock"
+                      value={values.stock}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("currentStock", true)}
+                      onFocus={() => setFieldTouched("stock", true)}
                       onBlur={handleBlur}
                       isInvalid={
-                        touched.currentStock &&
-                        values.currentStock &&
-                        !!errors.currentStock
+                        touched.stock && values.stock && !!errors.stock
                       }
-                      isValid={
-                        touched.currentStock &&
-                        values.currentStock &&
-                        !errors.currentStock
-                      }
+                      isValid={touched.stock && values.stock && !errors.stock}
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
-                      {errors.currentStock}
+                      {errors.stock}
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="createProductPrice"
+                    controlId="formProductPrice"
                     className="field-margin"
                   >
                     <Form.Label>Price</Form.Label>
                     <Form.Control
                       type="text"
-                      name="currentPrice"
-                      value={values.currentPrice}
+                      name="price"
+                      value={values.price}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("currentPrice", true)}
+                      onFocus={() => setFieldTouched("price", true)}
                       onBlur={handleBlur}
                       isInvalid={
-                        touched.currentPrice &&
-                        values.volume &&
-                        !!errors.currentPrice
+                        touched.price && values.volume && !!errors.price
                       }
-                      isValid={
-                        touched.currentPrice &&
-                        values.volume &&
-                        !errors.currentPrice
-                      }
+                      isValid={touched.price && values.volume && !errors.price}
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
-                      {errors.currentPrice}
+                      {errors.price}
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="createProductManufacturer"
+                    controlId="formProductManufacturer"
                     className="field-margin"
                   >
                     <Form.Label>Manufacturer</Form.Label>
@@ -456,7 +524,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="createProductSupplier"
+                    controlId="formProductSupplier"
                     className="field-margin"
                   >
                     <Form.Label>Supplier</Form.Label>
@@ -479,7 +547,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="createProductUrl"
+                    controlId="formProductUrl"
                     className="field-margin"
                   >
                     <Form.Label>Product Link</Form.Label>
@@ -488,7 +556,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                       name="productUrl"
                       value={values.productUrl}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("productLink", true)}
+                      onFocus={() => setFieldTouched("productUrl", true)}
                       onBlur={handleBlur}
                       isInvalid={touched.productUrl && !!errors.productUrl}
                       isValid={touched.productUrl && !errors.productUrl}
@@ -503,7 +571,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                   <div className="field-margin">
                     {images.map((image) => {
                       let imageUrl =
-                        image.image || URL.createObjectURL(image.file);
+                        image.image_url || URL.createObjectURL(image.file);
                       return (
                         <div key={image.id}>
                           <a
@@ -527,7 +595,7 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                     })}
                   </div>
                   <Form.Group
-                    controlId="createProductUrl"
+                    controlId="formProductImages"
                     className="field-margin"
                   >
                     <Form.Label>
@@ -540,14 +608,14 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                       title="Accepted formats: jpg, png, gif"
                       name="productImages"
                       onChange={(event) => {
-                        handleFileChange(event);
-                        const files = event.currentTarget.files;
+                        const files = Array.from(event.target.files);
+                        handleFileChange(files);
                         setFieldValue(
                           "productImages",
                           files.length ? files : null,
                         );
                       }}
-                      isValid={values.productImages}
+                      isValid={values.productImages || images.length}
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
@@ -580,10 +648,15 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
                 <Modal.Footer>
                   <Button
                     variant="primary"
-                    disabled={!isValid || !dirty}
+                    disabled={
+                      !isValid ||
+                      !catalogueNumberUniqueValidator.validate() ||
+                      isCheckingCatNum ||
+                      (!productObj && !dirty)
+                    }
                     onClick={handleSubmit}
                   >
-                    Create
+                    {productObj ? "Save" : "Create"}
                   </Button>
                   <Button variant="secondary" onClick={handleClose}>
                     Close
@@ -597,4 +670,4 @@ const CreateProductModal = ({ onSuccessfulCreate }) => {
     </>
   );
 };
-export default CreateProductModal;
+export default ProductModal;

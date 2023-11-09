@@ -14,33 +14,40 @@ export const validateToken = async (token) => {
   }
 };
 
-export const signup = async (userData) => {
+export const signup = async (
+  userData,
+  setToken,
+  setUserDetails,
+  setNotifications,
+) => {
   try {
-    await axios.post(`${BACKEND_URL}users/`, userData, {
+    const response = await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    return { success: true };
-  } catch (error) {
-    console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
-  }
-};
 
-export const fetchNotifications = async (token, setNotifications) => {
-  try {
-    const res = await axios.get(`${BACKEND_URL}products/serve_notifications`, {
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    });
+    let result = { success: true };
 
-    setNotifications(res.data);
+    if (response) {
+      login(
+        {
+          credentials: {
+            username: userData.username,
+            password: userData.password,
+          },
+        },
+        setToken,
+        setUserDetails,
+        setNotifications,
+      ).then((r) => {
+        if (r && !r.success) {
+          result.success = false;
+        }
+      });
+    }
 
-    return { success: true };
+    return result;
   } catch (error) {
     console.error(error.response.data);
     return error.response
@@ -159,6 +166,36 @@ export const updateUserProfile = async (
   } catch (error) {
     console.error(error);
     console.error(error.response);
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkUsername = async (value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_username/?value=${value}`,
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkEmail = async (value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_email/?value=${value}`,
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
     console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { getProducts } from "../../clients/product_client";
 import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
-import CreateProductModal from "../../components/Product/CreateProductModal";
+import ProductModal from "../../components/Product/ProductModal";
 import TextField from "@mui/material/TextField";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import InfiniteScroll from "react-infinite-scroller";
@@ -82,7 +82,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     <div>
       {!isShopView && (
         <div>
-          <CreateProductModal onSuccessfulCreate={fetchProducts} />
+          <ProductModal onSuccessfulSubmit={fetchProducts} />
         </div>
       )}
       <TextField

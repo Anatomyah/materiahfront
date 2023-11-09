@@ -3,10 +3,10 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { AppContext, CartAppContext } from "../../App";
 import { deleteProduct, getProductDetails } from "../../clients/product_client";
 import DeleteButton from "../Generic/DeleteButton";
-import EditProductModal from "./EditProductModal";
 import { ButtonGroup } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import ProductModal from "./ProductModal";
 
 const ProductDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -135,9 +135,9 @@ const ProductDetailComponent = () => {
             returnLocation="inventory"
           />
           {product && (
-            <EditProductModal
+            <ProductModal
               productObj={product}
-              onSuccessfulUpdate={fetchProduct}
+              onSuccessfulSubmit={fetchProduct}
             />
           )}
         </>
