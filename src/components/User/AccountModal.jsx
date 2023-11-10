@@ -5,7 +5,6 @@ import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import {
   checkEmail,
   checkUsername,
-  login,
   signup,
   updateUserProfile,
 } from "../../clients/user_client";
@@ -160,14 +159,28 @@ const AccountModal = ({ isSignUp }) => {
   const debouncedCheckEmail = useCallback(debounce(validateEmail, 1500), []);
 
   useEffect(() => {
-    if (username) {
+    if (
+      username &&
+      isSignUp &&
+      userDetails &&
+      username !== userDetails.username
+    ) {
       debouncedCheckUsername(username);
+    } else {
+      setIsCheckingUsername(false);
     }
   }, [username, debouncedCheckUsername]);
 
   useEffect(() => {
-    if (emailAddress) {
+    if (
+      emailAddress &&
+      isSignUp &&
+      userDetails &&
+      username !== userDetails.email
+    ) {
       debouncedCheckEmail(emailAddress);
+    } else {
+      setIsCheckingEmail(false);
     }
   }, [emailAddress, debouncedCheckEmail]);
 
@@ -233,7 +246,9 @@ const AccountModal = ({ isSignUp }) => {
     accountPromise.then((response) => {
       if (response && response.success) {
         handleClose();
-        nav("/");
+        if (isSignUp) {
+          nav("/");
+        }
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
@@ -354,7 +369,7 @@ const AccountModal = ({ isSignUp }) => {
                       value={values.email}
                       onChange={(event) => {
                         const { value } = event.target;
-                        setIsCheckingEmail(true);
+                        setIsCheckingUsername(true);
                         setEmailAddress(value);
                         setFieldValue("email", value);
                       }}
@@ -362,7 +377,7 @@ const AccountModal = ({ isSignUp }) => {
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.email && !!errors.email) ||
-                        !usernameUniqueValidator.validate()
+                        !emailUniqueValidator.validate()
                       }
                       isValid={
                         touched.email &&

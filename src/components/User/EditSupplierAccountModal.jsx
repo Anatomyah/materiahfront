@@ -1,135 +1,163 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
-import { updateUserProfile } from "../../clients/user_client";
-import { updateSupplier } from "../../clients/supplier_client";
+import {
+  checkSupplierContactEmail,
+  updateUserProfile,
+} from "../../clients/user_client";
+import * as yup from "yup";
+import { Col, Form, Row } from "react-bootstrap";
+import { Formik } from "formik";
+import debounce from "lodash/debounce";
+import { checkSupplierEmail } from "../../clients/supplier_client";
+
+const schema = yup.object().shape({
+  firstName: yup
+    .string()
+    .required("First name is required.")
+    .matches(
+      /^[a-zA-Z\s]+$/,
+      "First name must contain only letters and spaces.",
+    ),
+  lastName: yup
+    .string()
+    .required("Last name is required.")
+    .matches(
+      /^[a-zA-Z\s]+$/,
+      "Last name must contain only letters and spaces.",
+    ),
+  contactEmail: yup
+    .string()
+    .email("Invalid email format.")
+    .required("Email is required."),
+  contactPhonePrefix: yup.string().required("Phone prefix is required."),
+  contactPhoneSuffix: yup
+    .string()
+    .matches(/^[0-9]+$/, "Phone suffix must contain numbers only.")
+    .length(7, "Phone suffix must be 7 digits long.")
+    .required("Phone suffix is required."),
+  supplierEmail: yup
+    .string()
+    .email("Invalid email format.")
+    .required("Supplier email is required."),
+  supplierPhonePrefix: yup.string().required("Phone prefix is required."),
+  supplierPhoneSuffix: yup
+    .string()
+    .matches(/^[0-9]+$/, "Phone suffix must contain numbers only.")
+    .length(7, "Phone suffix must be 7 digits long.")
+    .required("Phone suffix is required."),
+  supplierWebsite: yup
+    .string()
+    .url("Invalid URL format.")
+    .required("Supplier website is required."),
+});
 
 const EditSupplierAccountModal = () => {
   const { token, userDetails, setUserDetails } = useContext(AppContext);
   const [showModal, setShowModal] = useState(false);
-  const [firstName, setFirstName] = useState(userDetails.first_name);
-  const [lastName, setLastName] = useState(userDetails.last_name);
-  const [email, setEmail] = useState(userDetails.email);
-  const [contactPhonePrefix, setContactPhonePrefix] = useState(
-    userDetails.phone_prefix,
-  );
-  const [contactPhoneSuffix, setContactPhoneSuffix] = useState(
-    userDetails.phone_suffix,
-  );
-  const [supplierEmail, setSupplierEmail] = useState(
-    userDetails.supplier_email,
-  );
-  const [supplierPhonePrefix, setSupplierPhonePrefix] = useState(
-    userDetails.supplier_phone_prefix,
-  );
-  const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState(
-    userDetails.supplier_phone_suffix,
-  );
-  const [supplierWebsite, setSupplierWebsite] = useState(
-    userDetails.supplier_website,
-  );
-  const [isFilled, setIsFilled] = useState(true);
+  const [contactEmail, setContactEmail] = useState("");
+  const [supplierEmail, setSupplierEmail] = useState("");
+  const [isContactEmailUnique, setIsContactEmailUnique] = useState(true);
+  const [isCheckingContactEmail, setIsCheckingContactEmail] = useState(false);
+  const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
+  const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
 
+  console.log(userDetails);
+
+  const contactEmailUniqueValidator = {
+    id: "unique",
+    text: "Email address already taken.",
+    validate: () => (isCheckingSupplierEmail ? true : isContactEmailUnique),
+  };
+
+  const supplierEmailUniqueValidator = {
+    id: "unique",
+    text: "Email address already taken.",
+    validate: () => (isCheckingSupplierEmail ? true : isSupplierEmailUnique),
+  };
+
+  const validateContactEmail = async (value) => {
+    const response = await checkSupplierContactEmail(token, value);
+    setIsCheckingContactEmail(false);
+    setIsContactEmailUnique(response);
+  };
+
+  const validateSupplierEmail = async (value) => {
+    const response = await checkSupplierEmail(value);
+    setIsCheckingSupplierEmail(false);
+    setIsSupplierEmailUnique(response);
+  };
+
+  const debouncedCheckContactEmail = useCallback(
+    debounce(validateContactEmail, 1500),
+    [],
+  );
+  const debouncedCheckSupplierEmail = useCallback(
+    debounce(validateSupplierEmail, 1500),
+    [],
+  );
+
   useEffect(() => {
-    setIsFilled(
-      firstName &&
-        lastName &&
-        email &&
-        contactPhonePrefix &&
-        contactPhoneSuffix &&
-        supplierEmail &&
-        supplierPhonePrefix &&
-        supplierPhoneSuffix,
-    );
-  }, [
-    firstName,
-    lastName,
-    email,
-    supplierEmail,
-    contactPhonePrefix,
-    contactPhoneSuffix,
-    supplierPhonePrefix,
-    supplierPhoneSuffix,
-  ]);
+    if (contactEmail && userDetails && contactEmail !== userDetails.email) {
+      debouncedCheckContactEmail(contactEmail);
+    } else {
+      setIsCheckingContactEmail(false);
+    }
+  }, [contactEmail, debouncedCheckContactEmail]);
+
+  useEffect(() => {
+    if (
+      supplierEmail &&
+      userDetails &&
+      supplierEmail !== userDetails.supplier_email
+    ) {
+      debouncedCheckSupplierEmail(supplierEmail);
+    } else {
+      setIsCheckingSupplierEmail(false);
+    }
+  }, [supplierEmail, debouncedCheckSupplierEmail]);
+
   const handleClose = () => {
     setErrorMessages([]);
-    setIsFilled(true);
     setShowModal(false);
   };
   const handleShow = () => setShowModal(true);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (values) => {
     setErrorMessages([]);
-    const supplierEmailValidation = document
-      .getElementById("contact_email")
-      .checkValidity();
-    const contactEmailValidation = document
-      .getElementById("supplier_email")
-      .checkValidity();
-    const phoneValidation = contactPhoneSuffix.length === 7;
-    const contactPhoneValidation = supplierPhoneSuffix.length === 7;
 
-    if (
-      !supplierEmailValidation ||
-      !contactEmailValidation ||
-      !phoneValidation ||
-      !contactPhoneValidation
-    ) {
-      setErrorMessages((prevState) => {
-        const newErrorMessages = [];
-        if (!supplierEmailValidation) {
-          newErrorMessages.push("Invalid office email format.");
-        }
-        if (!contactEmailValidation) {
-          newErrorMessages.push("Invalid contact email format.");
-        }
-        if (!phoneValidation) {
-          newErrorMessages.push(
-            `Supplier phone: Phone suffix should be exactly 7 digits long.`,
-          );
-        }
-        if (!contactPhoneValidation) {
-          newErrorMessages.push(
-            `Contact phone: Phone suffix should be exactly 7 digits long.`,
-          );
-        }
-        return [...prevState, ...newErrorMessages];
-      });
-    } else {
-      const updatedData = {
-        email: email,
-        first_name: firstName,
-        last_name: lastName,
-        supplieruserprofile: {
-          contact_phone_prefix: contactPhonePrefix,
-          contact_phone_suffix: contactPhoneSuffix,
-        },
-        supplier_data: {
-          supplier_id: userDetails.supplier_id,
-          email: supplierEmail,
-          phone_prefix: supplierPhonePrefix,
-          phone_suffix: supplierPhoneSuffix,
-          website: supplierWebsite,
-        },
-      };
-      updateUserProfile(
-        token,
-        userDetails.user_id,
-        updatedData,
-        setUserDetails,
-        true,
-      ).then((response) => {
-        if (response && response.success) {
-          handleClose();
-        } else {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
-    }
+    const updatedData = {
+      email: values.email,
+      first_name: values.firstName,
+      last_name: values.lastName,
+      supplieruserprofile: {
+        contact_phone_prefix: values.contactPhonePrefix,
+        contact_phone_suffix: values.contactPhoneSuffix,
+      },
+      supplier_data: {
+        supplier_id: userDetails.supplier_id,
+        email: values.supplierEmail,
+        phone_prefix: values.supplierPhonePrefix,
+        phone_suffix: values.supplierPhoneSuffix,
+        website: values.supplierWebsite,
+      },
+    };
+    updateUserProfile(
+      token,
+      userDetails.user_id,
+      updatedData,
+      setUserDetails,
+      true,
+    ).then((response) => {
+      if (response && response.success) {
+        handleClose();
+      } else {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
   };
 
   return (
@@ -142,119 +170,336 @@ const EditSupplierAccountModal = () => {
         <Modal.Header closeButton>
           <Modal.Title>Edit your personal details</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <form className="form-control">
-            <legend>Supplier contact details</legend>
-            <label htmlFor="firstName">First Name</label>
-            <input
-              id="first_name"
-              onChange={(e) => setFirstName(e.target.value)}
-              type="text"
-              placeholder="Contact First Name"
-              value={firstName}
-            />
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              id="last_name"
-              onChange={(e) => setLastName(e.target.value)}
-              type="text"
-              placeholder="Contact Last Name"
-              value={lastName}
-            />
-            <input
-              type="email"
-              placeholder="Contact Email"
-              id="contact_email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-            <label htmlFor="phone">Phone</label>
-            <select
-              value={contactPhonePrefix}
-              onChange={(e) => setContactPhonePrefix(e.target.value)}
-            >
-              {PHONE_PREFIX_CHOICES.map((choice, index) => (
-                <option key={index} value={choice.value}>
-                  {choice.label}
-                </option>
-              ))}
-            </select>
-            <input
-              id="phone"
-              onChange={(e) => setContactPhoneSuffix(e.target.value)}
-              type="text"
-              placeholder="Contact Phone"
-              value={contactPhoneSuffix}
-              onKeyPress={(e) => {
-                if (e.key.match(/[^0-9]/)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-            <legend>Supplier details:</legend>
-            <br />
-            <input
-              type="email"
-              placeholder="Supplier email for quotes"
-              id="supplier_email"
-              onChange={(e) => setSupplierEmail(e.target.value)}
-              value={supplierEmail}
-            />
-            <label htmlFor="supplier_phone">Phone</label>{" "}
-            <select
-              value={supplierPhonePrefix}
-              onChange={(e) => setSupplierPhonePrefix(e.target.value)}
-            >
-              {PHONE_PREFIX_CHOICES.map((choice, index) => (
-                <option key={index} value={choice.value}>
-                  {choice.label}
-                </option>
-              ))}
-            </select>
-            <input
-              id="supplier_phone"
-              onChange={(e) => setSupplierPhoneSuffix(e.target.value)}
-              type="text"
-              placeholder="Supplier office phone"
-              value={supplierPhoneSuffix}
-              onKeyPress={(e) => {
-                if (e.key.match(/[^0-9]/)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-            <input
-              id="supplier_website"
-              onChange={(e) => setSupplierWebsite(e.target.value)}
-              type="url"
-              placeholder="Supplier Website URL"
-              value={supplierWebsite}
-            />
-          </form>
-          {errorMessages.length > 0 && (
-            <ul>
-              {errorMessages.map((error, id) => (
-                <li key={id} className="text-danger fw-bold">
-                  {error}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="primary"
-            disabled={!isFilled}
-            onClick={(e) => {
-              handleSubmit(e);
-            }}
-          >
-            Save Changes
-          </Button>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
+
+        <Formik
+          initialValues={{
+            contactEmail: userDetails.email,
+            firstName: userDetails.first_name,
+            lastName: userDetails.last_name,
+            contactPhonePrefix: userDetails.phone_prefix,
+            contactPhoneSuffix: userDetails.phone_suffix,
+            supplierEmail: userDetails.supplier_email,
+            supplierPhonePrefix: userDetails.supplier_phone_prefix,
+            supplierPhoneSuffix: userDetails.supplier_phone_suffix,
+            supplierWebsite: userDetails.supplier_website,
+          }}
+          initialTouched={{
+            contactEmail: true,
+            firstName: true,
+            lastName: true,
+            contactPhonePrefix: true,
+            contactPhoneSuffix: true,
+            supplierEmail: true,
+            supplierPhonePrefix: true,
+            supplierPhoneSuffix: true,
+            supplierWebsite: true,
+          }}
+          validateOnMount={true}
+          enableReinitialize={true}
+          validationSchema={schema}
+          onSubmit={(values) => {
+            handleSubmit(values);
+          }}
+        >
+          {({
+            handleSubmit,
+            handleChange,
+            values,
+            handleBlur,
+            touched,
+            errors,
+            setFieldTouched,
+            isValid,
+            dirty,
+            setFieldValue,
+          }) => {
+            console.log(values);
+            return (
+              <Form noValidate onSubmit={handleSubmit}>
+                <Modal.Body className="d-flex flex-column p-4">
+                  <Form.Group controlId="contactEmail" className="field-margin">
+                    <Form.Label>Contact Email</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="contactEmail"
+                      value={values.contactEmail}
+                      onChange={(event) => {
+                        const { value } = event.target;
+                        setIsCheckingContactEmail(true);
+                        setContactEmail(value);
+                        setFieldValue("contactEmail", value);
+                      }}
+                      onFocus={() => setFieldTouched("contactEmail", true)}
+                      onBlur={handleBlur}
+                      isInvalid={
+                        (touched.contactEmail && !!errors.contactEmail) ||
+                        !contactEmailUniqueValidator.validate()
+                      }
+                      isValid={
+                        touched.contactEmail &&
+                        !errors.contactEmail &&
+                        contactEmailUniqueValidator.validate() &&
+                        !isCheckingContactEmail
+                      }
+                    />
+                    {contactEmailUniqueValidator.validate() &&
+                      !isCheckingContactEmail && (
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                      )}
+                    <Form.Control.Feedback type="invalid">
+                      {errors.contactEmail}
+                      {!contactEmailUniqueValidator.validate() &&
+                        !isCheckingContactEmail &&
+                        contactEmailUniqueValidator.text}
+                    </Form.Control.Feedback>
+                    {isCheckingContactEmail && (
+                      <Form.Text>Checking...</Form.Text>
+                    )}
+                  </Form.Group>
+                  <Form.Group
+                    controlId="contactFirstName"
+                    className="field-margin"
+                  >
+                    <Form.Label>First Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="firstName"
+                      value={values.firstName}
+                      onChange={handleChange}
+                      onFocus={() => setFieldTouched("firstName", true)}
+                      onBlur={handleBlur}
+                      isInvalid={touched.firstName && !!errors.firstName}
+                      isValid={touched.firstName && !errors.firstName}
+                    />
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.firstName}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group
+                    controlId="contactLastName"
+                    className="field-margin"
+                  >
+                    <Form.Label>Last name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="lastName"
+                      value={values.lastName}
+                      onChange={handleChange}
+                      onFocus={() => setFieldTouched("lastName", true)}
+                      onBlur={handleBlur}
+                      isInvalid={touched.lastName && !!errors.lastName}
+                      isValid={touched.lastName && !errors.lastName}
+                    />
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.lastName}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Row className="field-margin">
+                    <Form.Group as={Col} md="3" controlId="contactPhonePrefix">
+                      <Form.Label>Contact Phone</Form.Label>
+                      <Form.Select
+                        name="phonePrefix"
+                        value={values.phonePrefix}
+                        onChange={handleChange}
+                      >
+                        {PHONE_PREFIX_CHOICES.map((choice, index) => (
+                          <option key={index} value={choice.value}>
+                            {choice.label}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.phonePrefix}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group as={Col} md="9" controlId="contactPhoneSuffix">
+                      <Form.Control
+                        type="text"
+                        name="contactPhoneSuffix"
+                        value={values.contactPhoneSuffix}
+                        onChange={handleChange}
+                        onFocus={() =>
+                          setFieldTouched("contactPhoneSuffix", true)
+                        }
+                        onBlur={handleBlur}
+                        isInvalid={
+                          touched.contactPhoneSuffix &&
+                          !!errors.contactPhoneSuffix
+                        }
+                        isValid={
+                          touched.contactPhoneSuffix &&
+                          !errors.contactPhoneSuffix
+                        }
+                      />
+                      <Form.Control.Feedback type="valid">
+                        Looks good!
+                      </Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.contactPhoneSuffix}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Row>
+                  <Form.Group
+                    controlId="supplierEmail"
+                    className="field-margin"
+                  >
+                    <Form.Label>Supplier Email</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="supplierEmail"
+                      value={values.supplierEmail}
+                      onChange={(event) => {
+                        const { value } = event.target;
+                        setIsCheckingSupplierEmail(true);
+                        setSupplierEmail(value);
+                        setFieldValue("supplierEmail", value);
+                      }}
+                      onFocus={() => setFieldTouched("supplierEmail", true)}
+                      onBlur={handleBlur}
+                      isInvalid={
+                        (touched.supplierEmail && !!errors.supplierEmail) ||
+                        !supplierEmailUniqueValidator.validate()
+                      }
+                      isValid={
+                        touched.supplierEmail &&
+                        !errors.supplierEmail &&
+                        supplierEmailUniqueValidator.validate() &&
+                        !isCheckingSupplierEmail
+                      }
+                    />
+                    {supplierEmailUniqueValidator.validate() &&
+                      !isCheckingSupplierEmail && (
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                      )}
+                    <Form.Control.Feedback type="invalid">
+                      {errors.supplierEmail}
+                      {!supplierEmailUniqueValidator.validate() &&
+                        !isCheckingSupplierEmail &&
+                        supplierEmailUniqueValidator.text}
+                    </Form.Control.Feedback>
+                    {isCheckingSupplierEmail && (
+                      <Form.Text>Checking...</Form.Text>
+                    )}
+                  </Form.Group>
+                  <Row className="field-margin">
+                    <Form.Group as={Col} md="3" controlId="supplierPhonePrefix">
+                      <Form.Label>Supplier Phone</Form.Label>
+                      <Form.Select
+                        name="supplierPhonePrefix"
+                        value={values.supplierPhonePrefix}
+                        onChange={handleChange}
+                      >
+                        {PHONE_PREFIX_CHOICES.map((choice, index) => (
+                          <option key={index} value={choice.value}>
+                            {choice.label}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.supplierPhonePrefix}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group as={Col} md="9" controlId="supplierPhoneSuffix">
+                      <Form.Control
+                        type="text"
+                        name="supplierPhoneSuffix"
+                        value={values.supplierPhoneSuffix}
+                        onChange={handleChange}
+                        onFocus={() =>
+                          setFieldTouched("supplierPhoneSuffix", true)
+                        }
+                        onBlur={handleBlur}
+                        isInvalid={
+                          touched.supplierPhoneSuffix &&
+                          !!errors.supplierPhoneSuffix
+                        }
+                        isValid={
+                          touched.supplierPhoneSuffix &&
+                          !errors.supplierPhoneSuffix
+                        }
+                      />
+                      <Form.Control.Feedback type="valid">
+                        Looks good!
+                      </Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.supplierPhoneSuffix}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Row>
+                  <Form.Group
+                    controlId="supplierLastName"
+                    className="field-margin"
+                  >
+                    <Form.Label>Supplier Website</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="supplierWebsite"
+                      value={values.supplierWebsite}
+                      onChange={handleChange}
+                      onFocus={() => setFieldTouched("supplierWebsite", true)}
+                      onBlur={handleBlur}
+                      isInvalid={
+                        touched.supplierWebsite && !!errors.supplierWebsite
+                      }
+                      isValid={
+                        touched.supplierWebsite && !errors.supplierWebsite
+                      }
+                    />
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.supplierWebsite}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  {Object.keys(errorMessages).length > 0 && (
+                    <ul>
+                      {Object.keys(errorMessages).map((key, index) => {
+                        return errorMessages[key].map((error, subIndex) => (
+                          <li
+                            key={`${index}-${subIndex}`}
+                            className="text-danger fw-bold"
+                          >
+                            {error}
+                          </li>
+                        ));
+                      })}
+                    </ul>
+                  )}
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    variant="primary"
+                    disabled={
+                      !isValid ||
+                      !dirty ||
+                      !contactEmailUniqueValidator.validate() ||
+                      !supplierEmailUniqueValidator.validate() ||
+                      isCheckingContactEmail ||
+                      isCheckingSupplierEmail
+                    }
+                    onClick={handleSubmit}
+                  >
+                    Save
+                  </Button>
+                  <Button variant="secondary" onClick={handleClose}>
+                    Close
+                  </Button>
+                </Modal.Footer>
+              </Form>
+            );
+          }}
+        </Formik>
       </Modal>
     </>
   );

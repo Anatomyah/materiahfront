@@ -202,3 +202,23 @@ export const checkEmail = async (value) => {
       : "Something went wrong";
   }
 };
+
+export const checkSupplierContactEmail = async (token, value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_supplier_contact_email/?value=${value}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};

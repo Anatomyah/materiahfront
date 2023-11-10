@@ -150,3 +150,18 @@ export const getSupplierDetails = async (
       : "Something went wrong";
   }
 };
+
+export const checkSupplierEmail = async (value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}suppliers/check_email/?value=${value}`,
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
