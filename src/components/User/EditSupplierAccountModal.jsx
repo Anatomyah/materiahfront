@@ -4,14 +4,18 @@ import Modal from "react-bootstrap/Modal";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
 import {
-  checkSupplierContactEmail,
+  checkEmailAuthRequired,
+  checkPhoneAuthRequired,
   updateUserProfile,
 } from "../../clients/user_client";
 import * as yup from "yup";
 import { Col, Form, Row } from "react-bootstrap";
 import { Formik } from "formik";
 import debounce from "lodash/debounce";
-import { checkSupplierEmail } from "../../clients/supplier_client";
+import {
+  checkSupplierEmail,
+  checkSupplierPhone,
+} from "../../clients/supplier_client";
 
 const schema = yup.object().shape({
   firstName: yup
@@ -19,14 +23,14 @@ const schema = yup.object().shape({
     .required("First name is required.")
     .matches(
       /^[a-zA-Z\s]+$/,
-      "First name must contain only letters and spaces.",
+      "First name must contain only English letters and spaces.",
     ),
   lastName: yup
     .string()
     .required("Last name is required.")
     .matches(
       /^[a-zA-Z\s]+$/,
-      "Last name must contain only letters and spaces.",
+      "Last name must contain only English letters and spaces.",
     ),
   contactEmail: yup
     .string()
@@ -63,9 +67,25 @@ const EditSupplierAccountModal = () => {
   const [isCheckingContactEmail, setIsCheckingContactEmail] = useState(false);
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
+  const [supplierPhonePrefix, setSupplierPhonePrefix] = useState(
+    userDetails ? userDetails.supplier_phone_prefix : "",
+  );
+  const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState(
+    userDetails ? userDetails.supplier_phone_suffix : "",
+  );
+  const [isSupplierPhoneUnique, setIsSupplierPhoneUnique] = useState(true);
+  const [isCheckingSupplierPhone, setIsCheckingSupplierPhone] = useState(false);
+  const [supplierContactPhonePrefix, setSupplierContactPhonePrefix] = useState(
+    userDetails ? userDetails.phone_prefix : "",
+  );
+  const [supplierContactPhoneSuffix, setSupplierContactPhoneSuffix] = useState(
+    userDetails ? userDetails.phone_suffix : "",
+  );
+  const [isSupplierContactPhoneUnique, setIsSupplierContactPhoneUnique] =
+    useState(true);
+  const [isCheckingSupplierContactPhone, setIsCheckingSupplierContactPhone] =
+    useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
-
-  console.log(userDetails);
 
   const contactEmailUniqueValidator = {
     id: "unique",
@@ -79,24 +99,60 @@ const EditSupplierAccountModal = () => {
     validate: () => (isCheckingSupplierEmail ? true : isSupplierEmailUnique),
   };
 
+  const supplierPhoneUniqueValidator = {
+    id: "unique",
+    text: "Phone number already taken.",
+    validate: () => (isCheckingSupplierPhone ? true : isSupplierPhoneUnique),
+  };
+
+  const supplierContactPhoneUniqueValidator = {
+    id: "unique",
+    text: "Phone number already taken.",
+    validate: () =>
+      isCheckingSupplierContactPhone ? true : isSupplierContactPhoneUnique,
+  };
+
   const validateContactEmail = async (value) => {
-    const response = await checkSupplierContactEmail(token, value);
+    const response = await checkEmailAuthRequired(token, value);
     setIsCheckingContactEmail(false);
     setIsContactEmailUnique(response);
   };
 
   const validateSupplierEmail = async (value) => {
-    const response = await checkSupplierEmail(value);
+    const response = await checkSupplierEmail(token, value);
     setIsCheckingSupplierEmail(false);
     setIsSupplierEmailUnique(response);
+  };
+
+  const validateSupplierPhone = async (prefix, suffix) => {
+    const response = await checkSupplierPhone(token, prefix, suffix);
+    setIsCheckingSupplierPhone(false);
+    setIsSupplierPhoneUnique(response);
+  };
+
+  const validateSupplierContactPhone = async (prefix, suffix) => {
+    const response = await checkPhoneAuthRequired(token, prefix, suffix);
+    setIsCheckingSupplierContactPhone(false);
+    setIsSupplierContactPhoneUnique(response);
   };
 
   const debouncedCheckContactEmail = useCallback(
     debounce(validateContactEmail, 1500),
     [],
   );
+
   const debouncedCheckSupplierEmail = useCallback(
     debounce(validateSupplierEmail, 1500),
+    [],
+  );
+
+  const debouncedCheckSupplierPhone = useCallback(
+    debounce(validateSupplierPhone, 1500),
+    [],
+  );
+
+  const debouncedCheckSupplierContactPhone = useCallback(
+    debounce(validateSupplierContactPhone, 1500),
     [],
   );
 
@@ -119,6 +175,45 @@ const EditSupplierAccountModal = () => {
       setIsCheckingSupplierEmail(false);
     }
   }, [supplierEmail, debouncedCheckSupplierEmail]);
+
+  useEffect(() => {
+    if (
+      supplierPhonePrefix &&
+      supplierPhoneSuffix &&
+      supplierPhoneSuffix.length === 7 &&
+      userDetails &&
+      (supplierPhonePrefix !== userDetails.supplier_phone_prefix ||
+        supplierPhoneSuffix !== userDetails.supplier_phone_suffix)
+    ) {
+      debouncedCheckSupplierPhone(supplierPhonePrefix, supplierPhoneSuffix);
+    } else {
+      setIsSupplierPhoneUnique(true);
+      setIsCheckingSupplierPhone(false);
+    }
+  }, [supplierPhonePrefix, supplierPhoneSuffix, debouncedCheckSupplierPhone]);
+
+  useEffect(() => {
+    if (
+      supplierContactPhonePrefix &&
+      supplierContactPhoneSuffix &&
+      supplierContactPhoneSuffix.length === 7 &&
+      userDetails &&
+      (supplierContactPhonePrefix !== userDetails.phone_prefix ||
+        supplierContactPhoneSuffix !== userDetails.phone_suffix)
+    ) {
+      debouncedCheckSupplierContactPhone(
+        supplierContactPhonePrefix,
+        supplierContactPhoneSuffix,
+      );
+    } else {
+      setIsSupplierContactPhoneUnique(true);
+      setIsCheckingSupplierContactPhone(false);
+    }
+  }, [
+    supplierContactPhonePrefix,
+    supplierContactPhoneSuffix,
+    debouncedCheckSupplierContactPhone,
+  ]);
 
   const handleClose = () => {
     setErrorMessages([]);
@@ -213,7 +308,6 @@ const EditSupplierAccountModal = () => {
             dirty,
             setFieldValue,
           }) => {
-            console.log(values);
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
@@ -303,12 +397,17 @@ const EditSupplierAccountModal = () => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Row className="field-margin">
+                    <Form.Label>Contact Phone</Form.Label>
                     <Form.Group as={Col} md="3" controlId="contactPhonePrefix">
-                      <Form.Label>Contact Phone</Form.Label>
                       <Form.Select
-                        name="phonePrefix"
-                        value={values.phonePrefix}
-                        onChange={handleChange}
+                        name="contactPhonePrefix"
+                        value={values.contactPhonePrefix}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingSupplierContactPhone(true);
+                          setSupplierContactPhonePrefix(value);
+                          setFieldValue("contactPhonePrefix", value);
+                        }}
                       >
                         {PHONE_PREFIX_CHOICES.map((choice, index) => (
                           <option key={index} value={choice.value}>
@@ -317,7 +416,7 @@ const EditSupplierAccountModal = () => {
                         ))}
                       </Form.Select>
                       <Form.Control.Feedback type="invalid">
-                        {errors.phonePrefix}
+                        {errors.contactPhonePrefix}
                       </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group as={Col} md="9" controlId="contactPhoneSuffix">
@@ -325,18 +424,26 @@ const EditSupplierAccountModal = () => {
                         type="text"
                         name="contactPhoneSuffix"
                         value={values.contactPhoneSuffix}
-                        onChange={handleChange}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingSupplierContactPhone(true);
+                          setSupplierContactPhoneSuffix(value);
+                          setFieldValue("contactPhoneSuffix", value);
+                        }}
                         onFocus={() =>
                           setFieldTouched("contactPhoneSuffix", true)
                         }
                         onBlur={handleBlur}
                         isInvalid={
-                          touched.contactPhoneSuffix &&
-                          !!errors.contactPhoneSuffix
+                          (touched.contactPhoneSuffix &&
+                            !!errors.contactPhoneSuffix) ||
+                          !supplierContactPhoneUniqueValidator.validate()
                         }
                         isValid={
                           touched.contactPhoneSuffix &&
-                          !errors.contactPhoneSuffix
+                          !errors.contactPhoneSuffix &&
+                          supplierContactPhoneUniqueValidator.validate() &&
+                          !isCheckingSupplierContactPhone
                         }
                       />
                       <Form.Control.Feedback type="valid">
@@ -344,7 +451,13 @@ const EditSupplierAccountModal = () => {
                       </Form.Control.Feedback>
                       <Form.Control.Feedback type="invalid">
                         {errors.contactPhoneSuffix}
+                        {!supplierContactPhoneUniqueValidator.validate() &&
+                          !isCheckingSupplierContactPhone &&
+                          supplierContactPhoneUniqueValidator.text}
                       </Form.Control.Feedback>
+                      {isCheckingSupplierContactPhone && (
+                        <Form.Text>Checking...</Form.Text>
+                      )}
                     </Form.Group>
                   </Row>
                   <Form.Group
@@ -392,12 +505,17 @@ const EditSupplierAccountModal = () => {
                     )}
                   </Form.Group>
                   <Row className="field-margin">
+                    <Form.Label>Supplier Phone</Form.Label>
                     <Form.Group as={Col} md="3" controlId="supplierPhonePrefix">
-                      <Form.Label>Supplier Phone</Form.Label>
                       <Form.Select
                         name="supplierPhonePrefix"
                         value={values.supplierPhonePrefix}
-                        onChange={handleChange}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingSupplierPhone(true);
+                          setSupplierPhonePrefix(value);
+                          setFieldValue("supplierPhonePrefix", value);
+                        }}
                       >
                         {PHONE_PREFIX_CHOICES.map((choice, index) => (
                           <option key={index} value={choice.value}>
@@ -414,18 +532,26 @@ const EditSupplierAccountModal = () => {
                         type="text"
                         name="supplierPhoneSuffix"
                         value={values.supplierPhoneSuffix}
-                        onChange={handleChange}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingSupplierPhone(true);
+                          setSupplierPhoneSuffix(value);
+                          setFieldValue("supplierPhoneSuffix", value);
+                        }}
                         onFocus={() =>
                           setFieldTouched("supplierPhoneSuffix", true)
                         }
                         onBlur={handleBlur}
                         isInvalid={
-                          touched.supplierPhoneSuffix &&
-                          !!errors.supplierPhoneSuffix
+                          (touched.supplierPhoneSuffix &&
+                            !!errors.supplierPhoneSuffix) ||
+                          !supplierPhoneUniqueValidator.validate()
                         }
                         isValid={
                           touched.supplierPhoneSuffix &&
-                          !errors.supplierPhoneSuffix
+                          !errors.supplierPhoneSuffix &&
+                          supplierPhoneUniqueValidator.validate() &&
+                          !isCheckingSupplierPhone
                         }
                       />
                       <Form.Control.Feedback type="valid">
@@ -433,7 +559,13 @@ const EditSupplierAccountModal = () => {
                       </Form.Control.Feedback>
                       <Form.Control.Feedback type="invalid">
                         {errors.supplierPhoneSuffix}
+                        {!supplierPhoneUniqueValidator.validate() &&
+                          !isCheckingSupplierPhone &&
+                          supplierPhoneUniqueValidator.text}
                       </Form.Control.Feedback>
+                      {isCheckingSupplierPhone && (
+                        <Form.Text>Checking...</Form.Text>
+                      )}
                     </Form.Group>
                   </Row>
                   <Form.Group
@@ -486,7 +618,11 @@ const EditSupplierAccountModal = () => {
                       !contactEmailUniqueValidator.validate() ||
                       !supplierEmailUniqueValidator.validate() ||
                       isCheckingContactEmail ||
-                      isCheckingSupplierEmail
+                      isCheckingSupplierEmail ||
+                      !supplierPhoneUniqueValidator.validate() ||
+                      !supplierContactPhoneUniqueValidator.validate() ||
+                      isCheckingSupplierPhone ||
+                      isCheckingSupplierContactPhone
                     }
                     onClick={handleSubmit}
                   >

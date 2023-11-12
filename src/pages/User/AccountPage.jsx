@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { AppContext } from "../../App";
 import ChangePasswordModal from "../../components/User/ChangePasswordModal";
 import EditSupplierAccountModal from "../../components/User/EditSupplierAccountModal";
@@ -6,8 +6,6 @@ import AccountModal from "../../components/User/AccountModal";
 
 const Account = () => {
   const { userDetails, isSupplier } = useContext(AppContext);
-
-  useEffect(() => {}, [userDetails]);
 
   return (
     <div>
@@ -35,7 +33,7 @@ const Account = () => {
       {isSupplier ? <EditSupplierAccountModal /> : <AccountModal />}
 
       <ChangePasswordModal
-        email={userDetails.email}
+        userEmail={userDetails.email}
         buttonText="Change Password"
       />
     </div>

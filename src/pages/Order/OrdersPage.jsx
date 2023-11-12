@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import CreateOrderModal from "../../components/Order/CreateOrderModal";
 import TextField from "@mui/material/TextField";
 import InfiniteScroll from "react-infinite-scroller";
+import OrderModal from "../../components/Order/OrderModal";
 
 const OrdersPage = () => {
   const { token } = useContext(AppContext);
@@ -58,6 +59,7 @@ const OrdersPage = () => {
   return (
     <div>
       <CreateOrderModal onSuccessfulCreate={fetchOrders} />
+      <OrderModal onSuccessfulCreate={fetchOrders} />
       <TextField
         id="outlined-helperText"
         label="Free text search"

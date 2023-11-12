@@ -8,11 +8,8 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
 import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
-import {
-  createOrder,
-  finalizeOrderImageUploadStatus,
-} from "../../clients/order_client";
-import { uploadImagesToS3 } from "../../clients/product_client";
+import { createOrder } from "../../clients/order_client";
+import * as yup from "yup";
 
 const CreateOrderModal = ({ onSuccessfulCreate }) => {
   const { token } = useContext(AppContext);

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../../clients/user_client";
 import { AppContext } from "../../App";
 import AccountModal from "../../components/User/AccountModal";
-import ResetPasswordModal from "../../components/User/ResetPasswordModal";
 import Image from "react-bootstrap/Image";
 import logo from "../../assets/materiah_logo.png";
 import Container from "react-bootstrap/Container";
@@ -12,6 +11,7 @@ import Button from "react-bootstrap/Button";
 import * as formik from "formik";
 import * as yup from "yup";
 import "./LoginPageStyle.css";
+import ChangePasswordModal from "../../components/User/ChangePasswordModal";
 
 const schema = yup.object({
   username: yup.string().required("Username is required"),
@@ -118,7 +118,8 @@ const LoginPage = () => {
         </Formik>
         <div className="d-flex justify-content-between align-items-end">
           <AccountModal isSignUp={true} />
-          <ResetPasswordModal />
+          {/*<ResetPasswordModal />*/}
+          <ChangePasswordModal />
         </div>
       </div>
     </Container>

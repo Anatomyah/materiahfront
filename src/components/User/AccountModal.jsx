@@ -4,7 +4,11 @@ import Modal from "react-bootstrap/Modal";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import {
   checkEmail,
+  checkEmailAuthRequired,
+  checkPhoneAuthRequired,
+  checkPhoneNumber,
   checkUsername,
+  checkUsernameAuthRequired,
   signup,
   updateUserProfile,
 } from "../../clients/user_client";
@@ -96,28 +100,40 @@ const createFormSchema = ({ isSignUp }) =>
       return isSignUp
         ? schema
             .required("Password confirmation is required")
-            .oneOf([password, null], "Passwords must match")
+            .oneOf([yup.ref("password"), null], "Passwords must match")
         : schema.notRequired();
     }),
   });
 
-const AccountModal = ({ isSignUp }) => {
+const AccountModal = ({ isSignUp = false }) => {
   const { token, setToken, userDetails, setUserDetails, setNotifications } =
     useContext(AppContext);
   const formSchema = createFormSchema({
     isSignUp,
   });
+  const { Formik } = formik;
   const nav = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
   const [isUsernameUnique, setIsUsernameUnique] = useState(true);
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(
+    isSignUp ? "" : userDetails.username,
+  );
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isEmailUnique, setIsEmailUnique] = useState(true);
-  const [emailAddress, setEmailAddress] = useState("");
+  const [emailAddress, setEmailAddress] = useState(
+    isSignUp ? "" : userDetails.email,
+  );
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [phonePrefix, setPhonePrefix] = useState(
+    isSignUp ? "050" : userDetails.phone_prefix,
+  );
+  const [phoneSuffix, setPhoneSuffix] = useState(
+    isSignUp ? "" : userDetails.phone_suffix,
+  );
+  const [isPhoneUnique, setIsPhoneUnique] = useState(true);
 
-  const { Formik } = formik;
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
   const [showPasswords, setShowPasswords] = useState(false);
 
   const checkmarkIcon = (
@@ -139,50 +155,124 @@ const AccountModal = ({ isSignUp }) => {
     validate: () => (isCheckingEmail ? true : isEmailUnique),
   };
 
-  const validateUsername = async (value) => {
+  const phoneUniqueValidator = {
+    id: "unique",
+    text: "Phone number already taken.",
+    validate: () => (isCheckingPhone ? true : isPhoneUnique),
+  };
+
+  const validateSignUpPhone = async (prefix, suffix) => {
+    const response = await checkPhoneNumber(prefix, suffix);
+    setIsCheckingPhone(false);
+    setIsPhoneUnique(response);
+  };
+
+  const validateEditPhone = async (prefix, suffix) => {
+    const response = await checkPhoneAuthRequired(token, prefix, suffix);
+    setIsCheckingPhone(false);
+    setIsPhoneUnique(response);
+  };
+
+  const validateSignUpUsername = async (value) => {
     const response = await checkUsername(value);
     setIsCheckingUsername(false);
     setIsUsernameUnique(response);
   };
 
-  const validateEmail = async (value) => {
+  const validateEditUsername = async (value) => {
+    const response = await checkUsernameAuthRequired(token, value);
+    setIsCheckingUsername(false);
+    setIsUsernameUnique(response);
+  };
+
+  const validateSignUpEmail = async (value) => {
     const response = await checkEmail(value);
     setIsCheckingEmail(false);
     setIsEmailUnique(response);
   };
 
-  const debouncedCheckUsername = useCallback(
-    debounce(validateUsername, 1500),
+  const validateEditEmail = async (value) => {
+    const response = await checkEmailAuthRequired(token, value);
+    setIsCheckingEmail(false);
+    setIsEmailUnique(response);
+  };
+
+  const debouncedCheckSignUpUsername = useCallback(
+    debounce(validateSignUpUsername, 1500),
     [],
   );
 
-  const debouncedCheckEmail = useCallback(debounce(validateEmail, 1500), []);
+  const debouncedCheckEditUsername = useCallback(
+    debounce(validateEditUsername, 1500),
+    [],
+  );
+
+  const debouncedCheckSignUpEmail = useCallback(
+    debounce(validateSignUpEmail, 1500),
+    [],
+  );
+
+  const debouncedCheckEditEmail = useCallback(
+    debounce(validateEditEmail, 1500),
+    [],
+  );
+
+  const debouncedCheckSignUpPhone = useCallback(
+    debounce(validateSignUpPhone, 1500),
+    [],
+  );
+
+  const debouncedCheckEditPhone = useCallback(
+    debounce(validateEditPhone, 1500),
+    [],
+  );
 
   useEffect(() => {
-    if (
-      username &&
-      isSignUp &&
-      userDetails &&
-      username !== userDetails.username
-    ) {
-      debouncedCheckUsername(username);
+    if (username && isSignUp) {
+      debouncedCheckSignUpUsername(username);
+    } else if (username && userDetails && username !== userDetails.username) {
+      debouncedCheckSignUpUsername(username);
     } else {
       setIsCheckingUsername(false);
     }
-  }, [username, debouncedCheckUsername]);
+  }, [username, debouncedCheckSignUpUsername, debouncedCheckEditUsername]);
 
   useEffect(() => {
-    if (
+    if (emailAddress && isSignUp) {
+      debouncedCheckSignUpEmail(emailAddress);
+    } else if (
       emailAddress &&
-      isSignUp &&
       userDetails &&
-      username !== userDetails.email
+      emailAddress !== userDetails.email
     ) {
-      debouncedCheckEmail(emailAddress);
+      debouncedCheckEditEmail(emailAddress);
     } else {
       setIsCheckingEmail(false);
     }
-  }, [emailAddress, debouncedCheckEmail]);
+  }, [emailAddress, debouncedCheckSignUpEmail, debouncedCheckEditEmail]);
+
+  useEffect(() => {
+    if (phonePrefix && phoneSuffix && phoneSuffix.length === 7 && isSignUp) {
+      debouncedCheckSignUpPhone(phonePrefix, phoneSuffix);
+    } else if (
+      phonePrefix &&
+      phoneSuffix &&
+      phoneSuffix.length === 7 &&
+      userDetails &&
+      (phonePrefix !== userDetails.phone_prefix ||
+        phoneSuffix !== userDetails.phone_suffix)
+    ) {
+      debouncedCheckEditPhone(phonePrefix, phoneSuffix);
+    } else {
+      setIsCheckingPhone(false);
+    }
+  }, [
+    phonePrefix,
+    phoneSuffix,
+    userDetails,
+    debouncedCheckEditPhone,
+    debouncedCheckSignUpPhone,
+  ]);
 
   const passwordRequirements = [
     {
@@ -234,14 +324,14 @@ const AccountModal = ({ isSignUp }) => {
     }
 
     const accountPromise =
-      isSignUp !== null
-        ? updateUserProfile(
+      isSignUp !== false
+        ? signup(userData, setToken, setUserDetails, setNotifications)
+        : updateUserProfile(
             token,
             userDetails.user_id,
             userData,
             setUserDetails,
-          )
-        : signup(userData, setToken, setUserDetails, setNotifications);
+          );
 
     accountPromise.then((response) => {
       if (response && response.success) {
@@ -267,7 +357,6 @@ const AccountModal = ({ isSignUp }) => {
             {isSignUp ? "Enter User Details" : "Edit Account Details"}
           </Modal.Title>
         </Modal.Header>
-
         <Formik
           initialValues={{
             username: !isSignUp ? userDetails.username : "",
@@ -310,8 +399,6 @@ const AccountModal = ({ isSignUp }) => {
             dirty,
             setFieldValue,
           }) => {
-            console.log(values);
-            console.log(errors);
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
@@ -326,8 +413,8 @@ const AccountModal = ({ isSignUp }) => {
                       value={values.username}
                       onChange={(event) => {
                         const { value } = event.target;
-                        setIsCheckingUsername(true);
                         setUsername(value);
+                        setIsCheckingUsername(true);
                         setFieldValue("username", value);
                       }}
                       onFocus={() => setFieldTouched("username", true)}
@@ -369,7 +456,7 @@ const AccountModal = ({ isSignUp }) => {
                       value={values.email}
                       onChange={(event) => {
                         const { value } = event.target;
-                        setIsCheckingUsername(true);
+                        setIsCheckingEmail(true);
                         setEmailAddress(value);
                         setFieldValue("email", value);
                       }}
@@ -444,12 +531,17 @@ const AccountModal = ({ isSignUp }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Row className="field-margin">
+                    <Form.Label>Phone Number</Form.Label>
                     <Form.Group as={Col} md="3" controlId="signupPhonePrefix">
-                      <Form.Label>Phone prefix</Form.Label>
                       <Form.Select
                         name="phonePrefix"
                         value={values.phonePrefix}
-                        onChange={handleChange}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingPhone(true);
+                          setPhonePrefix(value);
+                          setFieldValue("phonePrefix", value);
+                        }}
                       >
                         {PHONE_PREFIX_CHOICES.map((choice, index) => (
                           <option key={index} value={choice.value}>
@@ -462,23 +554,39 @@ const AccountModal = ({ isSignUp }) => {
                       </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group as={Col} md="9" controlId="signupPhoneSuffix">
-                      <Form.Label>Phone Suffix</Form.Label>
                       <Form.Control
                         type="text"
                         name="phoneSuffix"
                         value={values.phoneSuffix}
-                        onChange={handleChange}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          setIsCheckingPhone(true);
+                          setPhoneSuffix(value);
+                          setFieldValue("phoneSuffix", value);
+                        }}
                         onFocus={() => setFieldTouched("phoneSuffix", true)}
                         onBlur={handleBlur}
-                        isInvalid={touched.phoneSuffix && !!errors.phoneSuffix}
-                        isValid={touched.phoneSuffix && !errors.phoneSuffix}
+                        isInvalid={
+                          (touched.phoneSuffix && !!errors.phoneSuffix) ||
+                          !phoneUniqueValidator.validate()
+                        }
+                        isValid={
+                          touched.phoneSuffix &&
+                          !errors.phoneSuffix &&
+                          phoneUniqueValidator.validate() &&
+                          !isCheckingPhone
+                        }
                       />
                       <Form.Control.Feedback type="valid">
                         Looks good!
                       </Form.Control.Feedback>
                       <Form.Control.Feedback type="invalid">
                         {errors.phoneSuffix}
+                        {!phoneUniqueValidator.validate() &&
+                          !isCheckingPhone &&
+                          phoneUniqueValidator.text}
                       </Form.Control.Feedback>
+                      {isCheckingPhone && <Form.Text>Checking...</Form.Text>}
                     </Form.Group>
                   </Row>
                   {isSignUp && (
@@ -579,7 +687,9 @@ const AccountModal = ({ isSignUp }) => {
                       !usernameUniqueValidator.validate() ||
                       !emailUniqueValidator.validate() ||
                       isCheckingEmail ||
-                      isCheckingUsername
+                      isCheckingUsername ||
+                      !phoneUniqueValidator.validate() ||
+                      isCheckingPhone
                     }
                     onClick={handleSubmit}
                   >

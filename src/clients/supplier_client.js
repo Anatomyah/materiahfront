@@ -151,10 +151,35 @@ export const getSupplierDetails = async (
   }
 };
 
-export const checkSupplierEmail = async (value) => {
+export const checkSupplierEmail = async (token, value) => {
   try {
     const response = await axios.get(
       `${BACKEND_URL}suppliers/check_email/?value=${value}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkSupplierPhone = async (token, prefix, suffix) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}suppliers/check_phone/?prefix=${prefix}&suffix=${suffix}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     console.log(response.data);
     return response.data.unique;

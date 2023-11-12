@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Form, FormControl } from "react-bootstrap";
+import "./OrderComponentStyle.css";
 
 const OrderItemComponent = ({
   product,
@@ -6,161 +8,198 @@ const OrderItemComponent = ({
   onItemChange,
   index,
   quoteItem,
+  formik,
 }) => {
   const [typingTimeout, setTypingTimeout] = useState(null);
-  const [quantity, setQuantity] = useState(item.quantity ? item.quantity : "");
-  const [batch, setBatch] = useState(item.batch ? item.batch : "");
-  const [expiryDate, setExpiryDate] = useState(item.expiry ? item.expiry : "");
-  const [itemFulfilled, setItemFulfilled] = useState(
-    item.status ? item.status === "OK" : true,
-  );
-  const [selectedReason, setSelectedReason] = useState(
-    item.status ? item.status : "",
-  );
-  const [showOtherReasonTextBox, setShowOtherReasonTextBox] = useState(
-    item.status ? item.status === "Other" : false,
-  );
-  const [otherReasonDetails, setOtherReasonDetails] = useState(
-    item.issue_detail ? item.issue_detail : "",
-  );
 
   const handleCheckbox = () => {
-    if (itemFulfilled) {
-      handleReasonChange("Did not arrive");
+    if (formik.values.items[index].itemFulfilled) {
+      handleInstantChange("status", "Did not arrive");
     } else {
-      handleReasonChange("OK");
+      handleInstantChange("status", "OK");
     }
-    setItemFulfilled((prevState) => !prevState);
-    handleQuantityChange(
+    handleDelayedChange(
+      "quantity",
       quoteItem ? quoteItem.quantity : item.quote_item.quantity,
     );
-    setShowOtherReasonTextBox(false);
-    if (otherReasonDetails !== "") {
-      handleOtherReasonChange("");
+    if (formik.values.items[index].otherReasonDetail !== "") {
+      handleDelayedChange("issue_detail", "");
     }
   };
 
-  const handleQuantityChange = (value) => {
+  const handleDelayedChange = (name, value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 
-    setQuantity(value);
-
     const newTimeout = setTimeout(() => {
-      onItemChange(index, "quantity", value);
+      onItemChange(index, name, value);
     }, 300);
 
     setTypingTimeout(newTimeout);
   };
 
-  const handleBatchChange = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    setBatch(value);
-
-    const newTimeout = setTimeout(() => {
-      onItemChange(index, "batch", value);
-    }, 300);
-
-    setTypingTimeout(newTimeout);
+  const handleInstantChange = (name, value) => {
+    onItemChange(index, name, value);
   };
 
-  const handleExpiryDateChange = (value) => {
-    setExpiryDate(value);
-    onItemChange(index, "expiry", value);
-  };
-
-  const handleReasonChange = (value) => {
-    setSelectedReason(value);
-    onItemChange(index, "status", value);
-    if (value === "Other") {
-      setShowOtherReasonTextBox(true);
-    } else {
-      setShowOtherReasonTextBox(false);
-    }
-  };
-
-  const handleOtherReasonChange = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    setOtherReasonDetails(value);
-
-    const newTimeout = setTimeout(() => {
-      onItemChange(index, "issue_detail", value);
-    }, 300);
-
-    setTypingTimeout(newTimeout);
-  };
+  const quantityFieldName = `items[${index}].quantity`;
+  const batchFieldName = `items[${index}].batch`;
+  const expiryDateFieldName = `items[${index}].expiryDate`;
+  const itemFulfilledStatus = `items[${index}].itemFulfilled`;
+  const selectedReasonFieldName = `items[${index}].selectedReason`;
+  const otherReasonDetailFieldName = `items[${index}].otherReasonDetail`;
 
   if (!item) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      <h2>{product.name}</h2>
-      <input
-        type="text"
-        placeholder="Quantity"
-        id="item_quantity"
-        onChange={(e) => handleQuantityChange(e.target.value)}
-        value={quantity}
-        disabled={selectedReason !== "Different amount"}
-        onKeyPress={(e) => {
-          if (e.key.match(/[^0-9]/)) {
-            e.preventDefault();
+    <div className="mt-3 mb-3 border border-secondary-subtle rounded p-3">
+      <h3>
+        {product.name}, {product.cat_num}
+      </h3>
+      <Form.Group controlId={`itemQuantity${index}`} className="field-margin">
+        <Form.Label>Item Quantity</Form.Label>
+        <FormControl
+          name={quantityFieldName}
+          type="text"
+          value={formik.values.items[index].quantity}
+          onChange={(event) => {
+            const { value } = event.target;
+            handleDelayedChange("quantity", value);
+          }}
+          onBlur={formik.handleBlur}
+          onFocus={() => formik.setFieldTouched(quantityFieldName, true)}
+          isValid={
+            formik.touched.items?.[index]?.quantity &&
+            !formik.errors.items?.[index]?.quantity
           }
-        }}
-      />
-      <input
-        type="text"
-        placeholder="Batch #"
-        id="item_batch"
-        onChange={(e) => handleBatchChange(e.target.value)}
-        value={batch}
-      />
-      <input
-        type="date"
-        placeholder="Select expiry date"
-        id="expiry_date"
-        min={new Date().toISOString().split("T")[0]}
-        onChange={(e) => handleExpiryDateChange(e.target.value)}
-        value={expiryDate}
-      />
-      <label>
-        <input
-          type="checkbox"
-          checked={itemFulfilled}
-          onChange={handleCheckbox}
+          isInvalid={
+            !!formik.errors.items?.[index]?.quantity &&
+            formik.touched.items?.[index]?.quantity
+          }
+          disabled={
+            formik.values.items[index].selectedReason !== "Different amount"
+          }
         />
-        Item arrived in full & In good condition
-      </label>
-      {!itemFulfilled && (
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.items?.[index]?.quantity}
+        </Form.Control.Feedback>
+      </Form.Group>
+      <Form.Group controlId={`itemBatch${index}`} className="field-margin">
+        <Form.Label>Batch Number</Form.Label>
+        <FormControl
+          name={batchFieldName}
+          type="text"
+          value={formik.values.items[index].batch}
+          onChange={(event) => {
+            formik.handleChange(event);
+            const { value } = event.target;
+            handleDelayedChange("batch", value);
+          }}
+          onBlur={formik.handleBlur}
+          onFocus={() => formik.setFieldTouched(batchFieldName, true)}
+          isValid={
+            formik.touched.items?.[index]?.batch &&
+            !formik.errors.items?.[index]?.batch
+          }
+          isInvalid={
+            !!formik.errors.items?.[index]?.batch &&
+            formik.touched.items?.[index]?.batch
+          }
+        />
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.items?.[index]?.batch}
+        </Form.Control.Feedback>
+      </Form.Group>
+      <Form.Group controlId={`expiryDate${index}`} className="field-margin">
+        <Form.Label>Expiry Date</Form.Label>
+        <Form.Control
+          type="date"
+          name={expiryDateFieldName}
+          value={formik.values.items[index].expiryDate}
+          onChange={(e) => {
+            const { value } = e.target;
+            formik.handleChange(e);
+            handleInstantChange("expiryDate", value);
+          }}
+          onFocus={() => formik.setFieldTouched(expiryDateFieldName, true)}
+          onBlur={formik.handleBlur}
+          isInvalid={
+            formik.touched.items?.[index].expiryDate &&
+            !!formik.errors.items?.[index].expiryDate
+          }
+          isValid={
+            formik.touched.items?.[index].expiryDate &&
+            !formik.errors.items?.[index].expiryDate
+          }
+        />
+        <Form.Control.Feedback type="invalid">
+          {formik.errors.items?.[index].expiryDate}
+        </Form.Control.Feedback>
+      </Form.Group>
+      <Form.Group
+        controlId={`formItemFulfilled${index}`}
+        className="field-margin"
+      >
+        <Form.Check
+          name={itemFulfilledStatus}
+          type="checkbox"
+          label="Item arrived in full & In good condition"
+          checked={formik.values.items[index].itemFulfilled}
+          onChange={(event) => {
+            const { value } = event.target;
+            formik.handleChange(event);
+            handleCheckbox(value);
+          }}
+          onBlur={formik.handleBlur}
+        />
+      </Form.Group>
+      {!formik.values.items[index].itemFulfilled && (
         <>
-          <select
-            onChange={(e) => handleReasonChange(e.target.value)}
-            value={selectedReason}
+          <Form.Group
+            controlId={`formSelectedReason${index}`}
+            className="field-margin"
           >
-            <option value="" disabled>
-              --Select a Reason--
-            </option>
-            <option value="Did not arrive">Did not arrive</option>
-            <option value="Different amount">Different amount</option>
-            <option value="Wrong Item">Wrong Item</option>
-            <option value="Expired or near expiry">
-              Expired or near expiry
-            </option>
-            <option value="Bad condition">Bad condition</option>
-            <option value="Other">Other...</option>
-          </select>
+            <Form.Select
+              name={selectedReasonFieldName}
+              onChange={(event) => {
+                const { value } = event.target;
+                formik.handleChange(event);
+                handleInstantChange("status", value);
+              }}
+              value={formik.values.items[index].selectedReason}
+              onBlur={formik.handleBlur}
+            >
+              <option value="" disabled>
+                --Select a Reason--
+              </option>
+              <option value="Did not arrive">Did not arrive</option>
+              <option value="Different amount">Different amount</option>
+              <option value="Wrong Item">Wrong Item</option>
+              <option value="Expired or near expiry">
+                Expired or near expiry
+              </option>
+              <option value="Bad condition">Bad condition</option>
+              <option value="Other">Other...</option>
+            </Form.Select>
+          </Form.Group>
 
-          {showOtherReasonTextBox && (
-            <textarea
-              placeholder="Specify the issue"
-              rows="4"
-              cols="50"
-              onChange={(e) => handleOtherReasonChange(e.target.value)}
-              value={otherReasonDetails}
-            ></textarea>
+          {formik.values.items[index].selectedReason === "Other" && (
+            <Form.Group controlId={`formOtherReasonDetails${index}`}>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name={otherReasonDetailFieldName}
+                placeholder="Specify the issue"
+                value={formik.values.items[index].otherReasonDetail}
+                onChange={(event) => {
+                  const { value } = event.target;
+                  formik.handleChange(event);
+                  handleDelayedChange("issue_detail", value);
+                }}
+                onBlur={formik.handleBlur}
+              />
+            </Form.Group>
           )}
         </>
       )}

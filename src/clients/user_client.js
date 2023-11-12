@@ -20,6 +20,8 @@ export const signup = async (
   setUserDetails,
   setNotifications,
 ) => {
+  console.log(userData);
+  console.log(setToken);
   try {
     const response = await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
@@ -29,22 +31,24 @@ export const signup = async (
 
     let result = { success: true };
 
+    console.log(setToken);
+
     if (response) {
-      login(
-        {
-          credentials: {
-            username: userData.username,
-            password: userData.password,
-          },
+      const loginResponse = await login({
+        credentials: {
+          username: userData.username,
+          password: userData.password,
         },
         setToken,
         setUserDetails,
         setNotifications,
-      ).then((r) => {
-        if (r && !r.success) {
-          result.success = false;
-        }
       });
+
+      if (loginResponse && !loginResponse.success) {
+        return { success: false, message: "Login failed after signup" };
+      }
+
+      return { success: true };
     }
 
     return result;
@@ -75,6 +79,8 @@ export const login = async ({
         "Content-Type": "application/json",
       },
     });
+    console.log(res);
+
     if (res.status === 200 && res.data) {
       setToken(res.data.token);
       setUserDetails(res.data.user_details);
@@ -131,6 +137,7 @@ export const getPasswordToken = async (email) => {
 };
 
 export const resetPassword = async (token, password) => {
+  console.log(password);
   try {
     await axios.post(`${BACKEND_URL}api/password_reset/confirm/`, {
       token,
@@ -161,12 +168,11 @@ export const updateUserProfile = async (
         },
       },
     );
+    console.log(response.data);
     setUserDetails(response.data);
     return { success: true };
   } catch (error) {
     console.error(error);
-    console.error(error.response);
-    console.error(error.response.data);
     return error.response
       ? Object.values(error.response.data).flat()
       : "Something went wrong";
@@ -177,6 +183,26 @@ export const checkUsername = async (value) => {
   try {
     const response = await axios.get(
       `${BACKEND_URL}users/check_username/?value=${value}`,
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkUsernameAuthRequired = async (token, value) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_username_auth_required/?value=${value}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
     );
     console.log(response.data);
     return response.data.unique;
@@ -203,15 +229,49 @@ export const checkEmail = async (value) => {
   }
 };
 
-export const checkSupplierContactEmail = async (token, value) => {
+export const checkEmailAuthRequired = async (token, value) => {
   try {
     const response = await axios.get(
-      `${BACKEND_URL}users/check_supplier_contact_email/?value=${value}`,
+      `${BACKEND_URL}users/check_email_auth_required/?value=${value}`,
       {
         headers: {
           Authorization: `Token ${token}`,
         },
       },
+    );
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkPhoneAuthRequired = async (token, prefix, suffix) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_phone_auth_required/?prefix=${prefix}&suffix=${suffix}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkPhoneNumber = async (prefix, suffix) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}users/check_phone/?prefix=${prefix}&suffix=${suffix}`,
     );
     console.log(response.data);
     return response.data.unique;
