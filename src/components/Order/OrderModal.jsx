@@ -7,30 +7,27 @@ import {
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
-import { allOrderItemsFilled } from "../../config_and_helpers/helpers";
-import { createOrder } from "../../clients/order_client";
+import { createOrder, updateOrder } from "../../clients/order_client";
 import * as yup from "yup";
 import { Col, Form } from "react-bootstrap";
 import { Formik } from "formik";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import EditIcon from "@mui/icons-material/Edit";
 
 const itemSchema = yup.object().shape({
   quantity: yup
-    .number()
+    .string()
     .required("Quantity is required")
-    .positive("Quantity must be positive")
-    .integer("Quantity must be an integer"),
+    .matches(/^\d+$/, "Quantity must be a number"),
   batch: yup.string().required("Batch number is required"),
-  expiryDate: yup
-    .date()
-    .required("Expiry date is required")
-    .min(new Date(), "Expiry date cannot be in the past"),
+  expiryDate: yup.date().required("Expiry date is required"),
   itemFulfilled: yup.boolean(),
   selectedReason: yup.string().when("itemFulfilled", function (itemFulfilled) {
     if (itemFulfilled === false) {
       return yup.string().required("Reason is required");
     }
-    return yup.string(); // Or yup.string().nullable() if the field can be empty
+    return yup.string();
   }),
   otherReasonDetail: yup
     .string()
@@ -38,46 +35,75 @@ const itemSchema = yup.object().shape({
       if (selectedReason === "Other") {
         return yup.string().required("Detail is required when status is Other");
       }
-      return yup.string(); // Or yup.string().nullable() if the field can be empty
+      return yup.string();
     }),
 });
 
-const schema = yup.object().shape({
-  items: yup.array().of(itemSchema),
-  quoteList: yup.string().required("Selecting a quote is required."),
-  arrivalDate: yup
-    .date()
-    .required("Arrival date is required.")
-    .typeError("Invalid date format. Please enter a valid date."),
-  orderImages: yup
-    .mixed()
-    .required("Uploading order images is required.")
-    .test(
-      "fileType",
-      "Unsupported file format. Accepted formats are PDF, JPG, PNG, GIF.",
-      (value) => {
-        if (!value) return true; // Bypass the test if no file is uploaded
-        return value.every((file) =>
-          ["application/pdf", "image/jpeg", "image/png", "image/gif"].includes(
-            file.type,
-          ),
-        );
-      },
-    ),
-  receivedBy: yup
-    .string()
-    .required("Received by field is required.")
-    .matches(/^[a-zA-Z\s]+$/, "Received by must contain only English letters."),
-});
+const createFormSchema = ({ hasExistingImages }) =>
+  yup.object().shape({
+    items: yup.array().of(itemSchema),
+    quoteList: yup.string(),
+    arrivalDate: yup
+      .date()
+      .required("Arrival date is required.")
+      .typeError("Invalid date format. Please enter a valid date."),
+    orderImages: yup
+      .mixed()
+      .when([], () => {
+        return hasExistingImages
+          ? yup.mixed()
+          : yup.mixed().required("Uploading order images is required.");
+      })
+      .test(
+        "fileType",
+        "Unsupported file format. Accepted formats are PDF, JPG, PNG, GIF.",
+        (value) => {
+          if (!value) return true; // Bypass the test if no file is uploaded
+          return value.every((file) =>
+            [
+              "application/pdf",
+              "image/jpeg",
+              "image/png",
+              "image/gif",
+            ].includes(file.type),
+          );
+        },
+      ),
+    receivedBy: yup
+      .string()
+      .required("Received by field is required.")
+      .matches(
+        /^[a-zA-Z\s]+$/,
+        "Received by must contain only English letters.",
+      ),
+  });
 
-const OrderModal = ({ onSuccessfulCreate }) => {
+const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
   const { token } = useContext(AppContext);
+  const [hasExistingImages, setHasExistingImages] = useState(false);
+  const formSchema = createFormSchema({
+    hasExistingImages,
+  });
   const [relatedQuoteObj, setRelatedQuoteObj] = useState(null);
-  const [supplier, setSupplier] = useState("");
   const [openQuotesSelectList, setOpenQuotesSelectList] = useState([]);
-  const [items, setItems] = useState([]);
-  const [images, setImages] = useState([]);
-
+  const [items, setItems] = useState(
+    orderObj
+      ? () => {
+          return orderObj.items.map((item) => ({
+            quote_item: {
+              id: item.quote_item.id,
+              quantity: item.quote_item.quantity,
+            },
+            quantity: item.quantity,
+            batch: item.batch,
+            expiry: item.expiry,
+            status: item.status,
+            issue_detail: item.issue_detail,
+          }));
+        }
+      : [],
+  );
+  const [images, setImages] = useState(orderObj ? orderObj.images : []);
   const [showModal, setShowModal] = useState(false);
   const [errorMessages, setErrorMessages] = useState([]);
 
@@ -90,10 +116,6 @@ const OrderModal = ({ onSuccessfulCreate }) => {
   };
 
   useEffect(() => {
-    console.log(images);
-  }, [images]);
-
-  useEffect(() => {
     getOpenQuotesSelectList(token, setOpenQuotesSelectList).then((response) => {
       if (response && !response.success) {
         setErrorMessages((prevState) => [...prevState, response]);
@@ -102,22 +124,18 @@ const OrderModal = ({ onSuccessfulCreate }) => {
   }, []);
 
   useEffect(() => {
-    if (relatedQuoteObj) {
-      setSupplier(relatedQuoteObj.supplier.name);
+    if (relatedQuoteObj && !orderObj) {
       setItems(() => {
         return relatedQuoteObj.items.map((item) => ({
           quote_item_id: item.id,
           cat_num: item.product.cat_num,
           quantity: item.quantity,
+          expiry: new Date().toISOString().split("T")[0],
           status: "OK",
         }));
       });
     }
   }, [relatedQuoteObj]);
-
-  useEffect(() => {
-    const itemsValidation = allOrderItemsFilled(items);
-  }, [items]);
 
   const updateItem = (index, field, value) => {
     const newItems = [...items];
@@ -134,6 +152,14 @@ const OrderModal = ({ onSuccessfulCreate }) => {
     setImages((prevState) => [...prevState, ...newImages]);
   };
 
+  useEffect(() => {
+    if (images.length) {
+      setHasExistingImages(true);
+    } else {
+      setHasExistingImages(false);
+    }
+  }, [images]);
+
   function handleDeleteImage(imageId) {
     setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
   }
@@ -142,30 +168,75 @@ const OrderModal = ({ onSuccessfulCreate }) => {
     setErrorMessages([]);
     setShowModal(false);
     setRelatedQuoteObj(null);
+    setItems(
+      orderObj
+        ? () => {
+            return orderObj.items.map((item) => ({
+              quote_item: {
+                id: item.quote_item.id,
+                quantity: item.quote_item.quantity,
+              },
+              quantity: item.quantity,
+              batch: item.batch,
+              expiry: item.expiry,
+              status: item.status,
+              issue_detail: item.issue_detail,
+            }));
+          }
+        : [],
+    );
+    setImages(orderObj ? orderObj.images : []);
   };
 
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
     setErrorMessages([]);
+    let finalItems, imagesToDelete;
+
+    if (orderObj) {
+      finalItems = items.map((item) => ({
+        quote_item_id: item.quote_item.id,
+        quantity: item.quantity,
+        batch: item.batch,
+        expiry: item.expiry,
+        status: item.status,
+        issue_detail: item.issue_detail,
+      }));
+
+      imagesToDelete = orderObj.images
+        .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
+        .map((obj) => obj.id);
+    }
 
     const formData = new FormData();
-    formData.append("quote", relatedQuoteObj.id);
+    formData.append("quote", orderObj ? orderObj.quote.id : relatedQuoteObj.id);
     formData.append("arrival_date", values.arrivalDate);
-    formData.append("items", JSON.stringify(items));
+    formData.append("items", JSON.stringify(orderObj ? finalItems : items));
     formData.append("received_by", values.receivedBy);
-    if (images.length) {
-      const imageInfo = images.map((image) => ({
+
+    if (orderObj && imagesToDelete.length) {
+      formData.append("images_to_delete", JSON.stringify(imagesToDelete));
+    }
+
+    const newImages = images.filter((image) => image.file);
+
+    if (newImages.length) {
+      const imageInfo = newImages.map((image) => ({
         id: image.id,
         type: image.file.type,
       }));
       formData.append("images", JSON.stringify(imageInfo));
     }
 
-    createOrder(token, formData, images).then((response) => {
+    const orderPromise = orderObj
+      ? updateOrder(token, orderObj.id, formData, newImages)
+      : createOrder(token, formData, images);
+
+    orderPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
-          onSuccessfulCreate();
+          onSuccessfulSubmit();
         }, 1500);
         handleClose();
       } else {
@@ -180,37 +251,71 @@ const OrderModal = ({ onSuccessfulCreate }) => {
 
   return (
     <>
-      <Button variant="link" onClick={handleShow}>
-        Create Order
+      <Button
+        variant={orderObj ? "outline-success" : "success"}
+        onClick={handleShow}
+      >
+        {orderObj ? <EditIcon /> : "Create Order"}
       </Button>
 
-      <Modal show={showModal} onHide={handleClose}>
+      <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
-          <Modal.Title>Create Order</Modal.Title>
+          <Modal.Title>{orderObj ? "Edit" : "Create"} Order</Modal.Title>
         </Modal.Header>
         <Formik
           key={items.length}
+          initialTouched={
+            orderObj
+              ? {
+                  items: orderObj.items.map(() => ({
+                    quantity: true,
+                    batch: true,
+                    expiryDate: true,
+                    itemFulfilled: true,
+                    otherReasonDetail: true,
+                  })),
+                  quoteList: true,
+                  arrivalDate: true,
+                  orderImages: true,
+                  receivedBy: true,
+                }
+              : {}
+          }
           initialValues={{
-            items: items.map((item) => ({
-              quantity: item.quantity || "",
-              batch: item.batch || "",
-              expiryDate: item.expiry || new Date().toISOString().split("T")[0],
-              itemFulfilled: item.status ? item.status === "OK" : true,
-              selectedReason: item.status === "Other" || false,
-              otherReasonDetail: item.issue_detail || "",
-            })),
+            items: orderObj
+              ? orderObj.items.map((item) => ({
+                  quantity: item.quantity,
+                  batch: item.batch,
+                  expiryDate: item.expiry,
+                  itemFulfilled: item.status === "OK" || false,
+                  otherReasonDetail: item.issue_detail || "",
+                }))
+              : items.map((item) => ({
+                  quantity: item.quantity || "",
+                  batch: item.batch || "",
+                  expiryDate:
+                    item.expiry || new Date().toISOString().split("T")[0],
+                  itemFulfilled: item.status ? item.status === "OK" : true,
+                  selectedReason: item.status === "Other" || false,
+                  otherReasonDetail: item.issue_detail || "",
+                })),
             quoteList: relatedQuoteObj ? relatedQuoteObj.id : "",
-            arrivalDate: new Date().toISOString().split("T")[0],
-            orderImages: "",
-            receivedBy: "",
+            arrivalDate: orderObj
+              ? orderObj.arrival_date
+              : new Date().toISOString().split("T")[0],
+            orderImages: orderObj ? "" : null,
+            receivedBy: orderObj ? orderObj.received_by : "",
           }}
-          validationSchema={schema}
+          validateOnMount={!!orderObj}
+          enableReinitialize={true}
+          validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);
           }}
         >
           {({
             handleChange,
+            handleSubmit,
             values,
             handleBlur,
             touched,
@@ -223,65 +328,108 @@ const OrderModal = ({ onSuccessfulCreate }) => {
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
-                  <Form.Group
-                    as={Col}
-                    md="8"
-                    controlId="selectQuote"
-                    className="field-margin"
-                  >
-                    <Form.Label>Select Quote</Form.Label>
-                    <Form.Select
-                      name="quoteList"
-                      value={values.quoteList}
-                      onChange={(event) => {
-                        handleChange(event);
-                        console.log(event);
-                        const { value } = event.target;
-                        fetchQuote(value);
-                        setFieldValue("quoteList", value);
-                      }}
-                    >
-                      <option value="" disabled>
-                        -- Select Quote --
-                      </option>
-                      {openQuotesSelectList.map((choice, index) => (
-                        <option key={index} value={choice.value}>
-                          {choice.label}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.quoteList}
-                    </Form.Control.Feedback>
-                    {!relatedQuoteObj ? (
-                      <Form.Text>Choose a quote to view it's details</Form.Text>
-                    ) : (
-                      <a
-                        href={
-                          relatedQuoteObj.quote_url instanceof Blob
-                            ? URL.createObjectURL(relatedQuoteObj.quote_url)
-                            : relatedQuoteObj.quote_url
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-outline-primary mt-1"
+                  <div className="d-flex justify-content-between align-items-start">
+                    {!orderObj && (
+                      <Form.Group
+                        as={Col}
+                        md="8"
+                        controlId="selectQuote"
+                        className="field-margin"
                       >
-                        View Quote
-                      </a>
+                        <Form.Label>Select Quote</Form.Label>
+                        <Form.Select
+                          name="quoteList"
+                          value={values.quoteList}
+                          onChange={(event) => {
+                            handleChange(event);
+                            const { value } = event.target;
+                            fetchQuote(value);
+                          }}
+                        >
+                          <option value="" disabled>
+                            -- Select Quote --
+                          </option>
+                          {openQuotesSelectList.map((choice, index) => (
+                            <option key={index} value={choice.value}>
+                              {choice.label}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.quoteList}
+                        </Form.Control.Feedback>
+                        {!relatedQuoteObj && (
+                          <Form.Text>
+                            Choose a quote to view it's details
+                          </Form.Text>
+                        )}
+                      </Form.Group>
                     )}
-                  </Form.Group>
-                  {relatedQuoteObj && items && (
+                    {relatedQuoteObj && !orderObj && (
+                      <div style={{ marginTop: "1.95rem" }}>
+                        <a
+                          href={
+                            relatedQuoteObj?.quote_url instanceof Blob
+                              ? URL.createObjectURL(relatedQuoteObj.quote_url)
+                              : relatedQuoteObj?.quote_url
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline-dark"
+                        >
+                          {orderObj && "View Quote "}
+                          <PictureAsPdfIcon />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  {orderObj && (
+                    <a
+                      href={
+                        orderObj?.quote?.quote_url instanceof Blob
+                          ? URL.createObjectURL(orderObj.quote.quote_url)
+                          : orderObj?.quote?.quote_url
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-outline-dark"
+                      style={{ margin: "1rem" }}
+                    >
+                      {orderObj && "View Quote "}
+                      <PictureAsPdfIcon />
+                    </a>
+                  )}
+                  {items && (relatedQuoteObj || orderObj) && (
                     <>
-                      <h2>Supplier: {supplier}</h2>
+                      <h2>
+                        Supplier:{" "}
+                        {orderObj
+                          ? orderObj.supplier.name
+                          : relatedQuoteObj.supplier.name}
+                      </h2>
                       {items.map((item, index) =>
-                        relatedQuoteObj.items[index] ? (
+                        (
+                          orderObj
+                            ? orderObj.items[index]
+                            : relatedQuoteObj.items[index]
+                        ) ? (
                           <OrderItemComponent
-                            key={`${relatedQuoteObj.id}-${index}`}
-                            product={relatedQuoteObj.items[index].product}
+                            key={
+                              orderObj
+                                ? `${orderObj.quote.id}-${index}`
+                                : `${relatedQuoteObj.id}-${index}`
+                            }
+                            product={
+                              orderObj
+                                ? orderObj.items[index].product
+                                : relatedQuoteObj.items[index].product
+                            }
                             onItemChange={updateItem}
                             index={index}
                             item={item}
-                            quoteItem={relatedQuoteObj.items[index]}
+                            quoteItem={
+                              orderObj ? null : relatedQuoteObj.items[index]
+                            }
                             formik={{
                               handleChange,
                               values,
@@ -296,7 +444,7 @@ const OrderModal = ({ onSuccessfulCreate }) => {
                       )}
                     </>
                   )}
-                  {relatedQuoteObj && (
+                  {(relatedQuoteObj || orderObj) && (
                     <>
                       <Form.Group
                         controlId="formOrderImages"
@@ -314,6 +462,7 @@ const OrderModal = ({ onSuccessfulCreate }) => {
                           onChange={(event) => {
                             const files = Array.from(event.target.files);
                             handleFileChange(files);
+                            setFieldValue("orderImages", files);
                           }}
                           isValid={values.orderImages && images.length}
                           isInvalid={
@@ -328,31 +477,59 @@ const OrderModal = ({ onSuccessfulCreate }) => {
                           {errors.orderImages}
                         </Form.Control.Feedback>
                       </Form.Group>
-
                       <div>
                         <div className="field-margin">
                           {images.map((image) => {
                             let imageUrl =
                               image.image_url ||
                               URL.createObjectURL(image.file);
+
+                            // Check if the file is a PDF by looking at the URL extension
+                            const isPdf = imageUrl
+                              .toLowerCase()
+                              .endsWith(".pdf");
+
                             return (
                               <div key={image.id}>
-                                <a
-                                  href={imageUrl}
-                                  key={image.id}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <img
-                                    src={imageUrl}
-                                    alt={`order-quote-${relatedQuoteObj.id}-image-${image.id}`}
-                                    width="200"
-                                  />
-                                </a>
-                                <DeleteIcon
-                                  onClick={() => handleDeleteImage(image.id)}
-                                  style={{ cursor: "pointer" }}
-                                />
+                                {isPdf ? (
+                                  <>
+                                    <a
+                                      href={imageUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-outline-dark"
+                                      style={{ width: "200px" }}
+                                    >
+                                      <PictureAsPdfIcon />
+                                    </a>
+                                    <DeleteIcon
+                                      onClick={() =>
+                                        handleDeleteImage(image.id)
+                                      }
+                                      style={{ cursor: "pointer" }}
+                                    />
+                                  </>
+                                ) : (
+                                  <>
+                                    <a
+                                      href={imageUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <img
+                                        src={imageUrl}
+                                        alt={`product-${values.catalogueNumber}-image-${image.id}`}
+                                        width="200"
+                                      />
+                                    </a>
+                                    <DeleteIcon
+                                      onClick={() =>
+                                        handleDeleteImage(image.id)
+                                      }
+                                      style={{ cursor: "pointer" }}
+                                    />
+                                  </>
+                                )}
                               </div>
                             );
                           })}
@@ -427,10 +604,10 @@ const OrderModal = ({ onSuccessfulCreate }) => {
                 <Modal.Footer>
                   <Button
                     variant="primary"
-                    disabled={!isValid || !dirty}
+                    disabled={!isValid || (!orderObj && !dirty)}
                     onClick={handleSubmit}
                   >
-                    Reset Password
+                    {orderObj ? "Save" : "Create"}
                   </Button>
                   <Button variant="secondary" onClick={handleClose}>
                     Close

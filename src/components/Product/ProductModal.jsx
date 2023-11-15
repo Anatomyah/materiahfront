@@ -21,6 +21,8 @@ import "./ProductComponentStyle.css";
 import "font-awesome/css/font-awesome.min.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import debounce from "lodash/debounce";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import EditIcon from "@mui/icons-material/Edit";
 
 const createFormSchema = ({ isSupplier }) =>
   yup.object().shape({
@@ -200,10 +202,9 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
       formData.append("images", JSON.stringify(imageInfo));
     }
 
-    const productPromise =
-      productObj !== null
-        ? updateProduct(token, productObj.id, formData, newImages)
-        : createProduct(token, formData, newImages);
+    const productPromise = productObj
+      ? updateProduct(token, productObj.id, formData, newImages)
+      : createProduct(token, formData, newImages);
 
     productPromise.then((response) => {
       if (response && response.success) {
@@ -223,8 +224,11 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
 
   return (
     <>
-      <Button variant="link" onClick={handleShow}>
-        {productObj ? "Edit" : "Create"} Product
+      <Button
+        variant={productObj ? "outline-success" : "success"}
+        onClick={handleShow}
+      >
+        {productObj ? <EditIcon /> : "Create Product"}
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>
@@ -572,24 +576,47 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                     {images.map((image) => {
                       let imageUrl =
                         image.image_url || URL.createObjectURL(image.file);
+
+                      // Check if the file is a PDF by looking at the URL extension
+                      const isPdf = imageUrl.toLowerCase().endsWith(".pdf");
+
                       return (
                         <div key={image.id}>
-                          <a
-                            href={imageUrl}
-                            key={image.id}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <img
-                              src={imageUrl}
-                              alt={`product-${values.catalogueNumber}-image-${image.id}`}
-                              width="200"
-                            />
-                          </a>
-                          <DeleteIcon
-                            onClick={() => handleDeleteImage(image.id)}
-                            style={{ cursor: "pointer" }}
-                          />
+                          {isPdf ? (
+                            <>
+                              <a
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-outline-dark"
+                                style={{ width: "200px" }}
+                              >
+                                <PictureAsPdfIcon />
+                              </a>
+                              <DeleteIcon
+                                onClick={() => handleDeleteImage(image.id)}
+                                style={{ cursor: "pointer" }}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <a
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <img
+                                  src={imageUrl}
+                                  alt={`product-${values.catalogueNumber}-image-${image.id}`}
+                                  width="200"
+                                />
+                              </a>
+                              <DeleteIcon
+                                onClick={() => handleDeleteImage(image.id)}
+                                style={{ cursor: "pointer" }}
+                              />
+                            </>
+                          )}
                         </div>
                       );
                     })}
@@ -654,7 +681,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                       isCheckingCatNum ||
                       (!productObj && !dirty)
                     }
-                    onClick={handleSubmit}
+                    type="submit"
                   >
                     {productObj ? "Save" : "Create"}
                   </Button>

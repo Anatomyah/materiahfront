@@ -151,3 +151,23 @@ export const getManufacturerDetails = async (
       : "Something went wrong";
   }
 };
+
+export const checkManufacturerName = async (token, name) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}manufacturers/check_name/?name=${name}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};

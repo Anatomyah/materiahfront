@@ -93,6 +93,13 @@ const EditSupplierAccountModal = () => {
     validate: () => (isCheckingSupplierEmail ? true : isContactEmailUnique),
   };
 
+  const supplierContactPhoneUniqueValidator = {
+    id: "unique",
+    text: "Phone number already taken.",
+    validate: () =>
+      isCheckingSupplierContactPhone ? true : isSupplierContactPhoneUnique,
+  };
+
   const supplierEmailUniqueValidator = {
     id: "unique",
     text: "Email address already taken.",
@@ -105,17 +112,16 @@ const EditSupplierAccountModal = () => {
     validate: () => (isCheckingSupplierPhone ? true : isSupplierPhoneUnique),
   };
 
-  const supplierContactPhoneUniqueValidator = {
-    id: "unique",
-    text: "Phone number already taken.",
-    validate: () =>
-      isCheckingSupplierContactPhone ? true : isSupplierContactPhoneUnique,
-  };
-
   const validateContactEmail = async (value) => {
     const response = await checkEmailAuthRequired(token, value);
     setIsCheckingContactEmail(false);
     setIsContactEmailUnique(response);
+  };
+
+  const validateSupplierContactPhone = async (prefix, suffix) => {
+    const response = await checkPhoneAuthRequired(token, prefix, suffix);
+    setIsCheckingSupplierContactPhone(false);
+    setIsSupplierContactPhoneUnique(response);
   };
 
   const validateSupplierEmail = async (value) => {
@@ -130,14 +136,13 @@ const EditSupplierAccountModal = () => {
     setIsSupplierPhoneUnique(response);
   };
 
-  const validateSupplierContactPhone = async (prefix, suffix) => {
-    const response = await checkPhoneAuthRequired(token, prefix, suffix);
-    setIsCheckingSupplierContactPhone(false);
-    setIsSupplierContactPhoneUnique(response);
-  };
-
   const debouncedCheckContactEmail = useCallback(
     debounce(validateContactEmail, 1500),
+    [],
+  );
+
+  const debouncedCheckSupplierContactPhone = useCallback(
+    debounce(validateSupplierContactPhone, 1500),
     [],
   );
 
@@ -148,11 +153,6 @@ const EditSupplierAccountModal = () => {
 
   const debouncedCheckSupplierPhone = useCallback(
     debounce(validateSupplierPhone, 1500),
-    [],
-  );
-
-  const debouncedCheckSupplierContactPhone = useCallback(
-    debounce(validateSupplierContactPhone, 1500),
     [],
   );
 

@@ -7,6 +7,7 @@ import { ButtonGroup } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import ProductModal from "./ProductModal";
+import ProductDetailModal from "./ProductDetailModal";
 
 const ProductDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -91,6 +92,7 @@ const ProductDetailComponent = () => {
 
   return (
     <div>
+      <ProductDetailModal />
       <h1>{product.name}</h1>
       <div>
         {product.images.map((image) => (

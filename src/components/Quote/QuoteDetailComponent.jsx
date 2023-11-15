@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { getQuoteDetails } from "../../clients/quote_client";
-import EditQuoteModal from "./EditQuoteModal";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteQuote } from "../../clients/quote_client";
+import QuoteModal from "./QuoteModal";
 
 const QuoteDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -49,7 +49,7 @@ const QuoteDetailComponent = () => {
         Quote PDF
       </a>
 
-      <EditQuoteModal quoteObj={quote} onSuccessfulUpdate={fetchQuote} />
+      <QuoteModal onSuccessfulSubmit={fetchQuote} quoteObj={quote} />
 
       {!errorMessages && (
         <ul>

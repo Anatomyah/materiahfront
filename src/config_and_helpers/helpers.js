@@ -68,32 +68,6 @@ export const createBeforeUnloadHandler = (
   };
 };
 
-export function isValidURL(url) {
-  try {
-    new URL(url);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-
-export const allQuoteItemsFilled = (items) => {
-  return items.every((item) => {
-    return item.product !== "" && item.quantity !== "" && item.price !== "";
-  });
-};
-
-export const allOrderItemsFilled = (items) => {
-  return items.every((item) => {
-    return (
-      item.product !== "" &&
-      item.quantity !== "" &&
-      item.price !== "" &&
-      item.batch !== ""
-    );
-  });
-};
-
 export function deepDeleteProperties(obj, propsToDelete) {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
@@ -106,3 +80,59 @@ export function deepDeleteProperties(obj, propsToDelete) {
   }
   return obj;
 }
+
+export const extractEntitiesSelectList = (
+  objList,
+  setEntityList,
+  entityType,
+) => {
+  const pluralEntityType = entityType + "s";
+
+  const entityObjects = objList.flatMap((obj) => {
+    const entities = obj[pluralEntityType] || obj[entityType];
+    if (!entities) return []; // Return an empty array if entities are not present
+    return Array.isArray(entities) ? entities : [entities];
+  });
+
+  setEntityList((prevEntities) => {
+    const existingEntityIds = new Set(prevEntities.map((entity) => entity?.id));
+    const uniqueEntityIds = new Set();
+
+    const updatedEntitySelectList = entityObjects.filter((entity) => {
+      if (
+        entity &&
+        !existingEntityIds.has(entity.id) &&
+        !uniqueEntityIds.has(entity.id)
+      ) {
+        uniqueEntityIds.add(entity.id);
+        return true;
+      }
+      return false;
+    });
+
+    return [...prevEntities, ...updatedEntitySelectList];
+  });
+};
+
+export const filterObjectsByEntity = (
+  entityId,
+  objList,
+  setFilteredList,
+  entityType,
+) => {
+  const pluralEntityType = entityType + "s";
+
+  const filteredObjList = objList.filter((obj) => {
+    const entities = obj[pluralEntityType] || obj[entityType];
+    // Skip if entities are not present
+    if (!entities) return false;
+
+    if (Array.isArray(entities)) {
+      return entities.some((entity) => entity?.id === parseInt(entityId, 10));
+    } else {
+      return entities?.id === parseInt(entityId, 10);
+    }
+  });
+
+  setFilteredList(filteredObjList);
+};

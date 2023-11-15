@@ -177,13 +177,10 @@ export const deleteQuote = async (token, quoteId) => {
   }
 };
 
-export const getQuotes = async (
-  token,
-  setQuotes,
-  nextPageUrl,
-  searchInput = "",
-) => {
-  let url = nextPageUrl ? nextPageUrl : `${BACKEND_URL}quotes/?page_num=1`;
+export const getQuotes = async (token, setQuotes, options = {}) => {
+  const { searchInput = "", nextPage = null } = options;
+
+  let url = nextPage ? nextPage : `${BACKEND_URL}quotes/?page_num=1`;
 
   if (searchInput) {
     url += `&search=${searchInput}`;
@@ -199,24 +196,18 @@ export const getQuotes = async (
     const nextCursor = response.data.next;
 
     if (!nextCursor) {
-      if (nextPageUrl) {
-        setQuotes((prevManufacturers) => [
-          ...prevManufacturers,
-          ...response.data.results,
-        ]);
+      if (nextPage) {
+        setQuotes((prevQuotes) => [...prevQuotes, ...response.data.results]);
       } else {
         setQuotes(response.data.results);
       }
       return { success: true, reachedEnd: true };
     }
 
-    if (searchInput && !nextPageUrl) {
+    if (!nextPage) {
       setQuotes(response.data.results);
     } else {
-      setQuotes((prevManufacturers) => [
-        ...prevManufacturers,
-        ...response.data.results,
-      ]);
+      setQuotes((prevQuotes) => [...prevQuotes, ...response.data.results]);
     }
 
     return { success: true, nextPage: response.data.next };

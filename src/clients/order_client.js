@@ -1,9 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
-import {
-  finalizeProductImageUploadStatus,
-  uploadImagesToS3,
-} from "./product_client";
+import { uploadImagesToS3 } from "./product_client";
 
 export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
   try {
@@ -27,6 +24,7 @@ export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
 };
 
 export const createOrder = async (token, orderData, images) => {
+  console.log("in create");
   try {
     const response = await axios.post(`${BACKEND_URL}orders/`, orderData, {
       headers: {
@@ -152,12 +150,10 @@ export const getOrders = async (token, setOrders, options = {}) => {
     });
 
     const nextCursor = response.data.next;
+
     if (!nextCursor) {
       if (nextPage) {
-        setOrders((prevManufacturers) => [
-          ...prevManufacturers,
-          ...response.data.results,
-        ]);
+        setOrders((prevOrders) => [...prevOrders, ...response.data.results]);
       } else {
         setOrders(response.data.results);
       }
@@ -167,10 +163,7 @@ export const getOrders = async (token, setOrders, options = {}) => {
     if (!nextPage) {
       setOrders(response.data.results);
     } else {
-      setOrders((prevManufacturers) => [
-        ...prevManufacturers,
-        ...response.data.results,
-      ]);
+      setOrders((prevOrders) => [...prevOrders, ...response.data.results]);
     }
 
     return { success: true, nextPage: response.data.next };

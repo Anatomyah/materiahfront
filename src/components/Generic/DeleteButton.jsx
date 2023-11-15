@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const DeleteButton = ({
   objectType,
@@ -36,12 +37,8 @@ const DeleteButton = ({
 
   return (
     <div>
-      <Button
-        className="btn-outline-danger"
-        variant="link"
-        onClick={handleShow}
-      >
-        Delete
+      <Button variant="outline-danger" onClick={handleShow}>
+        <DeleteIcon />
       </Button>
 
       <Modal show={showModal} onHide={handleClose}>

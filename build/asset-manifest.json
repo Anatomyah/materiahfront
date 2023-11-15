@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.ce9dc403.css",
-    "main.js": "/static/js/main.3698a7ee.js",
+    "main.css": "/static/css/main.bda42fdb.css",
+    "main.js": "/static/js/main.932ccaa2.js",
     "static/js/787.0f1e0154.chunk.js": "/static/js/787.0f1e0154.chunk.js",
     "static/media/fontawesome-webfont.svg?v=4.7.0": "/static/media/fontawesome-webfont.c1e38fd9e0e74ba58f7a.svg",
     "static/media/fontawesome-webfont.eot": "/static/media/fontawesome-webfont.8b43027f47b20503057d.eot",
@@ -10,12 +10,12 @@
     "static/media/fontawesome-webfont.woff2?v=4.7.0": "/static/media/fontawesome-webfont.20fd1704ea223900efa9.woff2",
     "static/media/materiah_logo.png": "/static/media/materiah_logo.aa15da5d53b3d3403c96.png",
     "index.html": "/index.html",
-    "main.ce9dc403.css.map": "/static/css/main.ce9dc403.css.map",
-    "main.3698a7ee.js.map": "/static/js/main.3698a7ee.js.map",
+    "main.bda42fdb.css.map": "/static/css/main.bda42fdb.css.map",
+    "main.932ccaa2.js.map": "/static/js/main.932ccaa2.js.map",
     "787.0f1e0154.chunk.js.map": "/static/js/787.0f1e0154.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ce9dc403.css",
-    "static/js/main.3698a7ee.js"
+    "static/css/main.bda42fdb.css",
+    "static/js/main.932ccaa2.js"
   ]
 }

@@ -1,12 +1,14 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
+import { ListItemText, MenuItem } from "@mui/material";
 
 const DropdownSelect = ({
   optionsList,
   label,
   selectedValue,
   setSelectedValue,
+  disabledOptions,
 }) => {
   return (
     <Autocomplete
@@ -23,6 +25,11 @@ const DropdownSelect = ({
         setSelectedValue(newValue ? newValue : null);
       }}
       renderInput={(params) => <TextField {...params} label={label} />}
+      renderOption={(props, option) => (
+        <MenuItem {...props} disabled={disabledOptions.includes(option.value)}>
+          <ListItemText primary={option.label} />
+        </MenuItem>
+      )}
       disableClearable
     />
   );

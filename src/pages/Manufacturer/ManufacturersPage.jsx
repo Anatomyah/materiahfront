@@ -1,28 +1,69 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../../App";
 import { getManufacturers } from "../../clients/manufacturer_client";
-import { useNavigate } from "react-router-dom";
-import CreateManufacturerModal from "../../components/Manufacturer/CreateManufacturerModal";
+import ManufacturerModal from "../../components/Manufacturer/ManufacturerModal";
 import InfiniteScroll from "react-infinite-scroller";
-import TextField from "@mui/material/TextField";
+import {
+  extractEntitiesSelectList,
+  filterObjectsByEntity,
+} from "../../config_and_helpers/helpers";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import InputGroup from "react-bootstrap/InputGroup";
+import SearchIcon from "@mui/icons-material/Search";
+import Form from "react-bootstrap/Form";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import Container from "react-bootstrap/Container";
+import ManufacturerTable from "../../components/Manufacturer/ManufacturerTable";
 
 const ManufacturersPage = () => {
-  const nav = useNavigate();
+  const isLoadingRef = useRef(false);
+  const isMountedRef = useRef(false);
   const { token } = useContext(AppContext);
-  const [manufacturers, setManufacturers] = useState([]);
+  const [viewManufacturers, setViewManufacturers] = useState([]);
+  const [baseManufacturers, setBaseManufacturers] = useState([]);
+  const [supplierSelectList, setSupplierSelectList] = useState([]);
+  const [supplier, setSupplier] = useState("");
   const [errorMessages, setErrorMessages] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [typingTimeout, setTypingTimeout] = useState(null);
 
+  useEffect(() => {
+    if (!baseManufacturers.length) return;
+    if (baseManufacturers) {
+      extractEntitiesSelectList(
+        baseManufacturers,
+        setSupplierSelectList,
+        "supplier",
+      );
+    }
+  }, [baseManufacturers]);
+
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+    if (!supplier) {
+      setViewManufacturers([]);
+    }
+
+    filterObjectsByEntity(
+      supplier,
+      baseManufacturers,
+      setViewManufacturers,
+      "supplier",
+    );
+  }, [supplier]);
+
   const fetchManufacturers = ({ searchValue = "", nextPage = null } = {}) => {
-    getManufacturers(token, setManufacturers, {
+    isLoadingRef.current = true;
+    getManufacturers(token, setBaseManufacturers, {
       searchInput: searchValue,
       nextPage: nextPage,
     }).then((response) => {
       if (response && response.success) {
         if (response.reachedEnd) {
+          setNextPageUrl(null);
           setHasMore(false);
         } else {
           setNextPageUrl(response.nextPage);
@@ -31,21 +72,21 @@ const ManufacturersPage = () => {
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
       }
+      isLoadingRef.current = false;
     });
   };
 
   useEffect(() => {
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return;
+    }
+
     fetchManufacturers({
       searchValue: searchInput,
       nextPage: null,
     });
   }, [searchInput]);
-
-  const goToManufacturerDetails = (manufacturer) => {
-    nav(`/manufacturer-details/${manufacturer.id}`, {
-      state: { manufacturer },
-    });
-  };
 
   const handleSearchInput = (value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
@@ -59,15 +100,59 @@ const ManufacturersPage = () => {
 
   return (
     <div>
-      <CreateManufacturerModal onSuccessfulCreate={fetchManufacturers} />
-      <TextField
-        id="outlined-helperText"
-        label="Free text search"
-        onChange={(e) => handleSearchInput(e.target.value)}
-      />
+      <Container className="my-3">
+        <Row className="align-items-center justify-content-md-evenly">
+          <Col md="auto" className="m">
+            <ManufacturerModal onSuccessfulSubmit={fetchManufacturers} />
+          </Col>
+          <Col xs={5} className="ms-2">
+            <InputGroup>
+              <InputGroup.Text id="basic-addon1">
+                <SearchIcon />
+              </InputGroup.Text>
+              <Form.Control
+                size="lg"
+                type="text"
+                placeholder="Free Search"
+                aria-label="Search "
+                aria-describedby="basic-addon1"
+                onChange={(e) => handleSearchInput(e.target.value)}
+              />
+            </InputGroup>
+          </Col>
+          <Col md="auto" sm>
+            {supplierSelectList && (
+              <InputGroup>
+                <Form.Select
+                  value={supplier}
+                  onChange={(e) => {
+                    setSupplier(e.target.value);
+                  }}
+                >
+                  <option value="" disabled>
+                    -- Select Supplier --
+                  </option>
+                  {supplierSelectList.map((choice, index) => (
+                    <option key={index} value={choice.id}>
+                      {choice.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                <InputGroup.Text
+                  onClick={() => setSupplier("")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <RefreshIcon />
+                </InputGroup.Text>
+              </InputGroup>
+            )}
+          </Col>
+        </Row>
+      </Container>
       <InfiniteScroll
         pageStart={0}
         loadMore={() => {
+          if (isLoadingRef.current) return;
           fetchManufacturers({
             searchValue: searchInput,
             nextPage: nextPageUrl,
@@ -80,16 +165,12 @@ const ManufacturersPage = () => {
           </div>
         }
       >
-        {manufacturers.map((manufacturer) => (
-          <span
-            key={manufacturer.id}
-            className="text-decoration-underline text-primary"
-            style={{ cursor: "pointer", minHeight: 500, display: "block" }}
-            onClick={() => goToManufacturerDetails(manufacturer)}
-          >
-            {manufacturer.name}
-          </span>
-        ))}
+        <ManufacturerTable
+          manufacturerList={
+            viewManufacturers.length ? viewManufacturers : baseManufacturers
+          }
+          handleEdit={fetchManufacturers}
+        />
       </InfiniteScroll>
       {!errorMessages && (
         <ul>

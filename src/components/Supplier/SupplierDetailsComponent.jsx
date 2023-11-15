@@ -6,7 +6,7 @@ import {
   getSupplierDetails,
 } from "../../clients/supplier_client";
 import DeleteButton from "../Generic/DeleteButton";
-import EditSupplierModal from "./EditSupplierModal";
+import SupplierModal from "./SupplierModal";
 
 const SupplierDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -17,15 +17,23 @@ const SupplierDetailComponent = () => {
   );
   const [errorMessages, setErrorMessages] = useState([]);
 
+  const fetchSupplier = () => {
+    getSupplierDetails(token, id, setSupplier).then((response) => {
+      if (response && !response.success) {
+        setErrorMessages((prevState) => [...prevState, response]);
+      }
+    });
+  };
+
   useEffect(() => {
     if (!supplier) {
-      getSupplierDetails(token, id, setSupplier).then((response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      });
+      fetchSupplier();
     }
   }, [id]);
+
+  useEffect(() => {
+    console.log(supplier);
+  }, [supplier]);
 
   if (!supplier) {
     return "Supplier details not available";
@@ -68,9 +76,9 @@ const SupplierDetailComponent = () => {
         returnLocation="suppliers"
       />
       {supplier && (
-        <EditSupplierModal
+        <SupplierModal
           supplierObj={supplier}
-          onSuccessfulUpdate={setSupplier}
+          onSuccessfulSubmit={setSupplier}
         />
       )}
       {errorMessages.length > 0 && (

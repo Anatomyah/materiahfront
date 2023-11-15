@@ -208,8 +208,8 @@ export const getProducts = async (token, setProducts, options = {}) => {
 
     if (!nextCursor) {
       if (nextPage) {
-        setProducts((prevManufacturers) => [
-          ...prevManufacturers,
+        setProducts((prevProducts) => [
+          ...prevProducts,
           ...response.data.results,
         ]);
       } else {

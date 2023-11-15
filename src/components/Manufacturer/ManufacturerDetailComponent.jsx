@@ -5,8 +5,8 @@ import {
   getManufacturerDetails,
 } from "../../clients/manufacturer_client";
 import { AppContext } from "../../App";
-import EditManufacturerModal from "./EditManufacturerModal";
 import DeleteButton from "../Generic/DeleteButton";
+import ManufacturerModal from "./ManufacturerModal";
 
 const ManufacturerDetailComponent = () => {
   const { token } = useContext(AppContext);
@@ -26,6 +26,10 @@ const ManufacturerDetailComponent = () => {
       });
     }
   }, [id]);
+
+  useEffect(() => {
+    console.log(manufacturer);
+  }, [manufacturer]);
 
   if (!manufacturer) {
     return "Manufacturer details not available";
@@ -65,9 +69,9 @@ const ManufacturerDetailComponent = () => {
         returnLocation="manufacturers"
       />
       {manufacturer && (
-        <EditManufacturerModal
+        <ManufacturerModal
+          onSuccessfulSubmit={setManufacturer}
           manufacturerObj={manufacturer}
-          onSuccessfulUpdate={setManufacturer}
         />
       )}
     </div>

@@ -400,7 +400,7 @@ const AccountModal = ({ isSignUp = false }) => {
             setFieldValue,
           }) => {
             return (
-              <Form noValidate onSubmit={handleSubmit}>
+              <Form onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
                   <Form.Group
                     controlId="signupUsername"
@@ -691,7 +691,7 @@ const AccountModal = ({ isSignUp = false }) => {
                       !phoneUniqueValidator.validate() ||
                       isCheckingPhone
                     }
-                    onClick={handleSubmit}
+                    type="submit"
                   >
                     {isSignUp ? "Signup" : "Save"}
                   </Button>

@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AppContext } from "../../App";
 import { deleteOrder, getOrderDetails } from "../../clients/order_client";
-import EditOrderModal from "./EditOrderModal";
 import DeleteButton from "../Generic/DeleteButton";
+import OrderModal from "./OrderModal";
 
 const OrderDetailsComponent = () => {
   const { token } = useContext(AppContext);
@@ -59,7 +59,6 @@ const OrderDetailsComponent = () => {
           const isPdf = image.image_url.toLowerCase().endsWith(".pdf");
 
           return isPdf ? (
-            // Render a link for a PDF file
             <a
               href={image.image_url}
               key={image.id}
@@ -69,7 +68,6 @@ const OrderDetailsComponent = () => {
               View PDF
             </a>
           ) : (
-            // Render an image tag for image files
             <a
               href={image.image_url}
               key={image.id}
@@ -85,14 +83,18 @@ const OrderDetailsComponent = () => {
           );
         })}
       </div>
-      <EditOrderModal orderObj={order} onSuccessfulUpdate={fetchOrder} />
-      <DeleteButton
-        objectType="order"
-        objectName={order.id}
-        objectId={order.id}
-        deleteFetchFunc={deleteOrder}
-        returnLocation="orders"
-      />
+      {order && (
+        <>
+          <OrderModal orderObj={order} onSuccessfulSubmit={fetchOrder} />
+          <DeleteButton
+            objectType="order"
+            objectName={order.id}
+            objectId={order.id}
+            deleteFetchFunc={deleteOrder}
+            returnLocation="orders"
+          />
+        </>
+      )}
       {!errorMessages && (
         <ul>
           {errorMessages.map((error, id) => (

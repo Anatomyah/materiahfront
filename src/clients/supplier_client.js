@@ -81,8 +81,8 @@ export const getSuppliers = async (token, setSuppliers, options = {}) => {
 
     if (!nextCursor) {
       if (nextPage) {
-        setSuppliers((prevManufacturers) => [
-          ...prevManufacturers,
+        setSuppliers((prevSuppliers) => [
+          ...prevSuppliers,
           ...response.data.results,
         ]);
       } else {
@@ -94,8 +94,8 @@ export const getSuppliers = async (token, setSuppliers, options = {}) => {
     if (!nextPage) {
       setSuppliers(response.data.results);
     } else {
-      setSuppliers((prevManufacturers) => [
-        ...prevManufacturers,
+      setSuppliers((prevSuppliers) => [
+        ...prevSuppliers,
         ...response.data.results,
       ]);
     }
@@ -175,6 +175,26 @@ export const checkSupplierPhone = async (token, prefix, suffix) => {
   try {
     const response = await axios.get(
       `${BACKEND_URL}suppliers/check_phone/?prefix=${prefix}&suffix=${suffix}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+    console.log(response.data);
+    return response.data.unique;
+  } catch (error) {
+    console.error(error.response.data);
+    return error.response
+      ? Object.values(error.response.data).flat()
+      : "Something went wrong";
+  }
+};
+
+export const checkSupplierName = async (token, name) => {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}suppliers/check_name/?name=${name}`,
       {
         headers: {
           Authorization: `Token ${token}`,
