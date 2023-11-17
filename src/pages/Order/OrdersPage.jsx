@@ -14,7 +14,9 @@ import Container from "react-bootstrap/Container";
 import {
   extractEntitiesSelectList,
   filterObjectsByEntity,
+  showToast,
 } from "../../config_and_helpers/helpers";
+import { Spinner } from "react-bootstrap";
 
 const OrdersPage = () => {
   const { token } = useContext(AppContext);
@@ -24,7 +26,6 @@ const OrdersPage = () => {
   const [viewOrders, setViewOrders] = useState([]);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState("");
-  const [errorMessages, setErrorMessages] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
@@ -61,7 +62,11 @@ const OrdersPage = () => {
           setHasMore(true);
         }
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again",
+          "danger",
+          "top-center",
+        );
       }
       isLoadingRef.current = false;
     });
@@ -87,6 +92,18 @@ const OrdersPage = () => {
     setNextPageUrl(null);
     setTypingTimeout(newTimeout);
   };
+
+  if (isLoadingRef.current) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <div>
@@ -160,15 +177,6 @@ const OrdersPage = () => {
           handleEdit={fetchOrders}
         />
       </InfiniteScroll>
-      {!errorMessages && (
-        <ul>
-          {errorMessages.map((error, id) => (
-            <li key={id} className="text-danger fw-bold">
-              {error}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

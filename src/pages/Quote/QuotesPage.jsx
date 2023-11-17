@@ -6,6 +6,7 @@ import InfiniteScroll from "react-infinite-scroller";
 import {
   extractEntitiesSelectList,
   filterObjectsByEntity,
+  showToast,
 } from "../../config_and_helpers/helpers";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -15,6 +16,7 @@ import Form from "react-bootstrap/Form";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Container from "react-bootstrap/Container";
 import QuoteTable from "../../components/Quote/QuoteTable";
+import { Spinner } from "react-bootstrap";
 
 const QuotesPage = () => {
   const { token } = useContext(AppContext);
@@ -24,19 +26,10 @@ const QuotesPage = () => {
   const [viewQuotes, setViewQuotes] = useState([]);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState("");
-  const [errorMessages, setErrorMessages] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
   const [typingTimeout, setTypingTimeout] = useState(null);
-
-  useEffect(() => {
-    console.log(baseQuotes);
-  }, [baseQuotes]);
-
-  useEffect(() => {
-    console.log(supplierSelectList);
-  }, [supplierSelectList]);
 
   useEffect(() => {
     if (!baseQuotes.length) return;
@@ -69,7 +62,11 @@ const QuotesPage = () => {
           setHasMore(true);
         }
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again",
+          "danger",
+          "top-center",
+        );
       }
       isLoadingRef.current = false;
     });
@@ -95,6 +92,18 @@ const QuotesPage = () => {
     setNextPageUrl(null);
     setTypingTimeout(newTimeout);
   };
+
+  if (isLoadingRef.current) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <div>
@@ -168,15 +177,6 @@ const QuotesPage = () => {
           handleEdit={fetchQuotes}
         />
       </InfiniteScroll>
-      {!errorMessages && (
-        <ul>
-          {errorMessages.map((error, id) => (
-            <li key={id} className="text-danger fw-bold">
-              {error}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

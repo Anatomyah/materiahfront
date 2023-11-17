@@ -2,20 +2,20 @@ import React, { useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
-import { useNavigate } from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Spinner } from "react-bootstrap";
 
 const DeleteButton = ({
   objectType,
   objectName,
   objectId,
   deleteFetchFunc,
-  returnLocation,
+  onSuccessfulDelete,
 }) => {
   const { token } = useContext(AppContext);
-  const nav = useNavigate();
   const [errorMessages, setErrorMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleClose = () => {
     setShowModal(false);
@@ -23,11 +23,14 @@ const DeleteButton = ({
   const handleShow = () => setShowModal(true);
 
   function handleDelete() {
+    setIsDeleting(true);
     deleteFetchFunc(token, objectId).then((response) => {
       if (response && response.success) {
-        handleClose();
         setTimeout(() => {
-          nav(`/${returnLocation}`);
+          onSuccessfulDelete();
+          handleClose();
+          response.toast();
+          setIsDeleting(false);
         }, 2000);
       } else {
         setErrorMessages((prevState) => [...prevState, response]);
@@ -60,14 +63,26 @@ const DeleteButton = ({
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="danger"
-            onClick={(e) => {
-              handleDelete(e);
-            }}
-          >
-            Yes, i'm certain
-          </Button>
+          {isDeleting ? (
+            <Button variant="danger" disabled>
+              <Spinner
+                size="sm"
+                as="span"
+                animation="border"
+                role="status"
+                aria-hidden="true"
+              />
+            </Button>
+          ) : (
+            <Button
+              variant="danger"
+              onClick={(e) => {
+                handleDelete(e);
+              }}
+            >
+              Yes, i'm certain
+            </Button>
+          )}
           <Button variant="secondary" onClick={handleClose}>
             Oops!
           </Button>

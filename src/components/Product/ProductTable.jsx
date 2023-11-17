@@ -5,6 +5,9 @@ import DeleteButton from "../Generic/DeleteButton";
 import { deleteProduct } from "../../clients/product_client";
 import ProductModal from "./ProductModal";
 import { defaultImageUrl } from "../../config_and_helpers/config";
+import ProductDetailModal from "./ProductDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
 
 const ProductTable = ({ productList, handleEdit }) => {
   return (
@@ -51,11 +54,12 @@ const ProductTable = ({ productList, handleEdit }) => {
               </a>
             </td>
             <td>
-              <a href={`/product-details/${product.id}`} className="link-">
-                {product.cat_num}
-              </a>
+              <ProductDetailModal
+                productObj={product}
+                updateProducts={handleEdit}
+              />
             </td>
-            <td>{product.name}</td>
+            <td>{product.cat_num}</td>
             <td>{product.category}</td>
             <td>{product.volume}</td>
             <td>{product.unit}</td>
@@ -67,20 +71,12 @@ const ProductTable = ({ productList, handleEdit }) => {
               </a>
             </td>
             <td>
-              <a
-                href={`/manufacturer-details/${product.manufacturer.id}`}
-                className="link-"
-              >
-                {product.manufacturer.name}
-              </a>
+              <ManufacturerDetailModal
+                manufacturerId={product.manufacturer.id}
+              />
             </td>
             <td>
-              <a
-                href={`/supplier-details/${product.supplier.id}`}
-                className="link-"
-              >
-                {product.supplier.name}
-              </a>
+              <SupplierDetailModal supplierId={product.supplier.id} />
             </td>
             <td className="align-items-center">
               <div className="mb-2">
@@ -94,7 +90,7 @@ const ProductTable = ({ productList, handleEdit }) => {
                 objectName={product.name}
                 objectId={product.id}
                 deleteFetchFunc={deleteProduct}
-                returnLocation="inventory"
+                onSuccessfulDelete={handleEdit}
               />
             </td>
           </tr>

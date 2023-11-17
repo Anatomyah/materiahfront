@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const createManufacturer = async (token, manufacturerData) => {
   try {
@@ -8,12 +9,14 @@ export const createManufacturer = async (token, manufacturerData) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Manufacturer created successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -34,12 +37,14 @@ export const updateManufacturer = async (
       },
     );
     setManufacturer(response.data);
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Manufacturer updated successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -50,12 +55,15 @@ export const deleteManufacturer = async (token, manufacturerId) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+
+    return {
+      success: true,
+      toast: () =>
+        showToast("Manufacturer deleted successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -105,9 +113,7 @@ export const getManufacturers = async (
     return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -118,13 +124,11 @@ export const getManufacturerSelectList = async (token, setManufacturers) => {
         Authorization: `Token ${token}`,
       },
     });
-    setManufacturers(response.data);
+    setManufacturers(response.data.manufacturer_list);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -146,9 +150,7 @@ export const getManufacturerDetails = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -162,12 +164,10 @@ export const checkManufacturerName = async (token, name) => {
         },
       },
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

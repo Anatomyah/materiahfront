@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const finalizeProductImageUploadStatus = async (
   token,
@@ -19,9 +20,7 @@ export const finalizeProductImageUploadStatus = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -66,7 +65,7 @@ export const uploadImagesToS3 = async (presignedUrls, files) => {
     return { uploadStatuses: uploadStatuses };
   } catch (error) {
     console.error("Error uploading files:", error);
-    return { error: error.message || "Something went wrong" };
+    return Object.values(error.response.data);
   }
 };
 
@@ -103,10 +102,13 @@ export const createProduct = async (token, productData, images) => {
       }
     }
 
+    result.toast = () =>
+      showToast("Product created successfully!", "success", "top-right");
+
     return result;
   } catch (error) {
-    console.error(error.response);
-    return error.response ? error.response.data.detail : "Something went wrong";
+    console.error(error.response.data);
+    return Object.values(error.response.data);
   }
 };
 
@@ -152,12 +154,13 @@ export const updateProduct = async (
       }
     }
 
+    result.toast = () =>
+      showToast("Product updated successfully!", "success", "top-right");
+
     return result;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -168,12 +171,15 @@ export const deleteProduct = async (token, productId) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+
+    return {
+      success: true,
+      toast: () =>
+        showToast("Product deleted successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -230,9 +236,7 @@ export const getProducts = async (token, setProducts, options = {}) => {
     return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -253,9 +257,7 @@ export const getProductDetails = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -277,9 +279,7 @@ export const getProductSelectList = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -293,12 +293,10 @@ export const checkCatNum = async (token, value) => {
         },
       },
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

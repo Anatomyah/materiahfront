@@ -6,6 +6,7 @@ import InfiniteScroll from "react-infinite-scroller";
 import {
   extractEntitiesSelectList,
   filterObjectsByEntity,
+  showToast,
 } from "../../config_and_helpers/helpers";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -15,6 +16,7 @@ import Form from "react-bootstrap/Form";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Container from "react-bootstrap/Container";
 import ManufacturerTable from "../../components/Manufacturer/ManufacturerTable";
+import { Spinner } from "react-bootstrap";
 
 const ManufacturersPage = () => {
   const isLoadingRef = useRef(false);
@@ -24,7 +26,6 @@ const ManufacturersPage = () => {
   const [baseManufacturers, setBaseManufacturers] = useState([]);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState("");
-  const [errorMessages, setErrorMessages] = useState([]);
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
@@ -70,7 +71,11 @@ const ManufacturersPage = () => {
           setHasMore(true);
         }
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again",
+          "danger",
+          "top-center",
+        );
       }
       isLoadingRef.current = false;
     });
@@ -97,6 +102,18 @@ const ManufacturersPage = () => {
 
     setTypingTimeout(newTimeout);
   };
+
+  if (isLoadingRef.current) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <div>
@@ -172,15 +189,6 @@ const ManufacturersPage = () => {
           handleEdit={fetchManufacturers}
         />
       </InfiniteScroll>
-      {!errorMessages && (
-        <ul>
-          {errorMessages.map((error, id) => (
-            <li key={id} className="text-danger fw-bold">
-              {error}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

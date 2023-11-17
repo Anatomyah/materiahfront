@@ -16,11 +16,12 @@ import { AppContext } from "../../App";
 import { useNavigate } from "react-router-dom";
 import * as formik from "formik";
 import * as yup from "yup";
-import { Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Row, Spinner } from "react-bootstrap";
 import "font-awesome/css/font-awesome.min.css";
 import "./UserComponentStyle.css";
 import ShowPassword from "../Generic/ShowPassword";
 import debounce from "lodash/debounce";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const createFormSchema = ({ isSignUp }) =>
   yup.object().shape({
@@ -114,7 +115,7 @@ const AccountModal = ({ isSignUp = false }) => {
   const { Formik } = formik;
   const nav = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUsernameUnique, setIsUsernameUnique] = useState(true);
   const [username, setUsername] = useState(
     isSignUp ? "" : userDetails.username,
@@ -299,14 +300,13 @@ const AccountModal = ({ isSignUp = false }) => {
   ];
 
   const handleClose = () => {
-    setErrorMessages([]);
     setShowModal(false);
   };
 
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
-    setErrorMessages([]);
+    setIsSubmitting(true);
 
     const userData = {
       username: values.username,
@@ -334,14 +334,22 @@ const AccountModal = ({ isSignUp = false }) => {
           );
 
     accountPromise.then((response) => {
+      setIsSubmitting(true);
       if (response && response.success) {
         handleClose();
         if (isSignUp) {
           nav("/");
+        } else {
+          response.toast();
         }
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
+      setIsSubmitting(false);
     });
   };
 
@@ -662,39 +670,36 @@ const AccountModal = ({ isSignUp = false }) => {
                       </Form.Group>
                     </>
                   )}
-
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={
-                      !isValid ||
-                      (isSignUp && !dirty) ||
-                      !usernameUniqueValidator.validate() ||
-                      !emailUniqueValidator.validate() ||
-                      isCheckingEmail ||
-                      isCheckingUsername ||
-                      !phoneUniqueValidator.validate() ||
-                      isCheckingPhone
-                    }
-                    type="submit"
-                  >
-                    {isSignUp ? "Signup" : "Save"}
-                  </Button>
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={
+                        !isValid ||
+                        (isSignUp && !dirty) ||
+                        !usernameUniqueValidator.validate() ||
+                        !emailUniqueValidator.validate() ||
+                        isCheckingEmail ||
+                        isCheckingUsername ||
+                        !phoneUniqueValidator.validate() ||
+                        isCheckingPhone
+                      }
+                      type="submit"
+                    >
+                      {isSignUp ? "Signup" : "Save"}
+                    </Button>
+                  )}
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const createSupplier = async (token, supplierData) => {
   try {
@@ -8,12 +9,14 @@ export const createSupplier = async (token, supplierData) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Supplier created successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -36,12 +39,15 @@ export const updateSupplier = async (
     if (setSupplier) {
       setSupplier(response.data);
     }
-    return { success: true };
+
+    return {
+      success: true,
+      toast: () =>
+        showToast("Supplier updated successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -52,12 +58,14 @@ export const deleteSupplier = async (token, supplierId) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Supplier deleted successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -103,9 +111,7 @@ export const getSuppliers = async (token, setSuppliers, options = {}) => {
     return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -119,13 +125,11 @@ export const getSupplierSelectList = async (token, setSuppliers) => {
         },
       },
     );
-    setSuppliers(response.data);
+    setSuppliers(response.data.suppliers_list);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -145,9 +149,7 @@ export const getSupplierDetails = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -161,13 +163,11 @@ export const checkSupplierEmail = async (token, value) => {
         },
       },
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -181,13 +181,10 @@ export const checkSupplierPhone = async (token, prefix, suffix) => {
         },
       },
     );
-    console.log(response.data);
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -201,12 +198,9 @@ export const checkSupplierName = async (token, name) => {
         },
       },
     );
-    console.log(response.data);
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

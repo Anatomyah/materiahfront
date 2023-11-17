@@ -7,6 +7,7 @@ import {
   createBeforeUnloadHandler,
   initializeApp,
 } from "./config_and_helpers/helpers";
+import CartModal from "./components/Shop/CartModal";
 
 export const AppContext = createContext(null);
 export const CartAppContext = createContext(null);
@@ -18,6 +19,7 @@ function App() {
   const [isSupplier, setIsSupplier] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [showCart, setShowCart] = useState(false);
   const [cart, setCart] = useState([]);
   const [cartCount, setCartCount] = useState();
 
@@ -30,6 +32,7 @@ function App() {
         setNotifications,
         setIsSupplier,
         setIsLoading,
+        setCart,
       );
     })();
   }, []);
@@ -43,25 +46,27 @@ function App() {
       notifications,
       isSupplier,
       rememberMe,
+      cart,
     );
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [token, userDetails, notifications, isSupplier, rememberMe]);
+  }, [token, userDetails, notifications, isSupplier, rememberMe, cart]);
+
+  // useEffect(() => {
+  //   if (cart?.length === 0) {
+  //     const storedCart = localStorage.getItem("cart");
+  //     if (storedCart && storedCart !== "null") {
+  //       setCart(JSON.parse(storedCart));
+  //     }
+  //   }
+  // }, []);
+  //
 
   useEffect(() => {
-    if (cart.length === 0) {
-      const storedCart = localStorage.getItem("cart");
-      if (storedCart && storedCart !== "null") {
-        setCart(JSON.parse(storedCart));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    setCartCount(cart.length);
+    setCartCount(cart?.length);
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
@@ -87,12 +92,20 @@ function App() {
         }}
       >
         <CartAppContext.Provider
-          value={{ cart, setCart, cartCount, setCartCount }}
+          value={{
+            showCart,
+            setShowCart,
+            cart,
+            setCart,
+            cartCount,
+            setCartCount,
+          }}
         >
           {token ? (
             <>
               <TopNavBar />
               <SiteRoutes />
+              <CartModal show={showCart} setShow={setShowCart} />
             </>
           ) : (
             <LoginPage />

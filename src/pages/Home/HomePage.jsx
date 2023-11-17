@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
-import { AppContext } from "../App";
+import { AppContext } from "../../App";
+import "./HomeStyle.css";
 
 const HomePage = () => {
   const { notifications } = useContext(AppContext);
 
   return (
-    <div>
-      <h1>HOME</h1>
+    <div className="background-image-2">
       {notifications &&
         notifications.map((notification) => (
           <div key={notification.pk}>

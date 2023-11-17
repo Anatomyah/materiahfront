@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const finalizeQuoteUploadStatus = async (
   token,
@@ -20,9 +21,7 @@ export const finalizeQuoteUploadStatus = async (
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -44,8 +43,8 @@ export const uploadQuoteFileToS3 = async (presignedPostData, file) => {
       return { uploadStatus: "failed" };
     }
   } catch (error) {
-    console.log(error);
-    return { error: error.message || "Something went wrong" };
+    console.error(error.response.data);
+    return Object.values(error.response.data);
   }
 };
 
@@ -57,12 +56,14 @@ export const createQuoteFromCart = async (token, cart_items) => {
         "Content-Type": "application/json",
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Quote created successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -100,12 +101,12 @@ export const createQuoteManually = async (token, quoteData, quoteFile) => {
       }
     }
 
+    result.toast = () =>
+      showToast("Quote created successfully!", "success", "top-right");
     return result;
   } catch (error) {
-    console.log(error);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    console.error(error.response.data);
+    return Object.values(error.response.data);
   }
 };
 
@@ -151,13 +152,13 @@ export const updateQuote = async (
         result.success = false;
       }
     }
+    result.toast = () =>
+      showToast("Quote updated successfully!", "success", "top-right");
 
     return result;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -168,12 +169,14 @@ export const deleteQuote = async (token, quoteId) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Quote deleted successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -213,9 +216,7 @@ export const getQuotes = async (token, setQuotes, options = {}) => {
     return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -230,9 +231,7 @@ export const getQuoteDetails = async (token, quoteId, setQuoteDetails) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -246,12 +245,10 @@ export const getOpenQuotesSelectList = async (token, setOpenQuotes) => {
         },
       },
     );
-    setOpenQuotes(response.data);
+    setOpenQuotes(response.data.quotes);
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

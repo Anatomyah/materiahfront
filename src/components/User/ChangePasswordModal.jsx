@@ -7,10 +7,11 @@ import {
   resetPassword,
 } from "../../clients/user_client";
 import * as yup from "yup";
-import { Form } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 import ShowPassword from "../Generic/ShowPassword";
 import { Formik } from "formik";
 import debounce from "lodash/debounce";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const schema = yup.object().shape({
   email: yup
@@ -49,7 +50,7 @@ const ChangePasswordModal = ({ userEmail }) => {
   const [emailExists, setEmailExists] = useState(true);
   const [tokenSent, setTokenSent] = useState(false);
   const [showPasswords, setShowPasswords] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const checkmarkIcon = (
     <i className="fa fa-check-circle" style={{ color: "green" }}></i>
@@ -115,8 +116,11 @@ const ChangePasswordModal = ({ userEmail }) => {
   const fetchPasswordToken = () => {
     getPasswordToken(recoveryEmail).then((response) => {
       if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-        //   todo - present email sending error - modal? toast? message?
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
       if (response && response.success) {
         if (userEmail) {
@@ -141,12 +145,19 @@ const ChangePasswordModal = ({ userEmail }) => {
   };
 
   const handleSubmit = (values) => {
+    setIsSubmitting(true);
     resetPassword(values.token, values.newPassword).then((response) => {
       if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       } else {
         handleClose();
+        response.toast();
       }
+      setIsSubmitting(false);
     });
   };
 
@@ -340,30 +351,28 @@ const ChangePasswordModal = ({ userEmail }) => {
                       </Form.Group>
                     </>
                   )}
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 {tokenSent && (
                   <Modal.Footer>
-                    <Button
-                      variant="primary"
-                      disabled={!isValid || !dirty}
-                      onClick={handleSubmit}
-                    >
-                      Reset Password
-                    </Button>
+                    {isSubmitting ? (
+                      <Button variant="primary" disabled>
+                        <Spinner
+                          size="sm"
+                          as="span"
+                          animation="border"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        disabled={!isValid || !dirty}
+                        onClick={handleSubmit}
+                      >
+                        Reset Password
+                      </Button>
+                    )}
                     <Button variant="secondary" onClick={handleClose}>
                       Close
                     </Button>

@@ -4,6 +4,9 @@ import LinkIcon from "@mui/icons-material/Link";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteManufacturer } from "../../clients/manufacturer_client";
 import ManufacturerModal from "./ManufacturerModal";
+import ProductDetailModal from "../Product/ProductDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import ManufacturerDetailModal from "./ManufacturerDetailModal";
 
 const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
   return (
@@ -13,8 +16,6 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
           <th>#</th>
           <th>Name</th>
           <th>Website</th>
-          <th>Suppliers</th>
-          <th>Products</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -23,12 +24,10 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
           <tr key={manufacturer.id} className="text-center align-middle">
             <td>{index + 1}</td>
             <td>
-              <a
-                href={`/manufacturer-details/${manufacturer.id}`}
-                className="link-"
-              >
-                {manufacturer.name}
-              </a>
+              <ManufacturerDetailModal
+                manufacturerObj={manufacturer}
+                updateManufacturers={handleEdit}
+              />
             </td>
             <td>
               <a
@@ -39,45 +38,8 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
                 <LinkIcon />
               </a>
             </td>
-            <td>
-              {manufacturer?.suppliers?.length ? (
-                <>
-                  {manufacturer.suppliers.map((supplier, index) => (
-                    <React.Fragment key={index}>
-                      <a href={`/manufacturer-details/${supplier.id}`}>
-                        {supplier.name}
-                      </a>
-
-                      {index + 1 < manufacturer.suppliers.length && (
-                        <span> | </span>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </>
-              ) : (
-                <span></span>
-              )}
-            </td>
-            <td>
-              {manufacturer?.products?.length ? (
-                <>
-                  {manufacturer?.products.map((product, index) => (
-                    <React.Fragment key={index}>
-                      <a href={`/product-details/${product.id}`}>
-                        {product.cat_num}
-                      </a>
-                      {index + 1 < manufacturer.products.length && (
-                        <span> | </span>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </>
-              ) : (
-                <span></span>
-              )}
-            </td>
-            <td className="align-items-center">
-              <div className="mb-2">
+            <td className="d-flex flex-row align-items-center justify-content-evenly">
+              <div>
                 <ManufacturerModal
                   manufacturerObj={manufacturer}
                   onSuccessfulSubmit={handleEdit}
@@ -88,7 +50,7 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
                 objectName={manufacturer.name}
                 objectId={manufacturer.id}
                 deleteFetchFunc={deleteManufacturer}
-                returnLocation="manufacturers"
+                onSuccessfulDelete={handleEdit}
               />
             </td>
           </tr>

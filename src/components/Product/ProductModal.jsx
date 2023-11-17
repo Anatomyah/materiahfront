@@ -16,13 +16,14 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Col, Form } from "react-bootstrap";
+import { Col, Form, Spinner } from "react-bootstrap";
 import "./ProductComponentStyle.css";
 import "font-awesome/css/font-awesome.min.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import debounce from "lodash/debounce";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import EditIcon from "@mui/icons-material/Edit";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const createFormSchema = ({ isSupplier }) =>
   yup.object().shape({
@@ -30,24 +31,16 @@ const createFormSchema = ({ isSupplier }) =>
       .string()
       .required("Product name is required")
       .min(2, "Product name must be at least 2 characters long")
-      .test(
-        "is-english",
-        "Username must be in English. No special characters, either.",
-        (value) => {
-          return /^[a-zA-Z0-9\s]+$/.test(value);
-        },
-      ),
+      .test("is-english", "Username must be in English.", (value) => {
+        return /^[a-zA-Z0-9\-_]+$/.test(value);
+      }),
     catalogueNumber: yup
       .string()
       .required("Catalogue number is required")
       .min(2, "Catalogue number must be at least 2 characters long")
-      .test(
-        "is-english",
-        "Username must be in English. No special characters, either.",
-        (value) => {
-          return /^[a-zA-Z0-9\s]+$/.test(value);
-        },
-      ),
+      .test("is-english", "Username must be in English.", (value) => {
+        return /^[a-zA-Z0-9\-_]+$/.test(value);
+      }),
     category: yup.string().required("Product category is required"),
     measurementUnit: yup.string().required("Measurement unit is required"),
     volume: yup
@@ -90,19 +83,11 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   const [supplierList, setSupplierList] = useState(null);
   const [images, setImages] = useState(productObj ? productObj.images : []);
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
-    getSupplierSelectList(token, setSupplierList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getManufacturerSelectList(token, setManufacturerList);
+    getSupplierSelectList(token, setSupplierList);
   }, []);
 
   const catalogueNumberUniqueValidator = {
@@ -151,7 +136,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   }
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     setShowModal(false);
     setImages(productObj ? productObj.images : []);
   };
@@ -159,7 +144,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
-    setErrorMessages([]);
+    setIsSubmitting(true);
     let imagesToDelete = null;
 
     const formData = new FormData();
@@ -211,9 +196,14 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
         setTimeout(() => {
           onSuccessfulSubmit();
           handleClose();
+          response.toast();
         }, 2500);
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   };
@@ -648,43 +638,33 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                       Looks good!
                     </Form.Control.Feedback>
                   </Form.Group>
-                  {errorMessages.length > 0 && (
-                    <ul>
-                      {errorMessages.map((error, id) => (
-                        <li key={id} className="text-danger fw-bold">
-                          {error}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={
-                      !isValid ||
-                      !catalogueNumberUniqueValidator.validate() ||
-                      isCheckingCatNum ||
-                      (!productObj && !dirty)
-                    }
-                    type="submit"
-                  >
-                    {productObj ? "Save" : "Create"}
-                  </Button>
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={
+                        !isValid ||
+                        !catalogueNumberUniqueValidator.validate() ||
+                        isCheckingCatNum ||
+                        (!productObj && !dirty)
+                      }
+                      type="submit"
+                    >
+                      {productObj ? "Save" : "Create"}
+                    </Button>
+                  )}
+
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>

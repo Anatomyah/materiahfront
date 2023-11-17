@@ -11,10 +11,11 @@ import {
 } from "../../clients/manufacturer_client";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Form } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 import debounce from "lodash/debounce";
 import "./ManufacturerComponentStyle.css";
 import EditIcon from "@mui/icons-material/Edit";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const formSchema = yup.object().shape({
   name: yup.string().required("Supplier name is required"),
@@ -42,15 +43,11 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
     useState(true);
   const [isCheckingManufacturerName, setIsCheckingManufacturerName] =
     useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    getSupplierSelectList(token, setSupplierList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getSupplierSelectList(token, setSupplierList);
   }, []);
 
   const manufacturerNameUniqueValidator = {
@@ -80,7 +77,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
   }, [name, debouncedCheckManufacturerName]);
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     setShowModal(false);
   };
 
@@ -93,7 +90,8 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
   const handleShow = () => setShowModal(true);
 
   function handleSubmit(values) {
-    setErrorMessages([]);
+    setIsSubmitting(true);
+
     const manufacturerData = {
       name: values.name,
       website: values.websiteUrl,
@@ -114,18 +112,31 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
         if (!manufacturerObj) {
           setTimeout(() => {
             onSuccessfulSubmit();
+            handleClose();
+            response.toast();
+            resetModal();
           }, 1000);
         }
-        handleClose();
-        resetModal();
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   }
 
   if (!supplierList) {
-    return "Loading...";
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
@@ -245,35 +256,32 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
                     setSelectedValues={setRelatedSuppliers}
                     placeholder="Suppliers"
                   />
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={
-                      !isValid ||
-                      (!manufacturerObj && !dirty) ||
-                      !manufacturerNameUniqueValidator.validate() ||
-                      isCheckingManufacturerName
-                    }
-                    onClick={handleSubmit}
-                  >
-                    {manufacturerObj ? "Save" : "Create"}
-                  </Button>
-
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={
+                        !isValid ||
+                        (!manufacturerObj && !dirty) ||
+                        !manufacturerNameUniqueValidator.validate() ||
+                        isCheckingManufacturerName
+                      }
+                      onClick={handleSubmit}
+                    >
+                      {manufacturerObj ? "Save" : "Create"}
+                    </Button>
+                  )}
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>

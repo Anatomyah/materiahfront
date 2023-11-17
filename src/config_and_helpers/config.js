@@ -6,6 +6,21 @@ export const BACKEND_URL = "http://localhost:8000/v1/";
 export const defaultImageUrl =
   "https://materiah1.s3.eu-central-1.amazonaws.com/products/No-Image-Placeholder.svg.png";
 
+export const defaultPdfUrl =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/products/PDF-Placeholder-e1500896019213.png";
+
+export const backgroundImage1 =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/design/3616399.jpg";
+export const backgroundImage2 =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg";
+export const backgroundImage3 =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/design/5116194.jpg";
+
+export const largeLogo =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/design/materiah_logo.png";
+export const smallLogo =
+  "https://materiah1.s3.eu-central-1.amazonaws.com/design/materiah_small_logo-removebg-preview.png";
+
 export const PHONE_PREFIX_CHOICES = [
   { value: "050", label: "050" },
   { value: "051", label: "051" },

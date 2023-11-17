@@ -1,4 +1,5 @@
 import { validateToken } from "../clients/user_client";
+import { toast } from "react-toastify";
 
 export const initializeApp = async (
   setRememberMe,
@@ -7,6 +8,7 @@ export const initializeApp = async (
   setNotifications,
   setIsSupplier,
   setIsLoading,
+  setCart,
 ) => {
   let storage;
 
@@ -30,6 +32,11 @@ export const initializeApp = async (
 
   const savedIsSupplier = storage.getItem("isSupplier") === "true";
 
+  const savedCart =
+    JSON.parse(storage.getItem("cart")) === "null"
+      ? null
+      : JSON.parse(storage.getItem("cart"));
+
   if (savedToken) {
     const response = await validateToken(savedToken);
     if (!response || !response.success) {
@@ -42,6 +49,9 @@ export const initializeApp = async (
       setUserDetails(savedUserDetails);
       setNotifications(savedNotifications);
       setIsSupplier(savedIsSupplier);
+      if (savedCart) {
+        setCart(savedCart);
+      }
     }
   }
 
@@ -55,6 +65,7 @@ export const createBeforeUnloadHandler = (
   notifications,
   isSupplier,
   rememberMe,
+  cart,
 ) => {
   return () => {
     let storage =
@@ -65,6 +76,7 @@ export const createBeforeUnloadHandler = (
     storage.setItem("notifications", JSON.stringify(notifications));
     storage.setItem("isSupplier", String(isSupplier));
     storage.setItem("rememberMe", String(rememberMe));
+    storage.setItem("cart", JSON.stringify(cart));
   };
 };
 
@@ -135,4 +147,17 @@ export const filterObjectsByEntity = (
   });
 
   setFilteredList(filteredObjList);
+};
+
+export const showToast = (message, type, position) => {
+  toast[type](message, {
+    position: position,
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+  });
 };

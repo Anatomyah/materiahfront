@@ -9,13 +9,14 @@ import {
   updateUserProfile,
 } from "../../clients/user_client";
 import * as yup from "yup";
-import { Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Row, Spinner } from "react-bootstrap";
 import { Formik } from "formik";
 import debounce from "lodash/debounce";
 import {
   checkSupplierEmail,
   checkSupplierPhone,
 } from "../../clients/supplier_client";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const schema = yup.object().shape({
   firstName: yup
@@ -85,7 +86,7 @@ const EditSupplierAccountModal = () => {
     useState(true);
   const [isCheckingSupplierContactPhone, setIsCheckingSupplierContactPhone] =
     useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contactEmailUniqueValidator = {
     id: "unique",
@@ -216,13 +217,13 @@ const EditSupplierAccountModal = () => {
   ]);
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     setShowModal(false);
   };
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
-    setErrorMessages([]);
+    setIsSubmitting(true);
 
     const updatedData = {
       email: values.email,
@@ -249,8 +250,13 @@ const EditSupplierAccountModal = () => {
     ).then((response) => {
       if (response && response.success) {
         handleClose();
+        response.toast();
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   };
@@ -594,40 +600,39 @@ const EditSupplierAccountModal = () => {
                       {errors.supplierWebsite}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={
-                      !isValid ||
-                      !dirty ||
-                      !contactEmailUniqueValidator.validate() ||
-                      !supplierEmailUniqueValidator.validate() ||
-                      isCheckingContactEmail ||
-                      isCheckingSupplierEmail ||
-                      !supplierPhoneUniqueValidator.validate() ||
-                      !supplierContactPhoneUniqueValidator.validate() ||
-                      isCheckingSupplierPhone ||
-                      isCheckingSupplierContactPhone
-                    }
-                    onClick={handleSubmit}
-                  >
-                    Save
-                  </Button>
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={
+                        !isValid ||
+                        !dirty ||
+                        !contactEmailUniqueValidator.validate() ||
+                        !supplierEmailUniqueValidator.validate() ||
+                        isCheckingContactEmail ||
+                        isCheckingSupplierEmail ||
+                        !supplierPhoneUniqueValidator.validate() ||
+                        !supplierContactPhoneUniqueValidator.validate() ||
+                        isCheckingSupplierPhone ||
+                        isCheckingSupplierContactPhone
+                      }
+                      onClick={handleSubmit}
+                    >
+                      Save
+                    </Button>
+                  )}
+
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>

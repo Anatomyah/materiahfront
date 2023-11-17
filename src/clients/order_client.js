@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
 import { uploadImagesToS3 } from "./product_client";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
   try {
@@ -17,14 +18,11 @@ export const finalizeOrderImageUploadStatus = async (token, uploadStatuses) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
 export const createOrder = async (token, orderData, images) => {
-  console.log("in create");
   try {
     const response = await axios.post(`${BACKEND_URL}orders/`, orderData, {
       headers: {
@@ -57,12 +55,13 @@ export const createOrder = async (token, orderData, images) => {
       }
     }
 
+    result.toast = () =>
+      showToast("Order created successfully!", "success", "top-right");
+
     return result;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -108,12 +107,13 @@ export const updateOrder = async (
       }
     }
 
+    result.toast = () =>
+      showToast("Order updated successfully!", "success", "top-right");
+
     return result;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -124,12 +124,14 @@ export const deleteOrder = async (token, orderId) => {
         Authorization: `Token ${token}`,
       },
     });
-    return { success: true };
+    return {
+      success: true,
+      toast: () =>
+        showToast("Order deleted successfully!", "success", "top-right"),
+    };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -169,9 +171,7 @@ export const getOrders = async (token, setOrders, options = {}) => {
     return { success: true, nextPage: response.data.next };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -187,8 +187,6 @@ export const getOrderDetails = async (token, orderId, setOrderDetails) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

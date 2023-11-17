@@ -8,10 +8,11 @@ import { createQuoteManually, updateQuote } from "../../clients/quote_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Col, Form } from "react-bootstrap";
+import { Col, Form, Spinner } from "react-bootstrap";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import EditIcon from "@mui/icons-material/Edit";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const itemSchema = yup.object().shape({
   quantity: yup
@@ -72,8 +73,9 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
       : [],
   );
   const [fileChanged, setFileChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
     if (quoteFile) {
@@ -84,26 +86,15 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   }, [quoteFile]);
 
   useEffect(() => {
-    getSupplierSelectList(token, setSupplierSelectList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getSupplierSelectList(token, setSupplierSelectList);
   }, []);
 
   const fetchProductSelectList = () => {
-    getProductSelectList(token, setProductSelectList, supplier).then(
-      (response) => {
-        if (response && !response.success) {
-          setErrorMessages((prevState) => [...prevState, response]);
-        }
-      },
-    );
+    getProductSelectList(token, setProductSelectList, supplier);
   };
 
   useEffect(() => {
     if (productSelectList && items.length === 0) {
-      console.log("worked");
       setItems([{ product: "", quantity: "", price: "" }]);
     }
   }, [productSelectList]);
@@ -115,7 +106,7 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   }, [supplier]);
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     resetModal();
     setShowModal(false);
   };
@@ -159,7 +150,7 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   };
 
   const handleSubmit = (values) => {
-    setErrorMessages([]);
+    setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append("supplier", values.supplier);
@@ -182,17 +173,30 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
       if (response && response.success) {
         setTimeout(() => {
           onSuccessfulSubmit();
+          handleClose();
+          response.toast();
+          resetModal();
         }, 1500);
-        handleClose();
-        resetModal();
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   };
 
-  if (!supplierSelectList) {
-    return "Loading...";
+  if (!supplierSelectList.length) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
   return (
     <>
@@ -370,31 +374,29 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
                       )}
                     </div>
                   )}
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  {quoteObj?.status !==
-                  ("Arrived, unfulfilled" || "Fulfilled") ? (
-                    <Button
-                      variant="primary"
-                      disabled={!isValid || (!quoteObj && !dirty)}
-                      onClick={handleSubmit}
-                    >
-                      {quoteObj ? "Save" : "Create"}
-                    </Button>
+                  {quoteObj?.status !== "Arrived, unfulfilled" &&
+                  quoteObj?.status !== "Fulfilled" ? (
+                    isSubmitting ? (
+                      <Button variant="primary" disabled>
+                        <Spinner
+                          size="sm"
+                          as="span"
+                          animation="border"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        disabled={!isValid || (!quoteObj && !dirty)}
+                        onClick={handleSubmit}
+                      >
+                        {quoteObj ? "Save" : "Create"}
+                      </Button>
+                    )
                   ) : (
                     <h6 className="justify-content-lg-start">
                       Can't edit a quote associated with an order

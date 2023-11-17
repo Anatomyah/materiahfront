@@ -5,6 +5,9 @@ import OrderModal from "./OrderModal";
 import { deleteOrder } from "../../clients/order_client";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import QuoteDetailModal from "../Quote/QuoteDetailModal";
+import OrderDetailModal from "./OrderDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
 const OrderTable = ({ orderList, handleEdit }) => {
   return (
@@ -28,14 +31,10 @@ const OrderTable = ({ orderList, handleEdit }) => {
             <tr key={index} className="text-center align-middle">
               <td>{index + 1}</td>
               <td>
-                <a href={`/order-details/${order.id}`} className="link-">
-                  {order.id}
-                </a>
+                <OrderDetailModal orderObj={order} updateOrders={handleEdit} />
               </td>
               <td className="justify-content-around">
-                <a href={`/quote-details/${order.quote.id}`} className="link-">
-                  {order.quote.id}
-                </a>
+                <QuoteDetailModal quoteId={order.quote.id} />
                 <span> | </span>
                 <a href={order.quote.quote_url} className="link-">
                   <PictureAsPdfIcon />
@@ -54,12 +53,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                 ))}
               </td>
               <td>
-                <a
-                  href={`/supplier-details/${order.supplier.id}`}
-                  className="link-"
-                >
-                  {order.supplier.name}
-                </a>
+                <SupplierDetailModal supplierId={order.supplier.id} />
               </td>
               <td>{order.quote.status}</td>
               <td className="d-flex flex-row justify-content-center">
@@ -74,7 +68,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                   objectName={order.id}
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
-                  returnLocation="orders"
+                  onSuccessfulDelete={handleEdit}
                 />
               </td>
             </tr>

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config_and_helpers/config";
+import { showToast } from "../config_and_helpers/helpers";
 
 export const validateToken = async (token) => {
   try {
@@ -20,8 +21,6 @@ export const signup = async (
   setUserDetails,
   setNotifications,
 ) => {
-  console.log(userData);
-  console.log(setToken);
   try {
     const response = await axios.post(`${BACKEND_URL}users/`, userData, {
       headers: {
@@ -30,8 +29,6 @@ export const signup = async (
     });
 
     let result = { success: true };
-
-    console.log(setToken);
 
     if (response) {
       const loginResponse = await login({
@@ -54,9 +51,7 @@ export const signup = async (
     return result;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -79,7 +74,6 @@ export const login = async ({
         "Content-Type": "application/json",
       },
     });
-    console.log(res);
 
     if (res.status === 200 && res.data) {
       setToken(res.data.token);
@@ -98,11 +92,8 @@ export const login = async ({
     }
     return { success: true };
   } catch (error) {
-    console.error(error);
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -119,8 +110,9 @@ export const logout = async (token) => {
     );
     localStorage.clear();
     sessionStorage.clear();
-  } catch (e) {
-    alert(e);
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
   }
 };
 
@@ -130,14 +122,11 @@ export const getPasswordToken = async (email) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
 export const resetPassword = async (token, password) => {
-  console.log(password);
   try {
     await axios.post(`${BACKEND_URL}api/password_reset/confirm/`, {
       token,
@@ -146,9 +135,7 @@ export const resetPassword = async (token, password) => {
     return { success: true };
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -168,14 +155,20 @@ export const updateUserProfile = async (
         },
       },
     );
-    console.log(response.data);
     setUserDetails(response.data);
-    return { success: true };
+
+    return {
+      success: true,
+      toast: () =>
+        showToast(
+          "Account details edited successfully!",
+          "success",
+          "top-right",
+        ),
+    };
   } catch (error) {
-    console.error(error);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    console.error(error.response.data);
+    return Object.values(error.response.data);
   }
 };
 
@@ -184,13 +177,11 @@ export const checkUsername = async (value) => {
     const response = await axios.get(
       `${BACKEND_URL}users/check_username/?value=${value}`,
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -204,13 +195,11 @@ export const checkUsernameAuthRequired = async (token, value) => {
         },
       },
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -219,13 +208,11 @@ export const checkEmail = async (value) => {
     const response = await axios.get(
       `${BACKEND_URL}users/check_email/?value=${value}`,
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -242,9 +229,7 @@ export const checkEmailAuthRequired = async (token, value) => {
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -258,13 +243,11 @@ export const checkPhoneAuthRequired = async (token, prefix, suffix) => {
         },
       },
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };
 
@@ -273,12 +256,10 @@ export const checkPhoneNumber = async (prefix, suffix) => {
     const response = await axios.get(
       `${BACKEND_URL}users/check_phone/?prefix=${prefix}&suffix=${suffix}`,
     );
-    console.log(response.data);
+
     return response.data.unique;
   } catch (error) {
     console.error(error.response.data);
-    return error.response
-      ? Object.values(error.response.data).flat()
-      : "Something went wrong";
+    return Object.values(error.response.data);
   }
 };

@@ -5,8 +5,13 @@ import DeleteButton from "../Generic/DeleteButton";
 import { deleteQuote } from "../../clients/quote_client";
 import LinkIcon from "@mui/icons-material/Link";
 import "./QuoteComponentStyle.css";
+import QuoteDetailModal from "./QuoteDetailModal";
+import OrderDetailModal from "../Order/OrderDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import ProductDetailModal from "../Product/ProductDetailModal";
 
 const QuoteTable = ({ quoteList, handleEdit }) => {
+  console.log(quoteList);
   return (
     <Table striped bordered hover>
       <thead>
@@ -14,7 +19,7 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
           <th>#</th>
           <th>ID</th>
           <th>Request Date</th>
-          <th>Reception Date</th>
+          <th>Creation/Reception Date</th>
           <th>Last Updated</th>
           <th>URL</th>
           <th>Order</th>
@@ -29,9 +34,7 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
             <tr key={index} className="text-center align-middle">
               <td>{index + 1}</td>
               <td>
-                <a href={`/order-details/${quote.id}`} className="link-">
-                  {quote.id}
-                </a>
+                <QuoteDetailModal quoteId={quote.id} />
               </td>
               <td>{quote.request_date}</td>
               <td>{quote.creation_date}</td>
@@ -46,17 +49,10 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 </a>
               </td>
               <td>
-                <a href={`/order-details/${quote.order}`} className="link-">
-                  {quote.order}
-                </a>
+                <OrderDetailModal orderId={quote?.order} />
               </td>
               <td>
-                <a
-                  href={`/supplier-details/${quote.supplier.id}`}
-                  className="link-"
-                >
-                  {quote.supplier.name}
-                </a>
+                <SupplierDetailModal supplierId={quote.supplier.id} />
               </td>
               <td>{quote.status}</td>
               <td className="d-flex flex-row justify-content-center">
@@ -71,7 +67,7 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                   objectName={quote.id}
                   objectId={quote.id}
                   deleteFetchFunc={deleteQuote}
-                  returnLocation="quotes"
+                  onSuccessfulDelete={handleEdit}
                 />
               </td>
             </tr>
@@ -87,10 +83,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 <tr className="text-center italic-text">
                   <td></td>
                   <td>{index + 1}</td>
-                  <td key={index}>
-                    <a href={`/product-details/${item.product.id}`}>
-                      {item.product.cat_num}
-                    </a>
+                  <td>
+                    <ProductDetailModal productId={item.product.id} />
                   </td>
                   <td>{item.quantity}</td>
                   <td>{item.price}</td>

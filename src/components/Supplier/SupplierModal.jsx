@@ -12,12 +12,13 @@ import {
   updateSupplier,
 } from "../../clients/supplier_client";
 import { Formik } from "formik";
-import { Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Row, Spinner } from "react-bootstrap";
 import * as yup from "yup";
 import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
 import debounce from "lodash/debounce";
 import "./SupplierComponentStyle.css";
 import EditIcon from "@mui/icons-material/Edit";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const formSchema = yup.object().shape({
   name: yup.string().required("Supplier name is required"),
@@ -61,15 +62,11 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   const [email, setEmail] = useState(supplierObj ? supplierObj?.email : "");
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
 
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getManufacturerSelectList(token, setManufacturerList);
   }, []);
 
   const supplierNameUniqueValidator = {
@@ -155,7 +152,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   }, [phonePrefix, phoneSuffix, debouncedCheckSupplierPhone]);
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     setShowModal(false);
   };
 
@@ -166,7 +163,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   const handleShow = () => setShowModal(true);
 
   function handleSubmit(values) {
-    setErrorMessages([]);
+    setIsSubmitting(true);
 
     const supplierData = {
       name: values.name,
@@ -188,18 +185,31 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
         if (!supplierObj) {
           setTimeout(() => {
             onSuccessfulSubmit();
+            handleClose();
+            response.toast();
+            resetModal();
           }, 1000);
         }
-        handleClose();
-        resetModal();
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   }
 
-  if (!manufacturerList) {
-    return "Loading...";
+  if (!manufacturerList.length) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
@@ -432,38 +442,36 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                     setSelectedValues={setRelatedManufacturers}
                     placeholder="Manufacturers"
                   />
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={
-                      !isValid ||
-                      (!supplierObj && !dirty) ||
-                      !supplierNameUniqueValidator.validate() ||
-                      !supplierEmailUniqueValidator.validate() ||
-                      !supplierPhoneUniqueValidator.validate() ||
-                      isCheckingSupplierName ||
-                      isCheckingSupplierEmail ||
-                      isCheckingSupplierPhone
-                    }
-                    onClick={handleSubmit}
-                  >
-                    {supplierObj ? "Save" : "Create"}
-                  </Button>
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={
+                        !isValid ||
+                        (!supplierObj && !dirty) ||
+                        !supplierNameUniqueValidator.validate() ||
+                        !supplierEmailUniqueValidator.validate() ||
+                        !supplierPhoneUniqueValidator.validate() ||
+                        isCheckingSupplierName ||
+                        isCheckingSupplierEmail ||
+                        isCheckingSupplierPhone
+                      }
+                      onClick={handleSubmit}
+                    >
+                      {supplierObj ? "Save" : "Create"}
+                    </Button>
+                  )}
 
                   <Button variant="secondary" onClick={handleClose}>
                     Close

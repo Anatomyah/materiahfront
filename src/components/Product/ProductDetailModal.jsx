@@ -1,122 +1,73 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
-import { AppContext, CartAppContext } from "../../App";
-import { deleteProduct, getProductDetails } from "../../clients/product_client";
-import DeleteButton from "../Generic/DeleteButton";
-import ProductModal from "./ProductModal";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import CarouselComponent from "../Generic/CarouselComponent";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AppContext } from "../../App";
+import { getProductDetails } from "../../clients/product_client";
+import "./ProductComponentStyle.css";
+import InventoryModal from "./InventoryModal";
+import ShopModal from "../Shop/ShopModal";
+import { showToast } from "../../config_and_helpers/helpers";
+import { Spinner } from "react-bootstrap";
 
-const ProductDetailModal = ({ productId, shopView = false }) => {
+const ProductDetailModal = ({
+  productObj,
+  productId,
+  shopView = false,
+  updateProducts,
+  showShopModal,
+  setShowShopModal,
+}) => {
   const { token } = useContext(AppContext);
-  const { cart, setCart } = useContext(CartAppContext);
-  const [productAmount, setProductAmount] = useState("");
-  const [product, setProduct] = useState(null);
-  const [errorMessages, setErrorMessages] = useState([]);
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
-  useEffect(() => {
-    if (!product) {
-      fetchProduct();
-    }
-  }, [productId, product]);
+  const isLoadingRef = useRef(false);
+  const [product, setProduct] = useState(productObj);
+  const productIdToUse = productObj ? productObj.id : productId;
 
   const fetchProduct = () => {
-    getProductDetails(token, productId, setProduct).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
+    isLoadingRef.current = true;
+    getProductDetails(token, productIdToUse, setProduct).then((response) => {
+      isLoadingRef.current = false;
     });
   };
 
-  const handleMinusClick = () => {
-    if (productAmount <= 1) {
-      setProductAmount("");
-    } else {
-      setProductAmount((prevState) => prevState - 1);
+  useEffect(() => {
+    if (!product && productIdToUse) fetchProduct();
+  }, []);
+
+  const handleEdit = () => {
+    if (updateProducts) {
+      updateProducts();
     }
+    fetchProduct();
   };
 
-  const handlePlusClick = () => {
-    if (productAmount === 0) {
-      setProductAmount(1);
-    } else {
-      setProductAmount((prevState) => Number(prevState) + 1);
-    }
-  };
-
-  const handleInputChange = (value) => {
-    if (value < 1) {
-      setProductAmount("");
-    } else {
-      setProductAmount(value);
-    }
-  };
-
-  const handleAddToCart = () => {
-    const itemExists = cart.some((item) => item.cat_num === product.cat_num);
-
-    if (itemExists) {
-      setCart((prevCart) => {
-        return prevCart.map((item) =>
-          item.cat_num === product.cat_num
-            ? {
-                ...item,
-                quantity: Number(item.quantity) + Number(productAmount),
-              }
-            : item,
-        );
-      });
-    } else {
-      const newItem = {
-        product: product.id,
-        cat_num: product.cat_num,
-        name: product.name,
-        image: product.images.length > 0 ? product.images[0].image : null,
-        supplier: product.supplier,
-        quantity: Number(productAmount),
-      };
-      setCart((prevCart) => {
-        return [...prevCart, newItem];
-      });
-    }
-  };
-
-  if (!product) {
-    return "Product details not available";
+  if (isLoadingRef.current) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
-    <>
-      <Button onClick={handleShow}>Large modal</Button>
-      <Modal
-        show={show}
-        onHide={() => setShow(false)}
-        aria-labelledby="example-modal-sizes-title-lg"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title id="example-modal-sizes-title-lg">
-            Large Modal
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <CarouselComponent />
-          <hr />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleClose}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+    <div>
+      {product &&
+        (shopView ? (
+          <ShopModal
+            product={product}
+            handleEdit={handleEdit}
+            show={showShopModal}
+            setShow={setShowShopModal}
+          />
+        ) : (
+          <InventoryModal
+            product={product}
+            handleEdit={handleEdit}
+            updateProducts={updateProducts}
+          />
+        ))}
+    </div>
   );
 };
 

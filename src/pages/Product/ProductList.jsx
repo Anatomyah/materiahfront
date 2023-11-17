@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { getProducts } from "../../clients/product_client";
 import { AppContext } from "../../App";
-import { useNavigate } from "react-router-dom";
 import ProductModal from "../../components/Product/ProductModal";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import InfiniteScroll from "react-infinite-scroller";
-import ItemCard from "../../components/Generic/ItemCard";
+import ItemCard from "../../components/Product/ItemCard";
 import "./ProductPageStyle.css";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import TextField from "@mui/material/TextField";
@@ -17,9 +16,10 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import SupplierSelect from "../../components/Generic/SupplierSelect";
+import { Spinner } from "react-bootstrap";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
-  const nav = useNavigate();
   const isLoadingRef = useRef(false);
   const isMountedRef = useRef(false);
   const { token, isSupplier } = useContext(AppContext);
@@ -28,16 +28,11 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const [supplier, setSupplier] = useState("");
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-  const [errorMessages, setErrorMessages] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [typingTimeout, setTypingTimeout] = useState(null);
 
   useEffect(() => {
-    getSupplierSelectList(token, setSupplierSelectList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getSupplierSelectList(token, setSupplierSelectList);
   }, []);
 
   const fetchProducts = ({
@@ -61,19 +56,15 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           setHasMore(true);
         }
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again",
+          "danger",
+          "top-center",
+        );
       }
       isLoadingRef.current = false;
     });
   };
-
-  useEffect(() => {
-    console.log(supplierSelectList);
-  }, [supplierSelectList]);
-
-  useEffect(() => {
-    console.log(supplier);
-  }, [supplier]);
 
   useEffect(() => {
     if (!isMountedRef.current) {
@@ -99,13 +90,17 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     setTypingTimeout(newTimeout);
   };
 
-  const goToProductDetails = (productId) => {
-    const state = { shopView: false };
-    if (isShopView) {
-      state.shopView = true;
-    }
-    nav(`/product-details/${productId}`, { state });
-  };
+  if (isLoadingRef.current) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <div>
@@ -207,32 +202,12 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           <div className="d-flex flex-wrap flex-row justify-content-start bg-dark-subtle pt-2">
             {products.map((product) => (
               <div className="item-card" key={product.id}>
-                <ItemCard
-                  props={{
-                    image: product?.images[0]?.image_url,
-                    name: product.name,
-                    catNum: product.cat_num,
-                    supplier: product.supplier.name,
-                    manufacturer: product.manufacturer.name,
-                    category: product.category,
-                    volume: product.volume,
-                    imageClick: () => goToProductDetails(product.id),
-                  }}
-                />
+                <ItemCard product={product} handleEdit={fetchProducts} />
               </div>
             ))}
           </div>
         )}
       </InfiniteScroll>
-      {!errorMessages && (
-        <ul>
-          {errorMessages.map((error, id) => (
-            <li key={id} className="text-danger fw-bold">
-              {error}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

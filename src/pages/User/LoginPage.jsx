@@ -4,14 +4,14 @@ import { login } from "../../clients/user_client";
 import { AppContext } from "../../App";
 import AccountModal from "../../components/User/AccountModal";
 import Image from "react-bootstrap/Image";
-import logo from "../../assets/materiah_logo.png";
 import Container from "react-bootstrap/Container";
-import { Form } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import * as formik from "formik";
 import * as yup from "yup";
 import "./LoginPageStyle.css";
 import ChangePasswordModal from "../../components/User/ChangePasswordModal";
+import { largeLogo } from "../../config_and_helpers/config";
 
 const schema = yup.object({
   username: yup.string().required("Username is required"),
@@ -20,6 +20,7 @@ const schema = yup.object({
 
 const LoginPage = () => {
   const [loginError, setLoginError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const nav = useNavigate();
   const {
     setToken,
@@ -37,12 +38,13 @@ const LoginPage = () => {
       className="d-flex flex-column justify-content-center align-content-center align-items-center"
       style={{ minHeight: "100vh" }}
     >
-      <Image src={logo} style={{ width: "50%" }} className="mb-5" />
+      <Image src={largeLogo} style={{ width: "50%" }} className="mb-5" />
       <div className="d-flex flex-column align-items-center gradient-bg px-5">
         <Formik
           initialValues={{ username: "", password: "" }}
           validationSchema={schema}
           onSubmit={(values) => {
+            setIsSubmitting(true);
             login({
               credentials: values,
               setToken,
@@ -57,6 +59,7 @@ const LoginPage = () => {
               } else {
                 setLoginError(true);
               }
+              setIsSubmitting(true);
             });
           }}
         >
@@ -110,15 +113,27 @@ const LoginPage = () => {
                   Unable to log in with provided credentials
                 </div>
               )}
-              <Button variant="dark" type="submit" size="lg">
-                Login
-              </Button>
+
+              {isSubmitting ? (
+                <Button variant="dark" disabled>
+                  <Spinner
+                    size="lg"
+                    as="span"
+                    animation="border"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                </Button>
+              ) : (
+                <Button variant="dark" type="submit" size="lg">
+                  Login
+                </Button>
+              )}
             </Form>
           )}
         </Formik>
         <div className="d-flex justify-content-between align-items-end">
           <AccountModal isSignUp={true} />
-          {/*<ResetPasswordModal />*/}
           <ChangePasswordModal />
         </div>
       </div>

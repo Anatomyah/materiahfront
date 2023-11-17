@@ -9,11 +9,12 @@ import Modal from "react-bootstrap/Modal";
 import OrderItemComponent from "./OrderItemComponent";
 import { createOrder, updateOrder } from "../../clients/order_client";
 import * as yup from "yup";
-import { Col, Form } from "react-bootstrap";
+import { Col, Form, Spinner } from "react-bootstrap";
 import { Formik } from "formik";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import EditIcon from "@mui/icons-material/Edit";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const itemSchema = yup.object().shape({
   quantity: yup
@@ -104,23 +105,16 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
       : [],
   );
   const [images, setImages] = useState(orderObj ? orderObj.images : []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
-  const [errorMessages, setErrorMessages] = useState([]);
 
   const fetchQuote = (quoteId) => {
-    getQuoteDetails(token, quoteId, setRelatedQuoteObj).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getQuoteDetails(token, quoteId, setRelatedQuoteObj);
   };
 
   useEffect(() => {
-    getOpenQuotesSelectList(token, setOpenQuotesSelectList).then((response) => {
-      if (response && !response.success) {
-        setErrorMessages((prevState) => [...prevState, response]);
-      }
-    });
+    getOpenQuotesSelectList(token, setOpenQuotesSelectList);
   }, []);
 
   useEffect(() => {
@@ -165,7 +159,7 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
   }
 
   const handleClose = () => {
-    setErrorMessages([]);
+    setIsSubmitting(false);
     setShowModal(false);
     setRelatedQuoteObj(null);
     setItems(
@@ -191,7 +185,7 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
   const handleShow = () => setShowModal(true);
 
   const handleSubmit = (values) => {
-    setErrorMessages([]);
+    setIsSubmitting(true);
     let finalItems, imagesToDelete;
 
     if (orderObj) {
@@ -237,16 +231,29 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
       if (response && response.success) {
         setTimeout(() => {
           onSuccessfulSubmit();
+          handleClose();
+          response.toast();
         }, 1500);
-        handleClose();
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
     });
   };
 
-  if (!openQuotesSelectList) {
-    return "Loading...";
+  if (!openQuotesSelectList.length) {
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
@@ -586,29 +593,28 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
                       </Form.Group>
                     </>
                   )}
-                  {Object.keys(errorMessages).length > 0 && (
-                    <ul>
-                      {Object.keys(errorMessages).map((key, index) => {
-                        return errorMessages[key].map((error, subIndex) => (
-                          <li
-                            key={`${index}-${subIndex}`}
-                            className="text-danger fw-bold"
-                          >
-                            {error}
-                          </li>
-                        ));
-                      })}
-                    </ul>
-                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button
-                    variant="primary"
-                    disabled={!isValid || (!orderObj && !dirty)}
-                    onClick={handleSubmit}
-                  >
-                    {orderObj ? "Save" : "Create"}
-                  </Button>
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      disabled={!isValid || (!orderObj && !dirty)}
+                      onClick={handleSubmit}
+                    >
+                      {orderObj ? "Save" : "Create"}
+                    </Button>
+                  )}
+
                   <Button variant="secondary" onClick={handleClose}>
                     Close
                   </Button>
