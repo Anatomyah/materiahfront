@@ -43,8 +43,6 @@ const ShopModal = ({ product, show, setShow }) => {
   };
 
   const handleAddToCart = () => {
-    showToast("Product added to cart", "success", "bottom-right");
-
     const itemExists = cart.some((item) => item.cat_num === product.cat_num);
 
     if (itemExists) {
@@ -72,7 +70,9 @@ const ShopModal = ({ product, show, setShow }) => {
         return [...prevCart, newItem];
       });
     }
+    showToast("Product added to cart", "success", "bottom-right");
   };
+
   const handleClose = () => setShow(false);
 
   const modalStyle = {

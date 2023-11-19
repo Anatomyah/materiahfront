@@ -203,14 +203,15 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
         .map((obj) => obj.id);
     }
 
-    const formData = new FormData();
-    formData.append("quote", orderObj ? orderObj.quote.id : relatedQuoteObj.id);
-    formData.append("arrival_date", values.arrivalDate);
-    formData.append("items", JSON.stringify(orderObj ? finalItems : items));
-    formData.append("received_by", values.receivedBy);
+    const updatedOrderData = {
+      quote: orderObj ? orderObj.quote.id : relatedQuoteObj.id,
+      arrival_date: values.arrivalDate,
+      items: JSON.stringify(orderObj ? finalItems : items),
+      received_by: values.receivedBy,
+    };
 
     if (orderObj && imagesToDelete.length) {
-      formData.append("images_to_delete", JSON.stringify(imagesToDelete));
+      updatedOrderData.images_to_delete = JSON.stringify(imagesToDelete);
     }
 
     const newImages = images.filter((image) => image.file);
@@ -220,12 +221,12 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
         id: image.id,
         type: image.file.type,
       }));
-      formData.append("images", JSON.stringify(imageInfo));
+      updatedOrderData.images = JSON.stringify(imageInfo);
     }
 
     const orderPromise = orderObj
-      ? updateOrder(token, orderObj.id, formData, newImages)
-      : createOrder(token, formData, images);
+      ? updateOrder(token, orderObj.id, updatedOrderData, newImages)
+      : createOrder(token, updatedOrderData, images);
 
     orderPromise.then((response) => {
       if (response && response.success) {

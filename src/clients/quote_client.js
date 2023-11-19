@@ -58,8 +58,7 @@ export const createQuoteFromCart = async (token, cart_items) => {
     });
     return {
       success: true,
-      toast: () =>
-        showToast("Quote created successfully!", "success", "top-right"),
+      toast: () => showToast("Shopping Successful!", "success", "top-right"),
     };
   } catch (error) {
     console.error(error.response.data);

@@ -300,3 +300,33 @@ export const checkCatNum = async (token, value) => {
     return Object.values(error.response.data);
   }
 };
+
+export const updateProductStock = async (token, productId, value) => {
+  try {
+    await axios.post(
+      `${BACKEND_URL}products/update_stock_item/`,
+      {
+        value: value,
+        product_id: productId,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    return {
+      success: true,
+      toast: () =>
+        showToast(
+          "Product stock updated successfully!",
+          "success",
+          "top-right",
+        ),
+    };
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
+  }
+};

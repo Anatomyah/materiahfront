@@ -15,7 +15,6 @@ import {
 } from "../../clients/manufacturer_client";
 import ManufacturerModal from "./ManufacturerModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
-import { showToast } from "../../config_and_helpers/helpers";
 
 const ManufacturerDetailModal = ({
   manufacturerObj,

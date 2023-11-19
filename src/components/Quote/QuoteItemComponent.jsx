@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
-import { Form, FormControl } from "react-bootstrap";
+import { Form, FormControl, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -37,7 +37,15 @@ const QuoteItemComponent = ({
   const priceFieldName = `items[${index}].price`;
 
   if (!productList) {
-    return <div>Loading...</div>;
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
   return (
     <div className="mt-3 mb-3 border border-secondary-subtle rounded p-3">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, FormControl } from "react-bootstrap";
+import { Form, FormControl, Spinner } from "react-bootstrap";
 import "./OrderComponentStyle.css";
 
 const OrderItemComponent = ({
@@ -49,7 +49,15 @@ const OrderItemComponent = ({
   const otherReasonDetailFieldName = `items[${index}].otherReasonDetail`;
 
   if (!item) {
-    return <div>Loading...</div>;
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (

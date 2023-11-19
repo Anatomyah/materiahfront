@@ -4,6 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Spinner } from "react-bootstrap";
+import { showToast } from "../../config_and_helpers/helpers";
 
 const DeleteButton = ({
   objectType,
@@ -13,7 +14,6 @@ const DeleteButton = ({
   onSuccessfulDelete,
 }) => {
   const { token } = useContext(AppContext);
-  const [errorMessages, setErrorMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -30,11 +30,15 @@ const DeleteButton = ({
           onSuccessfulDelete();
           handleClose();
           response.toast();
-          setIsDeleting(false);
         }, 2000);
       } else {
-        setErrorMessages((prevState) => [...prevState, response]);
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
       }
+      setIsDeleting(false);
     });
   }
 
@@ -52,15 +56,6 @@ const DeleteButton = ({
           <p>
             Are you sure you want to delete {objectType} {objectName}?
           </p>
-          {!errorMessages && (
-            <ul>
-              {errorMessages.map((error, id) => (
-                <li key={id} className="text-danger fw-bold">
-                  {error}
-                </li>
-              ))}
-            </ul>
-          )}
         </Modal.Body>
         <Modal.Footer>
           {isDeleting ? (

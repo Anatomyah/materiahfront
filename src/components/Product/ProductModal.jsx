@@ -32,14 +32,14 @@ const createFormSchema = ({ isSupplier }) =>
       .required("Product name is required")
       .min(2, "Product name must be at least 2 characters long")
       .test("is-english", "Username must be in English.", (value) => {
-        return /^[a-zA-Z0-9\-_]+$/.test(value);
+        return /^[a-zA-Z0-9\-_ ]+$/.test(value);
       }),
     catalogueNumber: yup
       .string()
       .required("Catalogue number is required")
       .min(2, "Catalogue number must be at least 2 characters long")
       .test("is-english", "Username must be in English.", (value) => {
-        return /^[a-zA-Z0-9\-_]+$/.test(value);
+        return /^[a-zA-Z0-9\-_ ]+$/.test(value);
       }),
     category: yup.string().required("Product category is required"),
     measurementUnit: yup.string().required("Measurement unit is required"),
@@ -111,11 +111,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   const debouncedCheckCatNum = useCallback(debounce(validateCatNum, 1500), []);
 
   useEffect(() => {
-    if (
-      catalogueNumber &&
-      productObj &&
-      catalogueNumber !== productObj.cat_num
-    ) {
+    if (catalogueNumber && catalogueNumber !== productObj?.cat_num) {
       debouncedCheckCatNum(catalogueNumber);
     } else {
       setIsCheckingCatNum(false);
@@ -209,7 +205,15 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   };
 
   if (!manufacturerList || !supplierList) {
-    return "Loading...";
+    return (
+      <Spinner
+        size="lg"
+        as="span"
+        animation="border"
+        role="status"
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
@@ -223,7 +227,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>{[productObj] ? "Edit" : "Create"} Product</Modal.Title>
+          <Modal.Title>{productObj ? "Edit" : "Create"} Product</Modal.Title>
         </Modal.Header>
 
         <Formik

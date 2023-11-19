@@ -12,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { smallLogo } from "../../config_and_helpers/config";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 function TopNavBar() {
   const { token, setToken, isSupplier, setIsSupplier, setRememberMe } =
@@ -83,78 +84,23 @@ function TopNavBar() {
                   </>
                 )}
               </Nav>
-              <Nav>
-                <Nav.Link as={Link} to="/account">
+
+              <NavDropdown
+                title={<AccountCircleIcon style={{ fontSize: "24px" }} />}
+                id="collasible-nav-dropdown"
+              >
+                <NavDropdown.Item as={Link} to="/account">
                   Account
-                </Nav.Link>
-                <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
-              </Nav>
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={handleLogout}>
+                  Logout
+                </NavDropdown.Item>
+              </NavDropdown>
             </Navbar.Collapse>
           </Col>
         </Row>
       </Container>
     </Navbar>
-    //   <Container>
-    //     <Row>
-    //       <Col>
-    //         <Navbar.Brand as={Link} to="/">
-    //           <img
-    //             src={smallLogo}
-    //             width="40" // Set the width of your logo
-    //             height="40" // Set the height of your logo
-    //             className="d-inline-block align-top" // This class aligns the image vertically with adjacent text
-    //             alt="Materiah Logo" // Alt text for the logo
-    //           />
-    //           Materiah
-    //         </Navbar.Brand>
-    //       </Col>
-    //       <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-    //       <Navbar.Collapse id="responsive-navbar-nav">
-    //         <Nav className="me-auto">
-    //           {isSupplier ? (
-    //             <>
-    //               <Nav.Link as={Link} to="/supplier-catalogue">
-    //                 Catalogue
-    //               </Nav.Link>
-    //             </>
-    //           ) : (
-    //             <>
-    //               <Nav.Link as={Link} to="/inventory">
-    //                 Inventory
-    //               </Nav.Link>
-    //               <Nav.Link as={Link} to="/orders">
-    //                 Orders
-    //               </Nav.Link>
-    //               <NavDropdown title="Database" id="collasible-nav-dropdown">
-    //                 <NavDropdown.Item as={Link} to="/suppliers">
-    //                   Suppliers
-    //                 </NavDropdown.Item>
-    //                 <NavDropdown.Item as={Link} to="/manufacturers">
-    //                   Manufacturers
-    //                 </NavDropdown.Item>
-    //                 <NavDropdown.Item as={Link} to="/quotes">
-    //                   Quotes
-    //                 </NavDropdown.Item>
-    //               </NavDropdown>
-    //               <Nav.Link as={Link} to="/shop">
-    //                 Shop
-    //               </Nav.Link>
-    //               <Nav.Link onClick={() => setShowCart(true)}>
-    //                 <ShoppingCartIcon />
-    //               </Nav.Link>
-    //             </>
-    //           )}
-    //         </Nav>
-    //         <Nav>
-    //           <Nav.Link as={Link} to="/account">
-    //             Account
-    //           </Nav.Link>
-    //           <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
-    //         </Nav>
-    //       </Navbar.Collapse>
-    //     </Row>
-    //   </Container>
-    // </Navbar>
   );
 }
 

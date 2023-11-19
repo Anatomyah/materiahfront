@@ -195,16 +195,20 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         }
       >
         {!products.length ? (
-          `No products related to this supplier`
+          <div>`Nothing here...`</div>
         ) : !isCatalogueView && !isShopView ? (
           <ProductTable productList={products} handleEdit={fetchProducts} />
         ) : (
-          <div className="d-flex flex-wrap flex-row justify-content-start bg-dark-subtle pt-2">
-            {products.map((product) => (
-              <div className="item-card" key={product.id}>
-                <ItemCard product={product} handleEdit={fetchProducts} />
+          <div className="bg-dark-subtle ps-3">
+            <div className="ps-5">
+              <div className="d-flex flex-wrap flex-row align-items-center justify-content-start ms-5">
+                {products.map((product) => (
+                  <div className="item-card" key={product.id}>
+                    <ItemCard product={product} handleEdit={fetchProducts} />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </InfiniteScroll>

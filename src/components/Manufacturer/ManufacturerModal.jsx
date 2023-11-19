@@ -77,7 +77,6 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
   }, [name, debouncedCheckManufacturerName]);
 
   const handleClose = () => {
-    setIsSubmitting(false);
     setShowModal(false);
   };
 
@@ -124,6 +123,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
           "top-right",
         );
       }
+      setIsSubmitting(false);
     });
   }
 
@@ -151,7 +151,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
       <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title>
-            {manufacturerObj ? "Edit" : "Create"} Supplier
+            {manufacturerObj ? "Edit" : "Create"} Manufacturer
           </Modal.Title>
         </Modal.Header>
         <Formik

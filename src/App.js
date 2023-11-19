@@ -55,16 +55,6 @@ function App() {
     };
   }, [token, userDetails, notifications, isSupplier, rememberMe, cart]);
 
-  // useEffect(() => {
-  //   if (cart?.length === 0) {
-  //     const storedCart = localStorage.getItem("cart");
-  //     if (storedCart && storedCart !== "null") {
-  //       setCart(JSON.parse(storedCart));
-  //     }
-  //   }
-  // }, []);
-  //
-
   useEffect(() => {
     setCartCount(cart?.length);
     localStorage.setItem("cart", JSON.stringify(cart));

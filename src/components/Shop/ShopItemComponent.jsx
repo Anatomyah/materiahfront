@@ -5,10 +5,12 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import { defaultImageUrl } from "../../config_and_helpers/config";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import Container from "@mui/material/Container";
+import Divider from "@mui/material/Divider";
 
 const ShopItemComponent = ({
   index,
+  dividerStop,
   item,
   supplierKey,
   onItemChange,
@@ -41,13 +43,28 @@ const ShopItemComponent = ({
   }, [quantity]);
 
   return (
-    <>
-      <Grid key={item.cat_num}>
-        <img
-          src={item?.image_url || defaultImageUrl}
-          alt={`product-${item.cat_num}`}
-          width="200"
-        />
+    <Container key={item.cat_num} sx={{ padding: 2 }}>
+      <Grid item xs={12} sm={6}>
+        <Grid container alignItems="center">
+          <Grid item xs={5}>
+            <img
+              src={item?.image_url || defaultImageUrl}
+              alt={`product-${item.cat_num}`}
+              width="200"
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={(e) => {
+                handleItemDelete(e, supplierKey, index);
+              }}
+            >
+              Remove
+            </Button>
+          </Grid>
+        </Grid>
       </Grid>
       <Grid item xs={6}>
         <Typography variant="subtitle1">{item.name}</Typography>
@@ -77,16 +94,8 @@ const ShopItemComponent = ({
         />
         <Button onClick={handlePlusClick}>+</Button>
       </ButtonGroup>
-      <Button
-        variant="outlined"
-        color="error"
-        onClick={(e) => {
-          handleItemDelete(e, supplierKey, index);
-        }}
-      >
-        <DeleteForeverIcon />
-      </Button>
-    </>
+      {!dividerStop && <Divider sx={{ my: 4, borderColor: "#424242" }} />}
+    </Container>
   );
 };
 export default ShopItemComponent;

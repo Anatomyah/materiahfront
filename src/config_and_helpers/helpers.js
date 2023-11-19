@@ -1,5 +1,7 @@
 import { validateToken } from "../clients/user_client";
 import { toast } from "react-toastify";
+import { useContext } from "react";
+import { CartAppContext } from "../App";
 
 export const initializeApp = async (
   setRememberMe,

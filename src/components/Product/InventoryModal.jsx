@@ -11,6 +11,7 @@ import DeleteButton from "../Generic/DeleteButton";
 import { deleteProduct } from "../../clients/product_client";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
+import UpdateAmountModal from "../UpdateAmountModal";
 
 const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   const [show, setShow] = useState(false);
@@ -33,7 +34,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
         </Modal.Header>
         <Modal.Body>
           <Container>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Catalogue Number: </p>
               </Col>
@@ -41,15 +42,21 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6">{product.cat_num}</p>
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Stock: </p>
               </Col>
               <Col>
                 <p className="fs-6">{product.stock}</p>
               </Col>
+              <Col md={4}>
+                <UpdateAmountModal
+                  product={{ catNum: product.cat_num, productId: product.id }}
+                  onSuccessfulUpdate={handleEdit}
+                />
+              </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Category: </p>
               </Col>
@@ -57,7 +64,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6">{product.category}</p>
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Supplier: </p>
               </Col>
@@ -65,7 +72,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <SupplierDetailModal supplierId={product.supplier.id} />
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Manufacturer: </p>
               </Col>
@@ -75,7 +82,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 />
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Unit: </p>
               </Col>
@@ -83,7 +90,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6">{product.unit}</p>
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Volume: </p>
               </Col>
@@ -91,7 +98,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6">{product.volume}</p>
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col>
                 <p className="fs-6 fw-bold">Storage: </p>
               </Col>
@@ -99,7 +106,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6">{product.storage}</p>
               </Col>
             </Row>
-            <Row>
+            <Row md={3}>
               <Col className="mt-1">
                 <p className="fs-6 fw-bold">Website Profile: </p>
               </Col>
