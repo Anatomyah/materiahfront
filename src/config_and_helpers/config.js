@@ -1,4 +1,5 @@
 // export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
 export const BACKEND_URL =
   "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
 

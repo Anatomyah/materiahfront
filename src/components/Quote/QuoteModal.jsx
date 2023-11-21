@@ -195,17 +195,6 @@ const QuoteModal = ({
     });
   };
 
-  if (!supplierSelectList.length) {
-    return (
-      <Spinner
-        size="lg"
-        as="span"
-        animation="border"
-        role="status"
-        aria-hidden="true"
-      />
-    );
-  }
   return (
     <>
       {!homeShowModal && (

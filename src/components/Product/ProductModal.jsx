@@ -213,18 +213,6 @@ const ProductModal = ({
     });
   };
 
-  if (!manufacturerList || !supplierList) {
-    return (
-      <Spinner
-        size="lg"
-        as="span"
-        animation="border"
-        role="status"
-        aria-hidden="true"
-      />
-    );
-  }
-
   return (
     <>
       {!homeShowModal && (

@@ -201,18 +201,6 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
     });
   }
 
-  if (!manufacturerList.length) {
-    return (
-      <Spinner
-        size="lg"
-        as="span"
-        animation="border"
-        role="status"
-        aria-hidden="true"
-      />
-    );
-  }
-
   return (
     <>
       <Button

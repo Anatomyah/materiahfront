@@ -254,18 +254,6 @@ const OrderModal = ({
     });
   };
 
-  if (!openQuotesSelectList) {
-    return (
-      <Spinner
-        size="lg"
-        as="span"
-        animation="border"
-        role="status"
-        aria-hidden="true"
-      />
-    );
-  }
-
   return (
     <>
       {!homeShowModal && (

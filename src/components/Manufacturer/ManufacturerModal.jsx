@@ -126,18 +126,6 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
     });
   }
 
-  if (!supplierList) {
-    return (
-      <Spinner
-        size="lg"
-        as="span"
-        animation="border"
-        role="status"
-        aria-hidden="true"
-      />
-    );
-  }
-
   return (
     <>
       <Button
