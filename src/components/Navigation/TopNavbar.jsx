@@ -11,38 +11,38 @@ import { Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { smallLogo } from "../../config_and_helpers/config";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import "./NavBarStyle.css";
 
 function TopNavBar() {
   const { token, setToken, isSupplier, setIsSupplier, setRememberMe } =
     useContext(AppContext);
   const { setShowCart } = useContext(CartAppContext);
-  const handleLogout = async () => {
-    try {
-      await logout(token);
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
-    setIsSupplier(false);
-    setToken(null);
-    setRememberMe(false);
-    toast("See you soon!");
+
+  const handleLogout = () => {
+    logout(token).then((response) => {
+      if (response && response.success) {
+        setIsSupplier(false);
+        setToken(null);
+        setRememberMe(false);
+        toast("See you soon!");
+      }
+    });
   };
 
   return (
-    <Navbar collapseOnSelect expand="lg" className="bg-body-secondary">
+    <Navbar collapseOnSelect expand="lg" className="bg-custom navbar-content">
       <Container>
-        <Row className="w-100">
+        <Row className="w-100 align-items-center">
           <Col xs="auto">
             <Navbar.Brand as={Link} to="/">
               <img
-                src={smallLogo}
-                width="35"
-                height="35"
-                className="mb-2 me-2"
-                alt="Materiah Logo"
-              />
+                alt=""
+                src="https://materiah1.s3.eu-central-1.amazonaws.com/design/chemistry+(1).png"
+                width="30"
+                height="30"
+                className="d-inline-block align-top"
+              />{" "}
               Materiah
             </Navbar.Brand>
           </Col>

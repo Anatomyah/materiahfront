@@ -1,0 +1,12 @@
+.bg-custom {
+    background-color: #ecec8c;
+}
+
+.bg-custom-bottom {
+    background-color: #c9e5d6;
+}
+
+.navbar-content {
+    position: relative;
+    z-index: 3; /* Above the overlay */
+}

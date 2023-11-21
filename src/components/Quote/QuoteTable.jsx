@@ -9,9 +9,9 @@ import QuoteDetailModal from "./QuoteDetailModal";
 import OrderDetailModal from "../Order/OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
+import { Accordion } from "react-bootstrap";
 
 const QuoteTable = ({ quoteList, handleEdit }) => {
-  console.log(quoteList);
   return (
     <Table striped bordered hover>
       <thead>
@@ -71,26 +71,44 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 />
               </td>
             </tr>
-            <tr className="bold-italic-text text-center">
-              <td className="text"></td>
-              <td>#</td>
-              <td>Product</td>
-              <td>Quantity</td>
-              <td>Price</td>
+            <tr>
+              <td></td>
+              <td>
+                <Accordion flush>
+                  <Accordion.Item eventKey={0}>
+                    <Accordion.Header>Quote Items</Accordion.Header>
+                    <Accordion.Body>
+                      <Table striped bordered hover>
+                        <thead>
+                          <tr className="text-center bold-italic-text">
+                            <td>#</td>
+                            <td>Product</td>
+                            <td>Quantity</td>
+                            <td>Price</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {quote.items.map((item, index) => (
+                            <React.Fragment key={index}>
+                              <tr className="text-center italic-text">
+                                <td>{index + 1}</td>
+                                <td>
+                                  <ProductDetailModal
+                                    productId={item.product.id}
+                                  />
+                                </td>
+                                <td>{item.quantity}</td>
+                                <td>{item.price}</td>
+                              </tr>
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+              </td>
             </tr>
-            {quote.items.map((item, index) => (
-              <React.Fragment key={index}>
-                <tr className="text-center italic-text">
-                  <td></td>
-                  <td>{index + 1}</td>
-                  <td>
-                    <ProductDetailModal productId={item.product.id} />
-                  </td>
-                  <td>{item.quantity}</td>
-                  <td>{item.price}</td>
-                </tr>
-              </React.Fragment>
-            ))}
           </React.Fragment>
         ))}
       </tbody>

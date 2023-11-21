@@ -4,7 +4,6 @@ import { getProductDetails } from "../../clients/product_client";
 import "./ProductComponentStyle.css";
 import InventoryModal from "./InventoryModal";
 import ShopModal from "../Shop/ShopModal";
-import { showToast } from "../../config_and_helpers/helpers";
 import { Spinner } from "react-bootstrap";
 
 const ProductDetailModal = ({

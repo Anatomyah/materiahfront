@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { getProducts } from "../../clients/product_client";
 import { AppContext } from "../../App";
 import ProductModal from "../../components/Product/ProductModal";
@@ -18,6 +24,7 @@ import Container from "react-bootstrap/Container";
 import SupplierSelect from "../../components/Generic/SupplierSelect";
 import { Spinner } from "react-bootstrap";
 import { showToast } from "../../config_and_helpers/helpers";
+import debounce from "lodash/debounce";
 
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const isLoadingRef = useRef(false);
@@ -29,7 +36,6 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
-  const [typingTimeout, setTypingTimeout] = useState(null);
 
   useEffect(() => {
     getSupplierSelectList(token, setSupplierSelectList);
@@ -80,14 +86,17 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     });
   }, [supplier, searchInput]);
 
-  const handleSearchInput = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    const newTimeout = setTimeout(() => {
+  const handleSearchInput = useCallback(
+    debounce((value) => {
       setSearchInput(value);
-    }, 2000);
+    }, 500),
+    [],
+  );
 
-    setTypingTimeout(newTimeout);
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      setSearchInput(event.target.value);
+    }
   };
 
   if (isLoadingRef.current) {
@@ -131,6 +140,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
                   aria-label="Search "
                   aria-describedby="basic-addon1"
                   onChange={(e) => handleSearchInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
                 />
               </InputGroup>
             )}
@@ -189,25 +199,29 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         }}
         hasMore={hasMore}
         loader={
-          <div className="loader" key={0}>
-            Loading ...
-          </div>
+          <Spinner
+            className="loader"
+            key={0}
+            size="lg"
+            as="span"
+            animation="border"
+            role="status"
+            aria-hidden="true"
+          />
         }
       >
         {!products.length ? (
-          <div>`Nothing here...`</div>
+          <div>Nothing here...</div>
         ) : !isCatalogueView && !isShopView ? (
           <ProductTable productList={products} handleEdit={fetchProducts} />
         ) : (
-          <div className="bg-dark-subtle ps-3">
-            <div className="ps-5">
-              <div className="d-flex flex-wrap flex-row align-items-center justify-content-start ms-5">
-                {products.map((product) => (
-                  <div className="item-card" key={product.id}>
-                    <ItemCard product={product} handleEdit={fetchProducts} />
-                  </div>
-                ))}
-              </div>
+          <div className="bg-dark-subtle">
+            <div className="d-flex flex-wrap flex-row justify-content-start">
+              {products.map((product) => (
+                <div className="item-card" key={product.id}>
+                  <ItemCard product={product} handleEdit={fetchProducts} />
+                </div>
+              ))}
             </div>
           </div>
         )}

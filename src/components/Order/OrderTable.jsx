@@ -8,6 +8,8 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import QuoteDetailModal from "../Quote/QuoteDetailModal";
 import OrderDetailModal from "./OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import { Accordion } from "react-bootstrap";
+import ProductDetailModal from "../Product/ProductDetailModal";
 
 const OrderTable = ({ orderList, handleEdit }) => {
   return (
@@ -72,34 +74,52 @@ const OrderTable = ({ orderList, handleEdit }) => {
                 />
               </td>
             </tr>
-            <tr className="text-center bold-italic-text">
+            <tr>
               <td></td>
-              <td>#</td>
-              <td>Product</td>
-              <td>Quantity</td>
-              <td>Batch</td>
-              <td>Expiry</td>
-              <td>Status</td>
-              <td>Details</td>
+              <td>
+                <Accordion>
+                  <Accordion.Item eventKey={0}>
+                    <Accordion.Header>Order Items</Accordion.Header>
+                    <Accordion.Body>
+                      <Table striped bordered hover>
+                        <thead>
+                          <tr className="text-center bold-italic-text">
+                            <td>#</td>
+                            <td>Product</td>
+                            <td>Quantity</td>
+                            <td>Batch</td>
+                            <td>Expiry</td>
+                            <td>Status</td>
+                            <td>Details</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.items.map((item, index) => (
+                            <React.Fragment key={index}>
+                              <tr className="text-center italic-text">
+                                <td>{index + 1}</td>
+                                <td key={index}>
+                                  <a
+                                    href={`/product-details/${item.product.id}`}
+                                  >
+                                    {item.product.cat_num}
+                                  </a>
+                                </td>
+                                <td>{item.quantity}</td>
+                                <td>{item.batch}</td>
+                                <td>{item.expiry}</td>
+                                <td>{item.status}</td>
+                                <td>{item.issue_detail}</td>
+                              </tr>
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+              </td>
             </tr>
-            {order.items.map((item, index) => (
-              <React.Fragment key={index}>
-                <tr className="text-center italic-text">
-                  <td></td>
-                  <td>{index + 1}</td>
-                  <td key={index}>
-                    <a href={`/product-details/${item.product.id}`}>
-                      {item.product.cat_num}
-                    </a>
-                  </td>
-                  <td>{item.quantity}</td>
-                  <td>{item.batch}</td>
-                  <td>{item.expiry}</td>
-                  <td>{item.status}</td>
-                  <td>{item.issue_detail}</td>
-                </tr>
-              </React.Fragment>
-            ))}
           </React.Fragment>
         ))}
       </tbody>

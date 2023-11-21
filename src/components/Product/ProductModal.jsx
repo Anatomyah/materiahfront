@@ -42,15 +42,15 @@ const createFormSchema = ({ isSupplier }) =>
         return /^[a-zA-Z0-9\-_ ]+$/.test(value);
       }),
     category: yup.string().required("Product category is required"),
-    measurementUnit: yup.string().required("Measurement unit is required"),
+    unit: yup.string().required("Measurement unit is required"),
     volume: yup
       .string()
       .required("Volume is required")
-      .matches(/^\d+$/, "Volume must be a number"),
+      .matches(/^\d+$/, "Volume must be a positive number"),
     storageConditions: yup.string().required("Storage condition is required"),
     stock: yup
       .string()
-      .matches(/^\d+$/, "Current stock must be a number")
+      .matches(/^\d+$/, "Current stock must be a positive number")
       .notRequired(),
     price: yup.lazy((value) =>
       !isSupplier
@@ -71,7 +71,12 @@ const createFormSchema = ({ isSupplier }) =>
       .required("Product link is required"),
   });
 
-const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
+const ProductModal = ({
+  onSuccessfulSubmit,
+  productObj,
+  homeShowModal,
+  setHomeShowModal,
+}) => {
   const { token, isSupplier, userDetails } = useContext(AppContext);
   const formSchema = createFormSchema({
     isSupplier,
@@ -82,7 +87,9 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   const [manufacturerList, setManufacturerList] = useState(null);
   const [supplierList, setSupplierList] = useState(null);
   const [images, setImages] = useState(productObj ? productObj.images : []);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(
+    homeShowModal ? homeShowModal : false,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -132,8 +139,8 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
   }
 
   const handleClose = () => {
-    setIsSubmitting(false);
     setShowModal(false);
+    if (setHomeShowModal) setHomeShowModal(false);
     setImages(productObj ? productObj.images : []);
   };
 
@@ -143,25 +150,25 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
     setIsSubmitting(true);
     let imagesToDelete = null;
 
-    const formData = new FormData();
-    formData.append("name", values.productName);
-    formData.append("cat_num", values.catalogueNumber);
-    formData.append("category", values.category);
-    formData.append("unit", values.measurementUnit);
-    formData.append("volume", values.volume);
-    formData.append("storage", values.storageConditions);
-    formData.append("stock", values.stock);
-    formData.append("price", values.price);
-    formData.append("url", values.productUrl);
-    formData.append("manufacturer", values.manufacturer);
+    const productData = {
+      name: values.productName,
+      cat_num: values.catalogueNumber,
+      category: values.category,
+      unit: values.unit,
+      volume: values.volume,
+      storage: values.storageConditions,
+      stock: values.stock,
+      price: values.price,
+      url: values.productUrl,
+      manufacturer: values.manufacturer,
+    };
 
-    const supplierValue = isSupplier
+    productData.supplier = isSupplier
       ? userDetails.supplier_id
       : values.supplier;
-    formData.append("supplier", supplierValue);
 
     if (isSupplier) {
-      formData.append("supplier_cat_item", true);
+      productData.supplier_cat_item = true;
     }
 
     if (productObj) {
@@ -169,7 +176,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
         .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
         .map((obj) => obj.id);
       if (imagesToDelete) {
-        formData.append("images_to_delete", imagesToDelete);
+        productData.images_to_delete = imagesToDelete;
       }
     }
 
@@ -180,26 +187,28 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
         id: image.id,
         type: image.file.type,
       }));
-      formData.append("images", JSON.stringify(imageInfo));
+      productData.images = JSON.stringify(imageInfo);
     }
 
     const productPromise = productObj
-      ? updateProduct(token, productObj.id, formData, newImages)
-      : createProduct(token, formData, newImages);
+      ? updateProduct(token, productObj.id, productData, newImages)
+      : createProduct(token, productData, newImages);
 
     productPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
-          onSuccessfulSubmit();
-          handleClose();
+          if (onSuccessfulSubmit) onSuccessfulSubmit();
           response.toast();
-        }, 2500);
+          setIsSubmitting(false);
+          handleClose();
+        }, 1000);
       } else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
+        setIsSubmitting(false);
       }
     });
   };
@@ -218,12 +227,14 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
 
   return (
     <>
-      <Button
-        variant={productObj ? "outline-success" : "success"}
-        onClick={handleShow}
-      >
-        {productObj ? <EditIcon /> : "Create Product"}
-      </Button>
+      {!homeShowModal && (
+        <Button
+          variant={productObj ? "outline-success" : "success"}
+          onClick={handleShow}
+        >
+          {productObj ? <EditIcon /> : "Create Product"}
+        </Button>
+      )}
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -235,7 +246,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
             productName: productObj ? productObj.name : "",
             catalogueNumber: productObj ? productObj.cat_num : "",
             category: productObj ? productObj.category : "",
-            measurementUnit: productObj ? productObj.unit : "",
+            unit: productObj ? productObj.unit : "",
             volume: productObj ? productObj.volume : "",
             storageConditions: productObj ? productObj.storage : "",
             stock: productObj ? productObj.stock : "",
@@ -255,7 +266,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                   productName: true,
                   catalogueNumber: true,
                   category: true,
-                  measurementUnit: true,
+                  unit: true,
                   volume: true,
                   storageConditions: true,
                   stock: true,
@@ -382,8 +393,8 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                   >
                     <Form.Label>Measurement Unit</Form.Label>
                     <Form.Select
-                      name="measurementUnit"
-                      value={values.measurementUnit}
+                      name="unit"
+                      value={values.unit}
                       onChange={handleChange}
                     >
                       <option value="" disabled>
@@ -396,7 +407,7 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                       ))}
                     </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                      {errors.measurementUnit}
+                      {errors.unit}
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
@@ -571,7 +582,6 @@ const ProductModal = ({ onSuccessfulSubmit, productObj }) => {
                       let imageUrl =
                         image.image_url || URL.createObjectURL(image.file);
 
-                      // Check if the file is a PDF by looking at the URL extension
                       const isPdf = imageUrl.toLowerCase().endsWith(".pdf");
 
                       return (

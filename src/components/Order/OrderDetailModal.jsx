@@ -141,7 +141,7 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                         <tr className="text-center italic-text">
                           <td>{index + 1}</td>
                           <td key={index}>
-                            <ProductDetailModal productId={item.product} />
+                            <ProductDetailModal productId={item.product.id} />
                           </td>
                           <td>{item.quantity}</td>
                           <td>{item.batch}</td>

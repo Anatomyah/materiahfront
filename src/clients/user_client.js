@@ -110,6 +110,7 @@ export const logout = async (token) => {
     );
     localStorage.clear();
     sessionStorage.clear();
+    return { success: true };
   } catch (error) {
     console.error(error.response.data);
     return Object.values(error.response.data);

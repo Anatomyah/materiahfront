@@ -14,7 +14,7 @@ import TextField from "@mui/material/TextField";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
 
-const ShopModal = ({ product, show, setShow }) => {
+const ShopModal = ({ product, show = false, setShow }) => {
   const { cart, setCart } = useContext(CartAppContext);
   const [productAmount, setProductAmount] = useState("");
 

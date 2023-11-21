@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
 import { Form, FormControl, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -17,6 +17,10 @@ const QuoteItemComponent = ({
   const [typingTimeout, setTypingTimeout] = useState(null);
   const foundProduct = item ? productList.find((p) => p.value === item) : null;
   const [product, setProduct] = useState(foundProduct);
+
+  useEffect(() => {
+    console.log(product);
+  }, [product]);
 
   const handleDelayedChange = (name, value) => {
     if (typingTimeout) clearTimeout(typingTimeout);

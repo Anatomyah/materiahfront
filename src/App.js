@@ -8,6 +8,7 @@ import {
   initializeApp,
 } from "./config_and_helpers/helpers";
 import CartModal from "./components/Shop/CartModal";
+import BottomNavBar from "./components/Navigation/BottomNavBar";
 
 export const AppContext = createContext(null);
 export const CartAppContext = createContext(null);
@@ -21,7 +22,7 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [cart, setCart] = useState([]);
-  const [cartCount, setCartCount] = useState();
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -65,7 +66,7 @@ function App() {
   }
 
   return (
-    <>
+    <div>
       <ToastContainer />
       <AppContext.Provider
         value={{
@@ -98,11 +99,14 @@ function App() {
               <CartModal show={showCart} setShow={setShowCart} />
             </>
           ) : (
-            <LoginPage />
+            <>
+              <LoginPage />
+              <BottomNavBar />
+            </>
           )}
         </CartAppContext.Provider>
       </AppContext.Provider>
-    </>
+    </div>
   );
 }
 

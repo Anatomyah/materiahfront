@@ -1,35 +1,46 @@
-.background-image-1 {
-    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/3616399.jpg'); /* Path to your image */
-    background-size: cover; /* Cover the entire area of the component */
-    background-position: center; /* Center the image */
-    height: 700px; /* Set a height */
-    width: 100%; /* Set a width */
+.home-box-style {
+    padding: 8px;
+    margin: 10px;
+    border-radius: 10px;
+    background-color: #f68e8e;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+
 }
 
-.background-image-2 {
-    position: relative; /* Required for absolute positioning of pseudo-element */
-    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg'); /* Your background image */
+.scrollable-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+    border: 1px solid #ccc;
+}
+
+.background-image-home {
+    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg'); /* Update with your image path */
     background-size: cover;
     background-position: center;
-    height: 700px; /* Example height */
-    width: 100%; /* Example width */
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
 }
 
-.background-image-2::before {
-    content: '';
-    position: absolute;
+.overlay {
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5); /* Black overlay with 50% opacity */
-    z-index: -1;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 1;
 }
 
-.background-image-3 {
-    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5116194.jpg'); /* Path to your image */
-    background-size: cover; /* Cover the entire area of the component */
-    background-position: center; /* Center the image */
-    height: 700px; /* Set a height */
-    width: 100%; /* Set a width */
+
+.content {
+    position: relative;
+    z-index: 2;
 }

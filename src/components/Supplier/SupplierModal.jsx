@@ -152,7 +152,6 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   }, [phonePrefix, phoneSuffix, debouncedCheckSupplierPhone]);
 
   const handleClose = () => {
-    setIsSubmitting(false);
     setShowModal(false);
   };
 
@@ -185,9 +184,10 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
         if (!supplierObj) {
           setTimeout(() => {
             onSuccessfulSubmit();
-            handleClose();
             response.toast();
             resetModal();
+            setIsSubmitting(false);
+            handleClose();
           }, 1000);
         }
       } else {
@@ -196,6 +196,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
           "error",
           "top-right",
         );
+        setIsSubmitting(false);
       }
     });
   }

@@ -11,7 +11,7 @@ import DeleteButton from "../Generic/DeleteButton";
 import { deleteProduct } from "../../clients/product_client";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
-import UpdateAmountModal from "../UpdateAmountModal";
+import UpdateAmountModal from "./UpdateAmountModal";
 
 const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   const [show, setShow] = useState(false);
@@ -51,7 +51,11 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               </Col>
               <Col md={4}>
                 <UpdateAmountModal
-                  product={{ catNum: product.cat_num, productId: product.id }}
+                  product={{
+                    catNum: product.cat_num,
+                    productId: product.id,
+                    currentStock: product.stock,
+                  }}
                   onSuccessfulUpdate={handleEdit}
                 />
               </Col>

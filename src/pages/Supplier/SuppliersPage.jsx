@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AppContext } from "../../App";
 import { getSuppliers } from "../../clients/supplier_client";
 import SupplierModal from "../../components/Supplier/SupplierModal";
@@ -17,6 +23,7 @@ import {
 } from "../../config_and_helpers/helpers";
 import SupplierTable from "../../components/Supplier/SupplierTable";
 import { Spinner } from "react-bootstrap";
+import debounce from "lodash/debounce";
 
 const SuppliersPage = () => {
   const isLoadingRef = useRef(false);
@@ -92,14 +99,17 @@ const SuppliersPage = () => {
     });
   }, [searchInput]);
 
-  const handleSearchInput = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    const newTimeout = setTimeout(() => {
+  const handleSearchInput = useCallback(
+    debounce((value) => {
       setSearchInput(value);
-    }, 2000);
-    setNextPageUrl(null);
-    setTypingTimeout(newTimeout);
+    }, 500),
+    [],
+  );
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      setSearchInput(event.target.value);
+    }
   };
 
   if (isLoadingRef.current) {
@@ -133,6 +143,7 @@ const SuppliersPage = () => {
                 aria-label="Search "
                 aria-describedby="basic-addon1"
                 onChange={(e) => handleSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
             </InputGroup>
           </Col>
@@ -176,9 +187,15 @@ const SuppliersPage = () => {
         }}
         hasMore={hasMore}
         loader={
-          <div className="loader" key={0}>
-            Loading ...
-          </div>
+          <Spinner
+            className="loader"
+            key={0}
+            size="lg"
+            as="span"
+            animation="border"
+            role="status"
+            aria-hidden="true"
+          />
         }
       >
         <SupplierTable

@@ -9,7 +9,7 @@ import { Form, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import * as formik from "formik";
 import * as yup from "yup";
-import "./LoginPageStyle.css";
+import "./UserPageStyle.css";
 import ChangePasswordModal from "../../components/User/ChangePasswordModal";
 import { largeLogo } from "../../config_and_helpers/config";
 
@@ -35,11 +35,11 @@ const LoginPage = () => {
   return (
     <Container
       fluid
-      className="d-flex flex-column justify-content-center align-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
+      className="d-flex flex-column justify-content-center align-content-center align-items-center background-image-login"
+      style={{ minHeight: "100vh", paddingBottom: "200px" }}
     >
       <Image src={largeLogo} style={{ width: "50%" }} className="mb-5" />
-      <div className="d-flex flex-column align-items-center gradient-bg px-5">
+      <div className="d-flex flex-column align-items-center px-5 login-box-style">
         <Formik
           initialValues={{ username: "", password: "" }}
           validationSchema={schema}
@@ -63,7 +63,7 @@ const LoginPage = () => {
             });
           }}
         >
-          {({ handleSubmit, handleChange, values, touched, errors }) => (
+          {({ handleSubmit, handleChange, values, errors }) => (
             <Form
               noValidate
               onSubmit={handleSubmit}

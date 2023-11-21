@@ -64,7 +64,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
   };
 
   const debouncedCheckManufacturerName = useCallback(
-    debounce(validateManufacturerName, 1500),
+    debounce(validateManufacturerName, 500),
     [],
   );
 
@@ -108,22 +108,21 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
 
     manufacturerPromise.then((response) => {
       if (response && response.success) {
-        if (!manufacturerObj) {
-          setTimeout(() => {
-            onSuccessfulSubmit();
-            handleClose();
-            response.toast();
-            resetModal();
-          }, 1000);
-        }
+        setTimeout(() => {
+          onSuccessfulSubmit();
+          response.toast();
+          resetModal();
+          setIsSubmitting(false);
+          handleClose();
+        }, 1000);
       } else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
+        setIsSubmitting(false);
       }
-      setIsSubmitting(false);
     });
   }
 

@@ -266,15 +266,17 @@ export const getProductSelectList = async (
   setProductSelectList,
   supplierId,
 ) => {
+  let url = `${BACKEND_URL}products/names/`;
+  if (supplierId) {
+    url += `?supplier_id=${supplierId}`;
+  }
+
   try {
-    const response = await axios.get(
-      `${BACKEND_URL}products/names/?supplier_id=${supplierId}`,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Token ${token}`,
       },
-    );
+    });
     setProductSelectList(response.data);
     return { success: true };
   } catch (error) {
@@ -302,6 +304,7 @@ export const checkCatNum = async (token, value) => {
 };
 
 export const updateProductStock = async (token, productId, value) => {
+  console.log(productId);
   try {
     await axios.post(
       `${BACKEND_URL}products/update_stock_item/`,

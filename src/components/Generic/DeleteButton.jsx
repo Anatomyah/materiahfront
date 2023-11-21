@@ -30,6 +30,7 @@ const DeleteButton = ({
           onSuccessfulDelete();
           handleClose();
           response.toast();
+          setIsDeleting(false);
         }, 2000);
       } else {
         showToast(
@@ -37,8 +38,8 @@ const DeleteButton = ({
           "error",
           "top-right",
         );
+        setIsDeleting(false);
       }
-      setIsDeleting(false);
     });
   }
 

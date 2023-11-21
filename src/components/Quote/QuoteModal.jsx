@@ -18,7 +18,7 @@ const itemSchema = yup.object().shape({
   quantity: yup
     .string()
     .required("Quantity is required")
-    .matches(/^\d+$/, "Quantity must be a number"),
+    .matches(/^\d+$/, "Quantity must be a positive number"),
   price: yup
     .string()
     .required("Price is required")
@@ -46,7 +46,12 @@ const createFormSchema = ({ hasQuotePdf }) =>
       ),
   });
 
-const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
+const QuoteModal = ({
+  onSuccessfulSubmit,
+  quoteObj,
+  homeShowModal,
+  setHomeShowModal,
+}) => {
   const { token } = useContext(AppContext);
   const [hasQuotePdf, setHasQuotePdf] = useState(false);
   const formSchema = createFormSchema({
@@ -74,8 +79,13 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   );
   const [fileChanged, setFileChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(
+    homeShowModal ? homeShowModal : false,
+  );
 
-  const [showModal, setShowModal] = useState(false);
+  useEffect(() => {
+    console.log(supplier);
+  }, [supplier]);
 
   useEffect(() => {
     if (quoteFile) {
@@ -94,7 +104,7 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   };
 
   useEffect(() => {
-    if (productSelectList && items.length === 0) {
+    if (productSelectList.length && items.length === 0) {
       setItems([{ product: "", quantity: "", price: "" }]);
     }
   }, [productSelectList]);
@@ -106,14 +116,13 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   }, [supplier]);
 
   const handleClose = () => {
-    setIsSubmitting(false);
+    if (setHomeShowModal) setHomeShowModal(false);
     resetModal();
     setShowModal(false);
   };
 
   const resetModal = () => {
     if (!quoteObj) {
-      setProductSelectList([]);
       setQuoteFile("");
       setItems([{ product: "", quantity: "", price: "" }]);
     }
@@ -152,37 +161,40 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   const handleSubmit = (values) => {
     setIsSubmitting(true);
 
-    const formData = new FormData();
-    formData.append("supplier", values.supplier);
-    formData.append("items", JSON.stringify(items));
+    const quoteData = {
+      supplier: values.supplier,
+      items: JSON.stringify(items),
+    };
 
     if (quoteFile && fileChanged) {
-      formData.append("quote_file_type", quoteFile.type);
+      quoteData.quote_file_type = quoteFile.type;
     }
 
     const quotePromise = quoteObj
       ? updateQuote(
           token,
           quoteObj.id,
-          formData,
+          quoteData,
           fileChanged ? quoteFile : null,
         )
-      : createQuoteManually(token, formData, quoteFile);
+      : createQuoteManually(token, quoteData, quoteFile);
 
     quotePromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
           onSuccessfulSubmit();
-          handleClose();
           response.toast();
           resetModal();
-        }, 1500);
+          setIsSubmitting(false);
+          handleClose();
+        }, 1000);
       } else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
+        setIsSubmitting(false);
       }
     });
   };
@@ -200,12 +212,14 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
   }
   return (
     <>
-      <Button
-        variant={quoteObj ? "outline-success" : "success"}
-        onClick={handleShow}
-      >
-        {quoteObj ? <EditIcon /> : "Create Quote"}
-      </Button>
+      {!homeShowModal && (
+        <Button
+          variant={quoteObj ? "outline-success" : "success"}
+          onClick={handleShow}
+        >
+          {quoteObj ? <EditIcon /> : "Create Quote"}
+        </Button>
+      )}
 
       <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
@@ -288,13 +302,13 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
                     <Form.Control.Feedback type="invalid">
                       {errors.supplier}
                     </Form.Control.Feedback>
-                    {!productSelectList.length && (
+                    {!supplier && (
                       <Form.Text>
                         Choose a supplier to view it's products
                       </Form.Text>
                     )}
                   </Form.Group>
-                  {items.length > 0 && (
+                  {items.length > 0 && productSelectList.length > 0 ? (
                     <div>
                       <div>
                         {items.map((item, index) => (
@@ -373,7 +387,9 @@ const QuoteModal = ({ onSuccessfulSubmit, quoteObj }) => {
                         </div>
                       )}
                     </div>
-                  )}
+                  ) : supplier ? (
+                    <h6>This supplier has no products related to it</h6>
+                  ) : null}
                 </Modal.Body>
                 <Modal.Footer>
                   {quoteObj?.status !== "Arrived, unfulfilled" &&

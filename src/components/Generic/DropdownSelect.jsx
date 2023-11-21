@@ -10,6 +10,7 @@ const DropdownSelect = ({
   setSelectedValue,
   disabledOptions,
 }) => {
+  console.log(label);
   return (
     <Autocomplete
       disablePortal

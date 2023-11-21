@@ -20,7 +20,7 @@ const itemSchema = yup.object().shape({
   quantity: yup
     .string()
     .required("Quantity is required")
-    .matches(/^\d+$/, "Quantity must be a number"),
+    .matches(/^\d+$/, "Quantity must be a positive number"),
   batch: yup.string().required("Batch number is required"),
   expiryDate: yup.date().required("Expiry date is required"),
   itemFulfilled: yup.boolean(),
@@ -79,7 +79,12 @@ const createFormSchema = ({ hasExistingImages }) =>
       ),
   });
 
-const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
+const OrderModal = ({
+  onSuccessfulSubmit,
+  orderObj,
+  homeShowModal,
+  setHomeShowModal,
+}) => {
   const { token } = useContext(AppContext);
   const [hasExistingImages, setHasExistingImages] = useState(false);
   const formSchema = createFormSchema({
@@ -107,7 +112,9 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
   const [images, setImages] = useState(orderObj ? orderObj.images : []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(
+    homeShowModal ? homeShowModal : false,
+  );
 
   const fetchQuote = (quoteId) => {
     getQuoteDetails(token, quoteId, setRelatedQuoteObj);
@@ -159,7 +166,7 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
   }
 
   const handleClose = () => {
-    setIsSubmitting(false);
+    if (setHomeShowModal) setHomeShowModal(false);
     setShowModal(false);
     setRelatedQuoteObj(null);
     setItems(
@@ -232,20 +239,22 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
       if (response && response.success) {
         setTimeout(() => {
           onSuccessfulSubmit();
-          handleClose();
           response.toast();
-        }, 1500);
+          setIsSubmitting(false);
+          handleClose();
+        }, 1000);
       } else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
+        setIsSubmitting(false);
       }
     });
   };
 
-  if (!openQuotesSelectList.length) {
+  if (!openQuotesSelectList) {
     return (
       <Spinner
         size="lg"
@@ -259,12 +268,14 @@ const OrderModal = ({ onSuccessfulSubmit, orderObj }) => {
 
   return (
     <>
-      <Button
-        variant={orderObj ? "outline-success" : "success"}
-        onClick={handleShow}
-      >
-        {orderObj ? <EditIcon /> : "Create Order"}
-      </Button>
+      {!homeShowModal && (
+        <Button
+          variant={orderObj ? "outline-success" : "success"}
+          onClick={handleShow}
+        >
+          {orderObj ? <EditIcon /> : "Create Order"}
+        </Button>
+      )}
 
       <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>

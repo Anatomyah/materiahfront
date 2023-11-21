@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AppContext } from "../../App";
 import { getOrders } from "../../clients/order_client";
 import InfiniteScroll from "react-infinite-scroller";
@@ -17,6 +23,7 @@ import {
   showToast,
 } from "../../config_and_helpers/helpers";
 import { Spinner } from "react-bootstrap";
+import debounce from "lodash/debounce";
 
 const OrdersPage = () => {
   const { token } = useContext(AppContext);
@@ -29,7 +36,6 @@ const OrdersPage = () => {
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
-  const [typingTimeout, setTypingTimeout] = useState(null);
 
   useEffect(() => {
     if (!baseOrders.length) return;
@@ -83,14 +89,17 @@ const OrdersPage = () => {
     });
   }, [searchInput]);
 
-  const handleSearchInput = (value) => {
-    if (typingTimeout) clearTimeout(typingTimeout);
-
-    const newTimeout = setTimeout(() => {
+  const handleSearchInput = useCallback(
+    debounce((value) => {
       setSearchInput(value);
-    }, 2000);
-    setNextPageUrl(null);
-    setTypingTimeout(newTimeout);
+    }, 500),
+    [],
+  );
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      setSearchInput(event.target.value);
+    }
   };
 
   if (isLoadingRef.current) {
@@ -124,6 +133,7 @@ const OrdersPage = () => {
                 aria-label="Search "
                 aria-describedby="basic-addon1"
                 onChange={(e) => handleSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
             </InputGroup>
           </Col>
@@ -167,9 +177,15 @@ const OrdersPage = () => {
         }}
         hasMore={hasMore}
         loader={
-          <div className="loader" key={0}>
-            Loading ...
-          </div>
+          <Spinner
+            className="loader"
+            key={0}
+            size="lg"
+            as="span"
+            animation="border"
+            role="status"
+            aria-hidden="true"
+          />
         }
       >
         <OrderTable
