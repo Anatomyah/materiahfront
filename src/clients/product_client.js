@@ -304,7 +304,6 @@ export const checkCatNum = async (token, value) => {
 };
 
 export const updateProductStock = async (token, productId, value) => {
-  console.log(productId);
   try {
     await axios.post(
       `${BACKEND_URL}products/update_stock_item/`,

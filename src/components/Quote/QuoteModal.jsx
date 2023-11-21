@@ -84,10 +84,6 @@ const QuoteModal = ({
   );
 
   useEffect(() => {
-    console.log(supplier);
-  }, [supplier]);
-
-  useEffect(() => {
     if (quoteFile) {
       setHasQuotePdf(true);
     } else {

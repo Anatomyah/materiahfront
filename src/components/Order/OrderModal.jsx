@@ -503,7 +503,6 @@ const OrderModal = ({
                               image.image_url ||
                               URL.createObjectURL(image.file);
 
-                            // Check if the file is a PDF by looking at the URL extension
                             const isPdf = imageUrl
                               .toLowerCase()
                               .endsWith(".pdf");

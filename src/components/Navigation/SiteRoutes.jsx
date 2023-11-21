@@ -67,56 +67,6 @@ const SiteRoutes = () => {
             !isSupplier ? <QuotesPage /> : <Navigate to="/not-authorized" />
           }
         />
-        {/*<Route*/}
-        {/*  path="/product-details/:id"*/}
-        {/*  element={*/}
-        {/*    !isSupplier ? (*/}
-        {/*      <ProductDetailModal />*/}
-        {/*    ) : (*/}
-        {/*      <Navigate to="/not-authorized" />*/}
-        {/*    )*/}
-        {/*  }*/}
-        {/*/>*/}
-        {/*<Route*/}
-        {/*  path="/manufacturer-details/:id"*/}
-        {/*  element={*/}
-        {/*    !isSupplier ? (*/}
-        {/*      <ManufacturerDetailComponent />*/}
-        {/*    ) : (*/}
-        {/*      <Navigate to="/not-authorized" />*/}
-        {/*    )*/}
-        {/*  }*/}
-        {/*/>*/}
-        {/*<Route*/}
-        {/*  path="/supplier-details/:id"*/}
-        {/*  element={*/}
-        {/*    !isSupplier ? (*/}
-        {/*      <SupplierDetailComponent />*/}
-        {/*    ) : (*/}
-        {/*      <Navigate to="/not-authorized" />*/}
-        {/*    )*/}
-        {/*  }*/}
-        {/*/>*/}
-        {/*<Route*/}
-        {/*  path="/quote-details/:id"*/}
-        {/*  element={*/}
-        {/*    !isSupplier ? (*/}
-        {/*      <QuoteDetailComponent />*/}
-        {/*    ) : (*/}
-        {/*      <Navigate to="/not-authorized" />*/}
-        {/*    )*/}
-        {/*  }*/}
-        {/*/>*/}
-        {/*<Route*/}
-        {/*  path="/order-details/:id"*/}
-        {/*  element={*/}
-        {/*    !isSupplier ? (*/}
-        {/*      <OrderDetailsComponent />*/}
-        {/*    ) : (*/}
-        {/*      <Navigate to="/not-authorized" />*/}
-        {/*    )*/}
-        {/*  }*/}
-        {/*/>*/}
         <Route path="/not-authorized" element={<NotAuthorizedPage />} />
       </Routes>
     </div>

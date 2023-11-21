@@ -104,7 +104,7 @@ export const extractEntitiesSelectList = (
 
   const entityObjects = objList.flatMap((obj) => {
     const entities = obj[pluralEntityType] || obj[entityType];
-    if (!entities) return []; // Return an empty array if entities are not present
+    if (!entities) return [];
     return Array.isArray(entities) ? entities : [entities];
   });
 
@@ -138,7 +138,6 @@ export const filterObjectsByEntity = (
 
   const filteredObjList = objList.filter((obj) => {
     const entities = obj[pluralEntityType] || obj[entityType];
-    // Skip if entities are not present
     if (!entities) return false;
 
     if (Array.isArray(entities)) {

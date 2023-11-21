@@ -17,11 +17,6 @@ const QuoteItemComponent = ({
   const [typingTimeout, setTypingTimeout] = useState(null);
   const foundProduct = item ? productList.find((p) => p.value === item) : null;
   const [product, setProduct] = useState(foundProduct);
-
-  useEffect(() => {
-    console.log(product);
-  }, [product]);
-
   const handleDelayedChange = (name, value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 

@@ -14,16 +14,16 @@
 }
 
 .bordered-shadow-container {
-    border: 1px solid #000; /* Black border of 1px */
-    border-radius: 10px; /* Radius of 10px */
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Example shadow */
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .background-image-user {
-    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg'); /* Update with your image path */
+    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg');
     background-size: cover;
     background-position: center;
-    min-height: 100vh; /* Optional: to ensure it covers the whole viewport height */
+    min-height: 100vh;
     padding: 0;
     margin: 0;
 }
@@ -34,12 +34,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.5); /* Adjust the color and opacity as needed */
+    background: rgba(255, 255, 255, 0.5);
     z-index: 1;
 }
 
 
 .content-user {
     position: relative;
-    z-index: 2; /* Above the overlay */
+    z-index: 2;
 }

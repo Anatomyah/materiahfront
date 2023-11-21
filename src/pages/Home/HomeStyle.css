@@ -21,7 +21,7 @@
 }
 
 .background-image-home {
-    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg'); /* Update with your image path */
+    background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg');
     background-size: cover;
     background-position: center;
     min-height: 100vh;

@@ -40,8 +40,8 @@ export default function SupplierSelect({
             height: 56,
             borderTopLeftRadius: 0,
             borderBottomLeftRadius: 0,
-            borderLeft: "none", // Remove the left border
-            marginLeft: "-1px", // Adjust to align with the Select component
+            borderLeft: "none",
+            marginLeft: "-1px",
           }}
           variant="outlined"
           color="primary"
