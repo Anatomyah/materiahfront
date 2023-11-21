@@ -518,31 +518,36 @@ const ProductModal = ({
                       {errors.manufacturer}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group
-                    as={Col}
-                    md="8"
-                    controlId="formProductSupplier"
-                    className="field-margin"
-                  >
-                    <Form.Label>Supplier</Form.Label>
-                    <Form.Select
-                      name="supplier"
-                      value={values.supplier}
-                      onChange={handleChange}
-                    >
-                      <option value="" disabled>
-                        --Select Supplier--
-                      </option>
-                      {supplierList.map((choice, index) => (
-                        <option key={index} value={choice.value}>
-                          {choice.label}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.supplier}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+
+                  {!isSupplier && (
+                    <>
+                      <Form.Group
+                        as={Col}
+                        md="8"
+                        controlId="formProductSupplier"
+                        className="field-margin"
+                      >
+                        <Form.Label>Supplier</Form.Label>
+                        <Form.Select
+                          name="supplier"
+                          value={values.supplier}
+                          onChange={handleChange}
+                        >
+                          <option value="" disabled>
+                            --Select Supplier--
+                          </option>
+                          {supplierList.map((choice, index) => (
+                            <option key={index} value={choice.value}>
+                              {choice.label}
+                            </option>
+                          ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.supplier}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </>
+                  )}
                   <Form.Group
                     controlId="formProductUrl"
                     className="field-margin"
