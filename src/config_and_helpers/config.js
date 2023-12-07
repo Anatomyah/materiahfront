@@ -1,7 +1,12 @@
 // export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// DEMO EC2
 export const BACKEND_URL =
-  "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
+  "http://ec2-52-28-42-227.eu-central-1.compute.amazonaws.com";
+
+// ORGANOIDS EC2
+// export const BACKEND_URL =
+//   "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
 
 export const defaultImageUrl =
   "https://materiah1.s3.eu-central-1.amazonaws.com/products/No-Image-Placeholder.svg.png";
