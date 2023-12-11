@@ -1,9 +1,9 @@
-// export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 // ORGANOIDS EC2
-export const BACKEND_URL =
-  "http://ec2-52-28-42-227.eu-central-1.compute.amazonaws.com/v1/";
-
+// export const BACKEND_URL =
+//   "http://ec2-52-28-42-227.eu-central-1.compute.amazonaws.com/v1/";
+//
 // DEMO EC2
 // export const BACKEND_URL =
 //   "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
@@ -68,3 +68,5 @@ export const PRODUCT_STORAGE_OPTIONS = [
   { value: "-80", label: "-80" },
   { value: "Other", label: "Other" },
 ];
+
+export const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;

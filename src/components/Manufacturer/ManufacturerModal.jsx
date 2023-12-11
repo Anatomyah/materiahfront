@@ -111,9 +111,11 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
         setTimeout(() => {
           onSuccessfulSubmit();
           response.toast();
-          resetModal();
           setIsSubmitting(false);
           handleClose();
+          if (!manufacturerObj) {
+            resetModal();
+          }
         }, 1000);
       } else {
         showToast(

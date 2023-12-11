@@ -1,7 +1,10 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import {
+  emailRegex,
+  PHONE_PREFIX_CHOICES,
+} from "../../config_and_helpers/config";
 import {
   checkEmail,
   checkEmailAuthRequired,
@@ -33,8 +36,9 @@ const createFormSchema = ({ isSignUp }) =>
       }),
     email: yup
       .string()
-      .email("Invalid email format")
-      .required("Email is required"),
+      .required("Email is required")
+      .matches(emailRegex, "Enter a valid email"),
+
     firstName: yup
       .string()
       .required("First name is required")
@@ -488,11 +492,14 @@ const AccountModal = ({ isSignUp = false }) => {
                     )}
                     <Form.Control.Feedback type="invalid">
                       {errors.email}
-                      {!emailUniqueValidator.validate() &&
+                      {!errors.email &&
+                        !emailUniqueValidator.validate() &&
                         !isCheckingEmail &&
                         emailUniqueValidator.text}
                     </Form.Control.Feedback>
-                    {isCheckingEmail && <Form.Text>Checking...</Form.Text>}
+                    {isCheckingEmail && !errors.email && (
+                      <Form.Text>Checking...</Form.Text>
+                    )}
                   </Form.Group>
                   <Form.Group
                     controlId="signupFirstName"

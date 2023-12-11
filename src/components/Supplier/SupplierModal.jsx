@@ -14,7 +14,10 @@ import {
 import { Formik } from "formik";
 import { Col, Form, Row, Spinner } from "react-bootstrap";
 import * as yup from "yup";
-import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import {
+  emailRegex,
+  PHONE_PREFIX_CHOICES,
+} from "../../config_and_helpers/config";
 import debounce from "lodash/debounce";
 import "./SupplierComponentStyle.css";
 import EditIcon from "@mui/icons-material/Edit";
@@ -29,7 +32,7 @@ const formSchema = yup.object().shape({
   email: yup
     .string()
     .required("Email is required")
-    .email("Enter a valid email"),
+    .matches(emailRegex, "Enter a valid email"),
   phonePrefix: yup.string(),
   phoneSuffix: yup
     .string()
@@ -59,8 +62,10 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   );
   const [isSupplierPhoneUnique, setIsSupplierPhoneUnique] = useState(true);
   const [isCheckingSupplierPhone, setIsCheckingSupplierPhone] = useState(false);
-  const [email, setEmail] = useState(supplierObj ? supplierObj?.email : "");
-  const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
+  const [supplierEmail, setSupplierEmail] = useState(
+    supplierObj ? supplierObj?.email : "",
+  );
+  const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(false);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -129,12 +134,12 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   }, [name, debouncedCheckSupplierName]);
 
   useEffect(() => {
-    if (email && email !== supplierObj?.email) {
-      debouncedCheckSupplierEmail(email);
+    if (supplierEmail && supplierEmail !== supplierObj?.email) {
+      debouncedCheckSupplierEmail(supplierEmail);
     } else {
       setIsCheckingSupplierEmail(false);
     }
-  }, [email, debouncedCheckSupplierEmail]);
+  }, [supplierEmail, debouncedCheckSupplierEmail]);
 
   useEffect(() => {
     if (
@@ -181,15 +186,15 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
 
     supplierPromise.then((response) => {
       if (response && response.success) {
-        if (!supplierObj) {
-          setTimeout(() => {
-            onSuccessfulSubmit();
-            response.toast();
+        setTimeout(() => {
+          onSuccessfulSubmit();
+          response.toast();
+          setIsSubmitting(false);
+          handleClose();
+          if (!supplierObj) {
             resetModal();
-            setIsSubmitting(false);
-            handleClose();
-          }, 1000);
-        }
+          }
+        }, 1000);
       } else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
@@ -333,18 +338,20 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         const { value } = event.target;
                         handleChange(event);
                         setIsCheckingSupplierEmail(true);
-                        setEmail(value);
+                        setSupplierEmail(value);
                       }}
                       onFocus={() => setFieldTouched("email", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.email && !!errors.email) ||
-                        !supplierEmailUniqueValidator.validate()
+                        (!supplierEmailUniqueValidator.validate() &&
+                          values.email !== supplierEmail)
                       }
                       isValid={
                         touched.email &&
                         !errors.email &&
                         supplierEmailUniqueValidator.validate() &&
+                        values.email !== supplierObj?.email &&
                         !isCheckingSupplierEmail
                       }
                     />
@@ -356,11 +363,12 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.email}
-                      {!supplierEmailUniqueValidator.validate() &&
+                      {!errors.email &&
+                        supplierEmailUniqueValidator.validate() &&
                         !isCheckingSupplierEmail &&
                         supplierEmailUniqueValidator.text}
                     </Form.Control.Feedback>
-                    {isCheckingSupplierEmail && (
+                    {isCheckingSupplierEmail && !errors.email && (
                       <Form.Text>Checking...</Form.Text>
                     )}
                   </Form.Group>

@@ -1,7 +1,10 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { PHONE_PREFIX_CHOICES } from "../../config_and_helpers/config";
+import {
+  emailRegex,
+  PHONE_PREFIX_CHOICES,
+} from "../../config_and_helpers/config";
 import { AppContext } from "../../App";
 import {
   checkEmailAuthRequired,
@@ -35,7 +38,7 @@ const schema = yup.object().shape({
     ),
   contactEmail: yup
     .string()
-    .email("Invalid email format.")
+    .matches(emailRegex, "Enter a valid email")
     .required("Email is required."),
   contactPhonePrefix: yup.string().required("Phone prefix is required."),
   contactPhoneSuffix: yup
@@ -45,7 +48,7 @@ const schema = yup.object().shape({
     .required("Phone suffix is required."),
   supplierEmail: yup
     .string()
-    .email("Invalid email format.")
+    .matches(emailRegex, "Enter a valid email")
     .required("Supplier email is required."),
   supplierPhonePrefix: yup.string().required("Phone prefix is required."),
   supplierPhoneSuffix: yup
@@ -350,13 +353,13 @@ const EditSupplierAccountModal = () => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.contactEmail}
-                      {!contactEmailUniqueValidator.validate() &&
+                      {errors.contactEmail &&
+                        !contactEmailUniqueValidator.validate() &&
                         !isCheckingContactEmail &&
                         contactEmailUniqueValidator.text}
                     </Form.Control.Feedback>
-                    {isCheckingContactEmail && (
-                      <Form.Text>Checking...</Form.Text>
-                    )}
+                    {isCheckingContactEmail &&
+                      !errors.contactEmail(<Form.Text>Checking...</Form.Text>)}
                   </Form.Group>
                   <Form.Group
                     controlId="contactFirstName"
@@ -502,13 +505,13 @@ const EditSupplierAccountModal = () => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.supplierEmail}
-                      {!supplierEmailUniqueValidator.validate() &&
+                      {errors.supplierEmail &&
+                        !supplierEmailUniqueValidator.validate() &&
                         !isCheckingSupplierEmail &&
                         supplierEmailUniqueValidator.text}
                     </Form.Control.Feedback>
-                    {isCheckingSupplierEmail && (
-                      <Form.Text>Checking...</Form.Text>
-                    )}
+                    {isCheckingSupplierEmail &&
+                      !errors.supplierEmail(<Form.Text>Checking...</Form.Text>)}
                   </Form.Group>
                   <Row className="field-margin">
                     <Form.Label>Supplier Phone</Form.Label>

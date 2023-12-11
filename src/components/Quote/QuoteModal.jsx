@@ -180,9 +180,11 @@ const QuoteModal = ({
         setTimeout(() => {
           onSuccessfulSubmit();
           response.toast();
-          resetModal();
           setIsSubmitting(false);
           handleClose();
+          if (!quoteObj) {
+            resetModal();
+          }
         }, 1000);
       } else {
         showToast(
