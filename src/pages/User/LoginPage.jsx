@@ -59,7 +59,7 @@ const LoginPage = () => {
               } else {
                 setLoginError(true);
               }
-              setIsSubmitting(true);
+              setIsSubmitting(false);
             });
           }}
         >
