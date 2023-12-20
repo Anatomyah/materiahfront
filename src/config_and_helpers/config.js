@@ -1,22 +1,38 @@
+/**
+ * This file exports configuration values that are used throughout the application.
+ */
+
+// The backend URL the application connects to. Users can configure it based on
+// their environment setting
+// For example, they can set the environment variable REACT_APP_BACKEND_URL to
+// the URL of the backend server before starting the React app.
+// export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// ---------------------------------------------------------------------
+
 // export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// When specifically using the Organoids EC2 instance for backend
 // ORGANOIDS EC2
 export const BACKEND_URL =
   "http://ec2-52-28-42-227.eu-central-1.compute.amazonaws.com/v1/";
-//
+
+// When specifically using the Demo EC2 instance for backend
 // DEMO EC2
 // export const BACKEND_URL =
 //   "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
 
+// Default URLs for images and pdfs when no specific image or pdf is provided
 export const defaultImageUrl =
   "https://materiah1.s3.eu-central-1.amazonaws.com/products/No-Image-Placeholder.svg.png";
 
 export const defaultPdfUrl =
   "https://materiah1.s3.eu-central-1.amazonaws.com/products/PDF-Placeholder-e1500896019213.png";
 
+// Logo URL as provided by design team
 export const largeLogo =
   "https://materiah1.s3.eu-central-1.amazonaws.com/design/materiah_logo.png";
 
+// Available phone number prefix choices
 export const PHONE_PREFIX_CHOICES = [
   { value: "050", label: "050" },
   { value: "051", label: "051" },
@@ -42,6 +58,7 @@ export const PHONE_PREFIX_CHOICES = [
   { value: "079", label: "079" },
 ];
 
+// Available categories for products
 export const PRODUCT_CATEGORIES = [
   { value: "Medium", label: "Medium" },
   { value: "Powders", label: "Powders" },
@@ -52,6 +69,7 @@ export const PRODUCT_CATEGORIES = [
   { value: "Lab Equipment", label: "Lab Equipment" },
 ];
 
+// Measurement units for products
 export const PRODUCT_MEASUREMENT_UNITS = [
   { value: "ML", label: "Milliliters, ml" },
   { value: "G", label: "Grams, g" },
@@ -61,6 +79,7 @@ export const PRODUCT_MEASUREMENT_UNITS = [
   { value: "Box", label: "Box" },
 ];
 
+// Storage options for products
 export const PRODUCT_STORAGE_OPTIONS = [
   { value: "+4", label: "+4" },
   { value: "-20", label: "-20" },
@@ -69,4 +88,5 @@ export const PRODUCT_STORAGE_OPTIONS = [
   { value: "Other", label: "Other" },
 ];
 
+// Regular expression for validating email addresses
 export const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
