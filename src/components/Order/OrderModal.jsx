@@ -16,6 +16,15 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import EditIcon from "@mui/icons-material/Edit";
 import { showToast } from "../../config_and_helpers/helpers";
 
+/**
+ * ItemSchema Yup Validation Schema
+ *
+ * The validation schema for each individual item in the order.
+ * Validates the quantity, batch, expiry date, item fulfillment status, selected reason,
+ * and other reason details of an item when item's fulfillment status marked as false.
+ *
+ * @type {Yup.object}
+ */
 const itemSchema = yup.object().shape({
   quantity: yup
     .string()
@@ -40,6 +49,15 @@ const itemSchema = yup.object().shape({
     }),
 });
 
+/**
+ * createFormSchema Yup Validation Schema
+ *
+ * A factory function that returns a Yup object schema appropriate for validating the form used in the component.
+ * It validates the items list, quote list, date of arrival, order images and received by fields.
+ *
+ * @param {boolean} hasExistingImages - A flag indicating whether there are existing images attached to the order
+ * @returns {Yup.object} - A Yup validation schema
+ */
 const createFormSchema = ({ hasExistingImages }) =>
   yup.object().shape({
     items: yup.array().of(itemSchema),
@@ -79,13 +97,39 @@ const createFormSchema = ({ hasExistingImages }) =>
       ),
   });
 
+/**
+ * OrderModal Component
+ *
+ * This component is a bootstrapped Modal which presents a Form to the user.
+ * The form is utilized to either create a new order or update an existing order.
+ *
+ * @component
+ * @prop {function} onSuccessfulSubmit Function called when order is successfully submitted
+ * @prop {object} orderObj Object of existing order when updating an order
+ * @prop {boolean} homeShowModal Boolean used to manually control the showing of this modal
+ * @prop {function} setHomeShowModal Function to sets the value of homeShowModal
+ *
+ * @example
+ *
+ * return (
+ *   <OrderModal
+ *     onSuccessfulSubmit={updateOrderList}
+ *     orderObj={existingOrder}
+ *     homeShowModal={modalVisible}
+ *     setHomeShowModal={setModalVisible}
+ *   />
+ * );
+ */
 const OrderModal = ({
   onSuccessfulSubmit,
   orderObj,
   homeShowModal,
   setHomeShowModal,
 }) => {
+  // useContext - Fetches the user token from the overall app context.
   const { token } = useContext(AppContext);
+
+  // useState - Initializes the state variables for the component.
   const [hasExistingImages, setHasExistingImages] = useState(false);
   const formSchema = createFormSchema({
     hasExistingImages,
@@ -116,14 +160,18 @@ const OrderModal = ({
     homeShowModal ? homeShowModal : false,
   );
 
+  // Function to fetch a specific Quote data.
   const fetchQuote = (quoteId) => {
     getQuoteDetails(token, quoteId, setRelatedQuoteObj);
   };
 
+  // useEffect Hook to load the list of open quotes when the component renders.
   useEffect(() => {
     getOpenQuotesSelectList(token, setOpenQuotesSelectList);
   }, []);
 
+  // useEffect Hook to set the Items state based on the relatedQuoteObj state.
+  // Runs when relatedQuoteObj changes.
   useEffect(() => {
     if (relatedQuoteObj && !orderObj) {
       setItems(() => {
@@ -138,12 +186,14 @@ const OrderModal = ({
     }
   }, [relatedQuoteObj]);
 
+  // Function updateItem - Updates a specific item in the items state
   const updateItem = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
     setItems(newItems);
   };
 
+  // Function to handle file change events and update the images state.
   const handleFileChange = (files) => {
     const newImages = files.map((file) => ({
       file,
@@ -153,6 +203,7 @@ const OrderModal = ({
     setImages((prevState) => [...prevState, ...newImages]);
   };
 
+  // useEffect to check if images have been loaded, will update has existing
   useEffect(() => {
     if (images.length) {
       setHasExistingImages(true);
@@ -161,10 +212,12 @@ const OrderModal = ({
     }
   }, [images]);
 
+  // HandleDeleteImage - Removes an image from the images state based on its ID.
   function handleDeleteImage(imageId) {
     setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
   }
 
+  // handleClose - Function to handle the closing of the modal. It reverts all state to its original form.
   const handleClose = () => {
     if (setHomeShowModal) setHomeShowModal(false);
     setShowModal(false);
@@ -189,13 +242,18 @@ const OrderModal = ({
     setImages(orderObj ? orderObj.images : []);
   };
 
+  // handleShow - Function to open the modal by setting showModal to true.
   const handleShow = () => setShowModal(true);
 
+  // handleSubmit - Finishing up the form submission either creating a new order or updating an existing one.
   const handleSubmit = (values) => {
+    // Indicates that the submission process has started, typically used to handle UI changes such as showing a loading spinner.
     setIsSubmitting(true);
     let finalItems, imagesToDelete;
 
+    // If the order object exists, it means we are updating an existing order.
     if (orderObj) {
+      // Each item in the 'items' array is transformed to have the attributes: quote_item_id, quantity, batch, expiry, status, issue_detail.
       finalItems = items.map((item) => ({
         quote_item_id: item.quote_item.id,
         quantity: item.quantity,
@@ -205,11 +263,13 @@ const OrderModal = ({
         issue_detail: item.issue_detail,
       }));
 
+      // Find images that are in the original order object but aren't present in the current image state - these images will be deleted.
       imagesToDelete = orderObj.images
         .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
         .map((obj) => obj.id);
     }
 
+    // Collect all validated data that will be sent to the server in the form.
     const updatedOrderData = {
       quote: orderObj ? orderObj.quote.id : relatedQuoteObj.id,
       arrival_date: values.arrivalDate,
@@ -217,12 +277,15 @@ const OrderModal = ({
       received_by: values.receivedBy,
     };
 
+    // If there are any images to delete, this data must be sent to the server as well.
     if (orderObj && imagesToDelete.length) {
       updatedOrderData.images_to_delete = JSON.stringify(imagesToDelete);
     }
 
+    // Determine the new images that have been added for the order object.
     const newImages = images.filter((image) => image.file);
 
+    // If there were new images added, we add that to the data to be sent to the server.
     if (newImages.length) {
       const imageInfo = newImages.map((image) => ({
         id: image.id,
@@ -231,10 +294,12 @@ const OrderModal = ({
       updatedOrderData.images = JSON.stringify(imageInfo);
     }
 
+    //We send the request to the server using a promise - if we have an order object, it mean's we're updating an existing order, otherwise, we're creating a new order.
     const orderPromise = orderObj
       ? updateOrder(token, orderObj.id, updatedOrderData, newImages)
       : createOrder(token, updatedOrderData, images);
 
+    //Once the promise resolves (i.e., the request is completed), we look at the response. If it was successful, we perform necessary UI update and call the onSuccessfulSubmit function.
     orderPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
@@ -244,6 +309,7 @@ const OrderModal = ({
           handleClose();
         }, 1000);
       } else {
+        // If there was an error, we halt the submission process and display a notification with the error message.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
@@ -256,6 +322,8 @@ const OrderModal = ({
 
   return (
     <>
+      {/* Render Create Order or Edit buttons based on whether orderObj is present,
+       onClick calls a function to handle modal visibility */}
       {!homeShowModal && (
         <Button
           variant={orderObj ? "outline-success" : "success"}
@@ -269,6 +337,10 @@ const OrderModal = ({
         <Modal.Header closeButton>
           <Modal.Title>{orderObj ? "Edit" : "Create"} Order</Modal.Title>
         </Modal.Header>
+        {/* The Formik component is being utilized for form handling,
+         providing APIs for commonly needed form operations. */}
+        {/* It uses 'orderObj' to conditionally setup its properties
+        for the modal's create or edit forms. */}
         <Formik
           key={items.length}
           initialTouched={
@@ -332,10 +404,17 @@ const OrderModal = ({
             dirty,
             setFieldValue,
           }) => {
+            // Formik provides these props to be utilized in the form fields for handling form state.
+
             return (
+              // The form itself
               <Form noValidate onSubmit={handleSubmit}>
+                {/* Some more components with their respective forms and form fields */}
+                {/* Additionally, there's conditional rendering to dynamically create JSX based on whether
+                 you're editing or creating an order. */}
                 <Modal.Body className="d-flex flex-column p-4">
                   <div className="d-flex justify-content-between align-items-start">
+                    {/* Selection of Quote */}
                     {!orderObj && (
                       <Form.Group
                         as={Col}
@@ -372,6 +451,8 @@ const OrderModal = ({
                         )}
                       </Form.Group>
                     )}
+
+                    {/* Link to Quote */}
                     {relatedQuoteObj && !orderObj && (
                       <div style={{ marginTop: "1.95rem" }}>
                         <a
@@ -390,6 +471,8 @@ const OrderModal = ({
                       </div>
                     )}
                   </div>
+
+                  {/* Link to Quote for orderObj scenario*/}
                   {orderObj && (
                     <a
                       href={
@@ -406,6 +489,8 @@ const OrderModal = ({
                       <PictureAsPdfIcon />
                     </a>
                   )}
+
+                  {/* Displaying Items */}
                   {items && (relatedQuoteObj || orderObj) && (
                     <>
                       <h2>
@@ -414,7 +499,10 @@ const OrderModal = ({
                           ? orderObj.supplier.name
                           : relatedQuoteObj.supplier.name}
                       </h2>
+                      {/* Mapping through items */}
                       {items.map((item, index) =>
+                        /* order item component representing each ordered item in modal,
+                         along with all necessary props */
                         (
                           orderObj
                             ? orderObj.items[index]
@@ -451,8 +539,11 @@ const OrderModal = ({
                       )}
                     </>
                   )}
+
+                  {/* Other Order Attributes */}
                   {(relatedQuoteObj || orderObj) && (
                     <>
+                      {/* Group to upload Receipt images */}
                       <Form.Group
                         controlId="formOrderImages"
                         className="field-margin"
@@ -485,6 +576,7 @@ const OrderModal = ({
                         </Form.Control.Feedback>
                       </Form.Group>
                       <div>
+                        {/* Display of Existing Images */}
                         <div className="field-margin">
                           {images.map((image) => {
                             let imageUrl =
@@ -541,6 +633,8 @@ const OrderModal = ({
                           })}
                         </div>
                       </div>
+
+                      {/* Field for Arrival Date */}
                       <Form.Group
                         controlId="formArrivalDate"
                         className="field-margin"
@@ -568,6 +662,8 @@ const OrderModal = ({
                           {errors.arrivalDate}
                         </Form.Control.Feedback>
                       </Form.Group>
+
+                      {/* Field for Receiver */}
                       <Form.Group
                         controlId="receivedBy"
                         className="field-margin"
@@ -594,6 +690,7 @@ const OrderModal = ({
                   )}
                 </Modal.Body>
                 <Modal.Footer>
+                  {/* Buttons for submitting and closing modal */}
                   {isSubmitting ? (
                     <Button variant="primary" disabled>
                       <Spinner

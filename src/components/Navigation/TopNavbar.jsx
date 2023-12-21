@@ -14,27 +14,46 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import "./NavBarStyle.css";
 
+/**
+ * TopNavBar Component
+ *
+ * This component represents a top navigation bar, providing links to different
+ * parts of the application depending on user's role. Also includes logout functionality.
+ *
+ * @component
+ *
+ * @example
+ *
+ * return (
+ *   <TopNavBar />
+ * );
+ */
 function TopNavBar() {
+  // Hooks from AppContext and CartAppContext used to access and update context data
   const { token, setToken, isSupplier, setIsSupplier, setRememberMe } =
     useContext(AppContext);
   const { setShowCart } = useContext(CartAppContext);
 
+  // Function to logout user
   const handleLogout = () => {
-    logout(token).then((response) => {
-      if (response && response.success) {
-        setIsSupplier(false);
-        setToken(null);
-        setRememberMe(false);
-        toast("See you soon!");
-      }
-    });
+    logout(token) // Call to logout client function which makes actual API request
+      .then((response) => {
+        if (response && response.success) {
+          setIsSupplier(false);
+          setToken(null);
+          setRememberMe(false);
+          toast("See you soon!"); // Gives feedback that logout was a success
+        }
+      });
   };
 
   return (
+    // Bootstrap Navbar component with custom styles
     <Navbar collapseOnSelect expand="lg" className="bg-custom navbar-content">
       <Container>
         <Row className="w-100 align-items-center">
           <Col xs="auto">
+            // Navbar brand logo and text
             <Navbar.Brand as={Link} to="/">
               <img
                 alt=""
@@ -49,6 +68,7 @@ function TopNavBar() {
           <Col className="d-flex justify-content-end">
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="responsive-navbar-nav">
+              {/* Link elements for navigation - these will change depending if user is a supplier or not */}
               <Nav className="me-auto">
                 {isSupplier ? (
                   <>
@@ -64,7 +84,7 @@ function TopNavBar() {
                     <Nav.Link as={Link} to="/orders">
                       Orders
                     </Nav.Link>
-                    <NavDropdown title="Database" id="collasible-nav-dropdown">
+                    <NavDropdown title="Database" id="collapsible-nav-dropdown">
                       <NavDropdown.Item as={Link} to="/suppliers">
                         Suppliers
                       </NavDropdown.Item>
@@ -85,9 +105,10 @@ function TopNavBar() {
                 )}
               </Nav>
 
+              {/* User Account options */}
               <NavDropdown
                 title={<AccountCircleIcon style={{ fontSize: "24px" }} />}
-                id="collasible-nav-dropdown"
+                id="collapsible-nav-dropdown"
               >
                 <NavDropdown.Item as={Link} to="/account">
                   Account

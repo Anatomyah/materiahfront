@@ -1,7 +1,13 @@
+/*
+Applies a bottom-margin to fields, ideal for keeping vertical rhythm in form layouts
+*/
 .field-margin {
     margin-bottom: 1rem;
 }
 
+/*
+Makes an icon larger than usual for prominent visual elements
+*/
 .large-icon {
     font-size: 36px;
 }

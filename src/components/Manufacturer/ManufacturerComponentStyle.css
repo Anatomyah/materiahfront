@@ -1,3 +1,20 @@
+/**
+ * CSS class for adding margin to the bottom of a field element.
+ *
+ * The `.field-margin` class is used to apply a margin at the bottom of any HTML element.
+ * It uses a rem unit for the margin value which makes it responsive to the root font-size.
+ *
+ * @class .field-margin
+ * @property margin-bottom: 0.5rem - Adds a responsive margin to the bottom of the element.
+ *
+ * @example
+ *
+ * <!-- Apply class to a HTML element -->
+ * <div class="field-margin">
+ *   <!-- Contents here... -->
+ * </div>
+ */
+
 .field-margin {
     margin-bottom: 0.5rem;
 }

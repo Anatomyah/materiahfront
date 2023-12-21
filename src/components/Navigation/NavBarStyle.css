@@ -1,11 +1,17 @@
+/* Customizes the background color to a specific kind of yellow */
 .bg-custom {
     background-color: #ecec8c;
 }
 
+/* Customizes the background color to a specific kind of mint */
 .bg-custom-bottom {
     background-color: #c9e5d6;
 }
 
+/* Positions elements with className 'navbar-content' in a new layer context relative to the normal document flow.
+* The Z-index property specifies this element's position along the z-axis (perpendicular to the screen).
+* Any element with a non-static position can have a z-index.
+* Elements with a higher z-index will render in front of elements with a lower index. */
 .navbar-content {
     position: relative;
     z-index: 3;

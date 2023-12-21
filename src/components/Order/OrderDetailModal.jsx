@@ -1,40 +1,63 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../../App";
+import DeleteButton from "../Generic/DeleteButton";
+import { deleteOrder, getOrderDetails } from "../../clients/order_client";
+import OrderModal from "./OrderModal";
+import QuoteDetailModal from "../Quote/QuoteDetailModal";
+import CarouselComponent from "../Generic/CarouselComponent";
+import ProductDetailModal from "../Product/ProductDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import { Col, Spinner } from "react-bootstrap";
-import DeleteButton from "../Generic/DeleteButton";
-import { deleteOrder, getOrderDetails } from "../../clients/order_client";
-import OrderModal from "./OrderModal";
-import QuoteDetailModal from "../Quote/QuoteDetailModal";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import CarouselComponent from "../Generic/CarouselComponent";
-import ProductDetailModal from "../Product/ProductDetailModal";
-import Table from "react-bootstrap/Table";
-import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
+/**
+ * OrderDetailModal Component
+ *
+ * This component takes an order object as props and displays a detailed view of that order in the form of
+ * a clickable link that can be opened in a modal. This view includes order information such as
+ * the supplier, quote, and items along with their details.
+ *
+ * @component
+ * @prop {object} orderObj The object of the order to be shown in detail view.
+ * @prop {function} updateOrders A function to update orders in parent state.
+ * @prop {string} orderId A string denoting the order id.
+ *
+ * @example
+ *
+ * return (
+ *   <OrderDetailModal orderObj={sampleOrderObject} updateOrders={updateOrderListFunction} orderId={"orderid123"} />
+ * );
+ */
 const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
+  // Hooks for necessary states and context values
   const { token } = useContext(AppContext);
+  // Provide a mutable value that exists for the whole lifetime of the component
   const isLoadingRef = useRef(false);
   const [show, setShow] = useState(false);
   const [order, setOrder] = useState(orderObj);
   const orderIdToUse = orderObj ? orderObj.id : orderId;
 
+  // Fetches specific order data
   const fetchOrder = () => {
     isLoadingRef.current = true;
     getOrderDetails(token, orderIdToUse, setOrder).then((response) => {
-      isLoadingRef.current = false;
+      isLoadingRef.current = false; // Stop loading after the data is fetched
     });
   };
 
+  // Run fetchOrder on component mount if there is an orderId but no order
   useEffect(() => {
     if (!order && orderIdToUse) {
       fetchOrder();
     }
   }, []);
 
+  // Callback for when the order is edited
   const handleEdit = () => {
     if (updateOrders) {
       updateOrders();
@@ -42,9 +65,11 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
     fetchOrder();
   };
 
+  // Handlers for opening and closing the modal
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  // A Bootstrap spinner spins until loading is finished.
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -61,12 +86,15 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
     <div>
       {order && (
         <>
+          {/* Button to open the modal showing order details */}
           <Button variant="link" onClick={handleShow}>
             {order.id}
           </Button>
+
+          {/* The modal itself */}
           <Modal
             show={show}
-            onHide={() => setShow(false)}
+            onHide={() => setShow(false)} // The onHide prop handles how to close
             aria-labelledby="product-modal"
             size="lg"
           >
@@ -74,7 +102,9 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
               <Modal.Title>Order {order.id}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              {/* The Container, Row, and Col components are from react-bootstrap and used for layout */}
               <Container>
+                {/* Various pieces of information about the order are listed here */}
                 <Row>
                   <Col>
                     <p className="fs-6 fw-bold">Quote:</p>
@@ -153,24 +183,33 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                   </tbody>
                 </Table>
               </Container>
+
+              {/* Display any images associated with the order in a carousel */}
               <CarouselComponent images={order.images} />
             </Modal.Body>
+
+            {/* The footer contains buttons that interact with the order */}
             <Modal.Footer className="d-flex flex-row justify-content-between">
               <div className="d-flex flex-row">
+                {/* Button to show a modal for editing the order. Triggers handleEdit when the edits are successful */}
                 <div className="me-2">
                   <OrderModal
                     orderObj={order}
                     onSuccessfulSubmit={handleEdit}
                   />
                 </div>
+
+                {/* Button to delete the order. The deleteFetchFunc prop prescribes a function from order_client.js to make the API call */}
                 <DeleteButton
                   objectType="order"
                   objectName={order.id}
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
-                  onSuccessfulDelete={updateOrders}
+                  onSuccessfulDelete={updateOrders} // Triggers the provided onDelete function when the delete operation is successful
                 />
               </div>
+
+              {/* Button to close the modal */}
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>

@@ -9,11 +9,33 @@ import ProductDetailModal from "./ProductDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
 
+/**
+ * Renders a list of products within a table layout.
+ *
+ * @component
+ * @param {Object} props - The properties that define the ProductTable.
+ * @param {Array} props.productList - An array of product objects to be displayed in the table.
+ * @param {Function} props.handleEdit - The function to be called when a product is edited or deleted.
+ *
+ * @example
+ * // Here is how to use this component
+ * const productList = [
+ *    // Here an array of product objects
+ * ];
+ * const handleEdit = () => {
+ *    // Define edit functionality here.
+ * };
+ * <ProductTable productList={productList} handleEdit={handleEdit} />
+ *
+ * @returns {React.Element} The rendered ProductTable component.
+ */
 const ProductTable = ({ productList, handleEdit }) => {
   return (
     <Table striped bordered hover>
       <thead>
         <tr className="text-center">
+          {/* The table header items */}
+          {/* The '#' here stands for the numeric index of the product in the list */}
           <th>#</th>
           <th>Image</th>
           <th>CAT #</th>
@@ -30,9 +52,12 @@ const ProductTable = ({ productList, handleEdit }) => {
         </tr>
       </thead>
       <tbody>
+        {/* Mapping over the productList to create a table row for each product */}
         {productList.map((product, index) => (
           <tr key={product.id} className="text-center align-middle">
+            {/* Displays the serial number of the item */}
             <td>{index + 1}</td>
+            {/* Displays the product image, if it exists, or a default image */}
             <td>
               <a
                 href={
@@ -54,6 +79,7 @@ const ProductTable = ({ productList, handleEdit }) => {
               </a>
             </td>
             <td>
+              {/* Renders the product detail modal for each product */}
               <ProductDetailModal
                 productObj={product}
                 updateProducts={handleEdit}
@@ -71,13 +97,16 @@ const ProductTable = ({ productList, handleEdit }) => {
               </a>
             </td>
             <td>
+              {/* Renders the manufacturer detail modal for each product */}
               <ManufacturerDetailModal
                 manufacturerId={product.manufacturer.id}
               />
             </td>
             <td>
+              {/* Renders the supplier detail modal for each product */}
               <SupplierDetailModal supplierId={product.supplier.id} />
             </td>
+            {/* Renders an edit button and a delete button for each product */}
             <td className="align-items-center">
               <div className="mb-2">
                 <ProductModal

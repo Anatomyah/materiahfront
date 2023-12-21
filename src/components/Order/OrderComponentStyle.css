@@ -1,16 +1,20 @@
+/* Declares a margin at the bottom of the targeted element to a size of 0.5rem */
 .field-margin {
     margin-bottom: 0.5rem;
 }
 
+/* Sets the font weight of the targeted element to bold, making the font thicker */
 .bold-text {
     font-weight: bold;
 }
 
+/* Sets the font weight of the targeted element to bold and its style to italic */
 .bold-italic-text {
     font-weight: bold;
     font-style: italic;
 }
 
+/* Sets the font style of the targeted element to italic, slanting the font */
 .italic-text {
     font-style: italic;
 }

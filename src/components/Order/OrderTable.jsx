@@ -9,12 +9,23 @@ import QuoteDetailModal from "../Quote/QuoteDetailModal";
 import OrderDetailModal from "./OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import { Accordion } from "react-bootstrap";
-import ProductDetailModal from "../Product/ProductDetailModal";
 
+/**
+ * OrderTable Component
+ *
+ * This component displays a list of orders in a tabular format. Each order is rendered as a row in the table.
+ * The table includes various details for each order such as order quote, arrival time, received by, receipts, supplier, and status.
+ * Actions that can update the order can also be done here like edit and delete.
+ *
+ * @component
+ * @param {Array} orderList - A list of order objects to be displayed as rows in the table.
+ * @param {function} handleEdit - A function that tell parent component to refresh the order data.
+ */
 const OrderTable = ({ orderList, handleEdit }) => {
   return (
     <Table striped bordered hover>
       <thead>
+        {/* Table Headers */}
         <tr className="text-center">
           <th>#</th>
           <th>ID</th>
@@ -28,9 +39,13 @@ const OrderTable = ({ orderList, handleEdit }) => {
         </tr>
       </thead>
       <tbody>
+        {/* Mapping through orderList to create several rows in the table. */}
         {orderList.map((order, index) => (
           <React.Fragment key={index}>
+            {/* Each row of order */}
             <tr key={index} className="text-center align-middle">
+              {/* Various columns like quote, arrival time, receipts etc. */}
+              {/* Action Buttons for each order */}
               <td>{index + 1}</td>
               <td>
                 <OrderDetailModal orderObj={order} updateOrders={handleEdit} />
@@ -75,6 +90,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
               </td>
             </tr>
             <tr>
+              {/* Order Items are displayed in a collapsable accordion */}
               <td></td>
               <td>
                 <Accordion>

@@ -25,6 +25,15 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import EditIcon from "@mui/icons-material/Edit";
 import { showToast } from "../../config_and_helpers/helpers";
 
+/**
+ * Creates a Yup schema for product form validation based on whether the current user is a supplier or not.
+ * Checks that all required fields have been filled in correctly.
+ *
+ * @function createFormSchema
+ * @param {Object} params - The parameters that define the schema.
+ * @param {boolean} params.isSupplier - A boolean value that tells whether the currently logged-in user is a supplier.
+ * @returns {yup.ObjectSchema} The schema to enforce on the product form.
+ */
 const createFormSchema = ({ isSupplier }) =>
   yup.object().shape({
     productName: yup
@@ -71,25 +80,64 @@ const createFormSchema = ({ isSupplier }) =>
       .required("Product link is required"),
   });
 
+/**
+ * Renders a modal that allows the user to create a new product or edit the details of an existing product.
+ * Integrated with validation, which works based on the Yup scheme.
+ *
+ * @component
+ * @param {Object} props - The properties that define the ProductModal.
+ * @param {Function} props.onSuccessfulSubmit - A callback function that is called when a product is successfully created or updated.
+ * @param {Object} props.productObj - An object containing the product's information.
+ * @param {boolean} props.homeShowModal - A boolean value that determines whether the modal is visible initially.
+ * @param {Function} props.setHomeShowModal - A function to update the state of homeShowModal.
+ *
+ * @example
+ * // Importing the component
+ * import ProductModal from './ProductModal';
+ * // Here is how to use this component
+ * const onSuccessfulSubmit = () => console.log('Product was successfully created or updated');
+ * const productObj = {
+ *  name: 'Example',
+ *  cat_num: 'EX123',
+ *  // And the rest of the required properties
+ * };
+ * const homeShowModal = false;
+ * const setHomeShowModal = (value) => console.log(value);
+ * <ProductModal onSuccessfulSubmit={onSuccessfulSubmit} productObj={productObj} homeShowModal={homeShowModal} setHomeShowModal={setHomeShowModal} />
+ *
+ * @returns {React.Element} The rendered ProductModal component.
+ */
 const ProductModal = ({
   onSuccessfulSubmit,
   productObj,
   homeShowModal,
   setHomeShowModal,
 }) => {
+  // Retrieves context values including the authentication token and user role information.
   const { token, isSupplier, userDetails } = useContext(AppContext);
+  // Generates a form validation schema based on the user's role (isSupplier). This schema is used to validate the product form inputs.
   const formSchema = createFormSchema({
     isSupplier,
   });
+  // Indicates whether the Catalogue Number (CAT#) entered is unique. Initialized as `true` by default.
   const [isCatNumUnique, setIsCatNumUnique] = useState(true);
+  // Stores the value of Catalogue Number (CAT#). Initialized as empty string by default.
   const [catalogueNumber, setCatalogueNumber] = useState("");
+  // Indicates whether the system is in the process of checking for the uniqueness of the Catalogue Number (CAT#). Initialized as `false` by default.
   const [isCheckingCatNum, setIsCheckingCatNum] = useState(false);
+  // Stores the list of available manufacturers retrieved from the backend. Initialized as `null` by default.
   const [manufacturerList, setManufacturerList] = useState(null);
+  // Stores the list of available suppliers retrieved from the backend. Initialized as `null` by default.
   const [supplierList, setSupplierList] = useState(null);
+  /* Stores the images related to the product.
+    If the product object is provided, it stores the images of the product, otherwise, an empty array is used as default. */
   const [images, setImages] = useState(productObj ? productObj.images : []);
+  /* Controls whether the ProductModal is displayed or not.
+    If the homeShowModal is provided, it uses the value otherwise default to `false`. */
   const [showModal, setShowModal] = useState(
     homeShowModal ? homeShowModal : false,
   );
+  // Indicates whether the form is being submitted or not. Initialized as `false` by default.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {

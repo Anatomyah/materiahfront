@@ -12,12 +12,28 @@ import QuotesPage from "../../pages/Quote/QuotesPage";
 import NotAuthorizedPage from "./NotAuthorizedPage";
 import { AppContext } from "../../App";
 
+/**
+ * SiteRoutes Component
+
+ * This component defines the routes (page URLs) for the application, and determines the page component to be rendered for
+ * each route. If a user is not authorized to access a certain route, they are redirected to the NotAuthorizedPage.
+ *
+ * @component
+ *
+ * @example
+ *
+ * return (
+ *   <SiteRoutes />
+ * );
+ */
 const SiteRoutes = () => {
+  // UseContext hook from react to get the isSupplier value from context
   const { isSupplier } = useContext(AppContext);
 
   return (
     <div>
       <Routes>
+        {/*Each Route component defines a route URL and corresponding page*/}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/account" element={<AccountPage />} />
@@ -27,12 +43,16 @@ const SiteRoutes = () => {
             isSupplier ? <ProductList /> : <Navigate to="/not-authorized" />
           }
         />
+
+        {/* If isSupplier, allow access to supplier-catalogue, else redirect */}
         <Route
           path="/inventory"
           element={
             !isSupplier ? <ProductList /> : <Navigate to="/not-authorized" />
           }
         />
+
+        {/* Decisions about what to render for other routes also depend on isSupplier value */}
         <Route
           path="/shop"
           element={
@@ -67,6 +87,8 @@ const SiteRoutes = () => {
             !isSupplier ? <QuotesPage /> : <Navigate to="/not-authorized" />
           }
         />
+
+        {/* This route will always render NotAuthorizedPage component */}
         <Route path="/not-authorized" element={<NotAuthorizedPage />} />
       </Routes>
     </div>

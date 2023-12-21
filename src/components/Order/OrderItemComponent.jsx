@@ -2,6 +2,21 @@ import React, { useState } from "react";
 import { Form, FormControl, Spinner } from "react-bootstrap";
 import "./OrderComponentStyle.css";
 
+/**
+ * OrderItemComponent
+ *
+ * A component that builds a single order item within the order form, complete with necessary fields with validation.
+ * These items include fields such as item quantity, batch number, expiry date, item fullfillment and reason for unfullfillment.
+ *
+ * @param {Object} product - Contains the details of a product.
+ * @param {Object} item - Represents a single order item.
+ * @param {function} onItemChange - The callback to execute when an item property changes. Updates the data of a specific order item.
+ * @param {number} index - The index position of an item in the array.
+ * @param {Object} quoteItem - Information about the quote for this order item.
+ * @param {Object} formik - The formik object, containing form control methods and values.
+ *
+ * @component
+ */
 const OrderItemComponent = ({
   product,
   item,
@@ -10,8 +25,10 @@ const OrderItemComponent = ({
   quoteItem,
   formik,
 }) => {
+  // State hook for managing delay in updating form field changes.
   const [typingTimeout, setTypingTimeout] = useState(null);
 
+  // Handler for when the checkbox changes. It modifies the status and quantity fields appropriately.
   const handleCheckbox = () => {
     if (formik.values.items[index].itemFulfilled) {
       handleInstantChange("status", "Did not arrive");
@@ -27,6 +44,8 @@ const OrderItemComponent = ({
     }
   };
 
+  // Handler for inputs that has delay in updating their changes.
+  // It clears the previously set timeout and sets a new one.
   const handleDelayedChange = (name, value) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 
@@ -37,10 +56,12 @@ const OrderItemComponent = ({
     setTypingTimeout(newTimeout);
   };
 
+  // Handler for inputs that should update their changes instantly.
   const handleInstantChange = (name, value) => {
     onItemChange(index, name, value);
   };
 
+  // Field names for Formik form fields
   const quantityFieldName = `items[${index}].quantity`;
   const batchFieldName = `items[${index}].batch`;
   const expiryDateFieldName = `items[${index}].expiryDate`;
@@ -48,6 +69,7 @@ const OrderItemComponent = ({
   const selectedReasonFieldName = `items[${index}].selectedReason`;
   const otherReasonDetailFieldName = `items[${index}].otherReasonDetail`;
 
+  // Showing a loading spinner if item is undefined or null
   if (!item) {
     return (
       <Spinner
@@ -62,17 +84,24 @@ const OrderItemComponent = ({
 
   return (
     <div className="mt-3 mb-3 border border-secondary-subtle rounded p-3">
+      {/* Conditional rendering, we check if the 'items' array exists and if the item at current index exists */}
       {formik?.values?.items && formik?.values?.items[index] && (
         <>
           <h3>
+            {/* Displaying the product name and catalogue number */}
             {product.name}, {product.cat_num}
           </h3>
+
+          {/* Quantity input field */}
           <Form.Group
             controlId={`itemQuantity${index}`}
             className="field-margin"
           >
             <Form.Label>Item Quantity</Form.Label>
             <FormControl
+              // A bunch of prop assignments for FormControl
+              // onBlur and onFocus handlers for touch feedback //
+              // isValid and isInvalid for displaying validation feedback //
               name={quantityFieldName}
               type="text"
               value={formik.values?.items[index]?.quantity || ""}
@@ -95,10 +124,14 @@ const OrderItemComponent = ({
                 formik.values.items[index].selectedReason !== "Different amount"
               }
             />
+
+            {/* Adding an invalid feedback component for quantity input field */}
             <Form.Control.Feedback type="invalid">
               {formik.errors.items?.[index]?.quantity}
             </Form.Control.Feedback>
           </Form.Group>
+
+          {/* Same pattern is followed for batch input field*/}
           <Form.Group controlId={`itemBatch${index}`} className="field-margin">
             <Form.Label>Batch Number</Form.Label>
             <FormControl
@@ -125,8 +158,11 @@ const OrderItemComponent = ({
               {formik.errors.items?.[index]?.batch}
             </Form.Control.Feedback>
           </Form.Group>
+
+          {/* Similar structure for the expiry date field */}
           <Form.Group controlId={`expiryDate${index}`} className="field-margin">
             <Form.Label>Expiry Date</Form.Label>
+            {/* Props for FormControl */}
             <Form.Control
               type="date"
               name={expiryDateFieldName}
@@ -151,6 +187,8 @@ const OrderItemComponent = ({
               {formik.errors.items?.[index]?.expiryDate}
             </Form.Control.Feedback>
           </Form.Group>
+
+          {/* Check box for whether item has arrived and is in good condition */}
           <Form.Group
             controlId={`formItemFulfilled${index}`}
             className="field-margin"
@@ -168,12 +206,16 @@ const OrderItemComponent = ({
               onBlur={formik.handleBlur}
             />
           </Form.Group>
+
+          {/* Depending on whether item has been fulfilled, we show a dropdown of predefined reasons */}
           {!formik.values?.items[index]?.itemFulfilled && (
             <>
               <Form.Group
                 controlId={`formSelectedReason${index}`}
                 className="field-margin"
               >
+                {/* Providing predefined reasons */}
+                {/* User can also enter their own reasons */}
                 <Form.Select
                   name={selectedReasonFieldName}
                   onChange={(event) => {
@@ -198,8 +240,10 @@ const OrderItemComponent = ({
                 </Form.Select>
               </Form.Group>
 
+              {/* If 'Other' reason is selected, we provide an additional textarea for the user to specify the issue */}
               {formik.values?.items[index]?.selectedReason === "Other" && (
                 <Form.Group controlId={`formOtherReasonDetails${index}`}>
+                  {/* Props for FormControl */}
                   <Form.Control
                     as="textarea"
                     rows={4}
