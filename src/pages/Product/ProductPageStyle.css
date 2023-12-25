@@ -1,5 +1,5 @@
 .item-card {
-    flex: 0 0 25%;
-    max-width: 25%;
-    padding: 10px;
+    flex: 0 0 25%; /* Flex grow, shrink, and basis properties */
+    max-width: 25%; /* Maximum width of the item card */
+    padding: 10px; /* Padding inside the item card */
 }

@@ -13,26 +13,45 @@ import OrderDetailModal from "../Order/OrderDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import Table from "react-bootstrap/Table";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
-import { showToast } from "../../config_and_helpers/helpers";
 
+/**
+ * Component: QuoteDetailModal
+ * Description: This component renders a detailed view of a quote in a modal.
+ * Props:
+ *   - quoteObj: Object containing the initial quote data.
+ *   - updateQuotes: Function to update the quotes list after changes.
+ *   - quoteId: The ID of the quote to be displayed.
+ * Usage: This component is used to provide an in-depth view of quote details and allows for editing and deleting the quote.
+ */
 const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
+  // useContext to access global state, useRef for mutable flag, useState for local state management
   const { token } = useContext(AppContext);
   const isLoadingRef = useRef(false);
   const [show, setShow] = useState(false);
   const [quote, setQuote] = useState(quoteObj);
   const quoteIdToUse = quoteObj ? quoteObj.id : quoteId;
 
+  /**
+   * Function: fetchQuote
+   * Description: Fetches quote details from the server and updates the component state.
+   * Logic:
+   *  - Sets isLoadingRef to true before fetching.
+   *  - Calls getQuoteDetails with token, quoteIdToUse, and setQuote as arguments.
+   *  - Sets isLoadingRef to false after fetching.
+   */
   const fetchQuote = () => {
     isLoadingRef.current = true;
-    getQuoteDetails(token, quoteIdToUse, setQuote).then((response) => {
+    getQuoteDetails(token, quoteIdToUse, setQuote).then(() => {
       isLoadingRef.current = false;
     });
   };
 
+  // useEffect to fetch quote details on component mount if quote data is not provided
   useEffect(() => {
     if (!quote && quoteIdToUse) fetchQuote();
   }, []);
 
+  // Function handlers for editing, showing, and closing the modal
   const handleEdit = () => {
     if (updateQuotes) {
       updateQuotes();
@@ -40,9 +59,13 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
     fetchQuote();
   };
 
+  // Function to close the modal.
   const handleClose = () => setShow(false);
+
+  // Function to open the modal.
   const handleShow = () => setShow(true);
 
+  // Render a spinner while loading
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -57,30 +80,40 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
 
   return (
     <div>
+      {/* Conditionally render the content only if the quote data is available */}
       {quote && (
         <>
+          {/* Button to trigger the modal display */}
           <Button variant="link" onClick={handleShow}>
             {quote.id}
           </Button>
+
+          {/* Modal component to display quote details */}
           <Modal
             show={show}
-            onHide={() => setShow(false)}
-            aria-labelledby="product-modal"
+            onHide={handleClose}
+            aria-labelledby="quote-detail-modal"
             size="lg"
           >
             <Modal.Header closeButton>
+              {/* Modal title displaying the quote ID */}
               <Modal.Title>Quote {quote.id}</Modal.Title>
             </Modal.Header>
+
             <Modal.Body>
               <Container>
+                {/* Displaying various details of the quote in a structured format */}
                 <Row>
                   <Col>
+                    {/* Label for request date */}
                     <p className="fs-6 fw-bold">Request Date:</p>
                   </Col>
                   <Col>
+                    {/* Value for request date */}
                     <p className="fs-6">{quote.request_date}</p>
                   </Col>
                 </Row>
+                {/* Additional rows follow the same structure for different quote details */}
                 <Row>
                   <Col>
                     <p className="fs-6 fw-bold">Creation/Reception Date:</p>
@@ -142,6 +175,8 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                     <p className="fs-6 fw-bold">Quote Items: </p>
                   </Col>
                 </Row>
+
+                {/* Displaying quote items in a table format */}
                 <Table striped bordered hover>
                   <thead>
                     <tr className="text-center">
@@ -152,11 +187,13 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Mapping over each item in the quote to create a table row */}
                     {quote.items.map((item, index) => (
                       <React.Fragment key={index}>
                         <tr className="text-center italic-text">
                           <td>{index + 1}</td>
                           <td>
+                            {/* Displaying product details in a modal */}
                             <ProductDetailModal productId={item.product.id} />
                           </td>
                           <td>{item.quantity}</td>
@@ -168,14 +205,17 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                 </Table>
               </Container>
             </Modal.Body>
+
             <Modal.Footer className="d-flex flex-row justify-content-between">
               <div className="d-flex flex-row">
+                {/* Edit button for the quote */}
                 <div className="me-2">
                   <QuoteModal
                     quoteObj={quote}
                     onSuccessfulSubmit={handleEdit}
                   />
                 </div>
+                {/* Delete button for the quote */}
                 <DeleteButton
                   objectType="quote"
                   objectName={quote.id}
@@ -184,6 +224,7 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                   onSuccessfulDelete={updateQuotes}
                 />
               </div>
+              {/* Close button for the modal */}
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>

@@ -26,10 +26,32 @@ import { Spinner } from "react-bootstrap";
 import { showToast } from "../../config_and_helpers/helpers";
 import debounce from "lodash/debounce";
 
+/**
+ * Represents a product list component, displaying products either in a table or card format.
+ *
+ * This component provides functionalities such as infinite scrolling, supplier filtering, and free text search.
+ * It adapts its presentation based on the view context (shop, catalogue, or standard view) and allows
+ * for the addition of new products and updating existing ones.
+ *
+ * @component
+ * @param {Object} props
+ * @param {boolean} [props.isShopView=false] - Determines if the component is used in a shop view.
+ * @param {boolean} [props.isCatalogueView=false] - Determines if the component is used in a catalogue view.
+ * @returns The ProductList component.
+ *
+ * Usage:
+ * ```jsx
+ * <ProductList
+ *    isShopView={false}
+ *    isCatalogueView={false}
+ * />
+ * ```
+ */
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
+  // State and context management.
+  const { token, isSupplier } = useContext(AppContext);
   const isLoadingRef = useRef(false);
   const isMountedRef = useRef(false);
-  const { token, isSupplier } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState("");
@@ -37,10 +59,12 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
 
+  // Fetching supplier select list on component mount.
   useEffect(() => {
     getSupplierSelectList(token, setSupplierSelectList);
   }, []);
 
+  // Function to fetch products based on certain parameters.
   const fetchProducts = ({
     searchValue = "",
     supplierId = "",
@@ -53,6 +77,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
       supplierCatalogue: isCatalogueView,
       nextPage: nextPage,
     }).then((response) => {
+      // Processing response and setting state accordingly.
       if (response && response.success) {
         if (response.reachedEnd) {
           setNextPageUrl(null);
@@ -72,6 +97,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     });
   };
 
+  // Fetch products whenever the supplier or search input changes.
   useEffect(() => {
     if (!isMountedRef.current) {
       isMountedRef.current = true;
@@ -86,6 +112,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     });
   }, [supplier, searchInput]);
 
+  // Debounced handler for search input changes.
   const handleSearchInput = useCallback(
     debounce((value) => {
       setSearchInput(value);
@@ -93,12 +120,14 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
     [],
   );
 
+  // Function to handle key press events in the search input field.
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       setSearchInput(event.target.value);
     }
   };
 
+  // Render a spinner while loading.
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -113,6 +142,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
 
   return (
     <div>
+      {/* Container for search, filtering, and product addition UI */}
       <Container className="my-3">
         <Row className="align-items-center justify-content-md-evenly">
           {!isShopView && (
@@ -186,6 +216,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           </Col>
         </Row>
       </Container>
+      {/* InfiniteScroll component for loading more products */}
       <InfiniteScroll
         pageStart={0}
         loadMore={() => {
@@ -210,6 +241,7 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
           />
         }
       >
+        {/* Conditional rendering of ProductTable or ItemCard components based on view context */}
         {!products.length ? (
           <div>Nothing here...</div>
         ) : !isCatalogueView && !isShopView ? (

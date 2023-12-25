@@ -140,64 +140,99 @@ const ProductModal = ({
   // Indicates whether the form is being submitted or not. Initialized as `false` by default.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // useEffect hook to initialize manufacturer and supplier lists.
+  // It's triggered once after the component mounts. The dependencies array is empty,
+  // indicating that this effect does not depend on any props or state and should only run once.
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList);
-    getSupplierSelectList(token, setSupplierList);
+    getManufacturerSelectList(token, setManufacturerList); // Fetches the manufacturer list.
+    getSupplierSelectList(token, setSupplierList); // Fetches the supplier list.
   }, []);
 
+  // Object for validating the uniqueness of the catalogue number.
+  // It contains an id, error text, and a validation function.
   const catalogueNumberUniqueValidator = {
-    id: "unique",
-    text: "This CAT# is already taken.",
-    validate: () => (isCheckingCatNum ? true : isCatNumUnique),
+    id: "unique", // Identifier for this specific validator.
+    text: "This CAT# is already taken.", // Error message displayed if validation fails.
+    validate: () => (isCheckingCatNum ? true : isCatNumUnique), // Validation logic.
   };
 
+  // useEffect hook for setting images when the product object changes.
+  // The dependency array contains 'productObj', so this effect will rerun every time 'productObj' changes.
   useEffect(() => {
     if (productObj) {
-      setImages(productObj.images);
+      setImages(productObj.images); // Updates the state with the new images from the product object.
     }
   }, [productObj]);
 
+  // Async function for validating the catalogue number.
+  // Checks if the given catalogue number is unique.
   const validateCatNum = async (value) => {
-    const response = await checkCatNum(token, value);
-    setIsCheckingCatNum(false);
-    setIsCatNumUnique(response);
+    const response = await checkCatNum(token, value); // Calls API to validate catalogue number.
+    setIsCheckingCatNum(false); // Sets state to indicate checking is complete.
+    setIsCatNumUnique(response); // Sets state based on the API response.
   };
 
+  // Debounced function for catalogue number validation.
+  // Debouncing prevents the validateCatNum function from being called too frequently.
+  // This is useful for operations like real-time validation where you don't want to overload the server with requests.
   const debouncedCheckCatNum = useCallback(debounce(validateCatNum, 1500), []);
 
+  // useEffect hook for debouncing catalogue number validation.
+  // It's triggered when 'catalogueNumber' or 'debouncedCheckCatNum' changes.
+  // This effect manages the logic for when to trigger the catalogue number validation.
   useEffect(() => {
     if (catalogueNumber && catalogueNumber !== productObj?.cat_num) {
-      debouncedCheckCatNum(catalogueNumber);
+      debouncedCheckCatNum(catalogueNumber); // Validates the new catalogue number after debounce period.
     } else {
-      setIsCheckingCatNum(false);
+      setIsCheckingCatNum(false); // Resets the checking state if conditions are not met.
     }
   }, [catalogueNumber, debouncedCheckCatNum]);
 
+  // Function to handle file changes (typically from an input element).
+  // It processes the selected files and updates the 'images' state.
   const handleFileChange = (files) => {
+    // Maps each file to an object containing the file and a temporary unique ID.
+    // The ID is generated using the current timestamp and a random number to ensure uniqueness.
     const newImages = files.map((file) => ({
       file,
       id: `temp-${Date.now()}-${Math.random()}`,
     }));
 
+    // Updates the 'images' state by adding the new images to the existing ones.
     setImages((prevState) => [...prevState, ...newImages]);
   };
 
+  // Function to handle the deletion of an image.
+  // It takes the ID of the image to be deleted and updates the 'images' state.
   function handleDeleteImage(imageId) {
+    // Filters out the image with the specified ID and updates the state.
+    // This effectively removes the image from the UI.
     setImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
   }
 
+  // Function to handle the closing of the modal.
+  // It resets the state related to the modal and images.
   const handleClose = () => {
-    setShowModal(false);
+    setShowModal(false); // Closes the modal by setting the state to false.
+    // Optionally closes another modal (e.g., a parent or related modal) if required.
     if (setHomeShowModal) setHomeShowModal(false);
+    // Resets the 'images' state to the initial images of the product object,
+    // or to an empty array if no product object is present.
     setImages(productObj ? productObj.images : []);
   };
 
+  // Function to handle the action to show the modal.
+  // It simply sets the 'showModal' state to true, which is typically used to render the modal.
   const handleShow = () => setShowModal(true);
 
+  // Function to handle the submission of the product form.
+  // It processes the form values, manages image data, and sends the data to the server.
   const handleSubmit = (values) => {
-    setIsSubmitting(true);
-    let imagesToDelete = null;
+    setIsSubmitting(true); // Sets a flag indicating that the form is currently being submitted.
 
+    let imagesToDelete = null; // Initializes a variable to track images that need to be deleted.
+
+    // Constructs the product data object from the form values.
     const productData = {
       name: values.productName,
       cat_num: values.catalogueNumber,
@@ -211,14 +246,17 @@ const ProductModal = ({
       manufacturer: values.manufacturer,
     };
 
+    // Sets the supplier ID based on whether the user is a supplier or not.
     productData.supplier = isSupplier
       ? userDetails.supplier_id
       : values.supplier;
 
+    // Flags the product as a supplier catalog item if the user is a supplier.
     if (isSupplier) {
       productData.supplier_cat_item = true;
     }
 
+    // If updating an existing product, identifies which images to delete.
     if (productObj) {
       imagesToDelete = productObj.images
         .filter((obj1) => !images.some((obj2) => obj1.id === obj2.id))
@@ -228,8 +266,8 @@ const ProductModal = ({
       }
     }
 
+    // Filters for new images and prepares their data for submission.
     const newImages = images.filter((image) => image.file);
-
     if (newImages.length) {
       const imageInfo = newImages.map((image) => ({
         id: image.id,
@@ -238,31 +276,37 @@ const ProductModal = ({
       productData.images = JSON.stringify(imageInfo);
     }
 
+    // Chooses between updating or creating a product based on the existence of 'productObj'.
     const productPromise = productObj
       ? updateProduct(token, productObj.id, productData, newImages)
       : createProduct(token, productData, newImages);
 
+    // Handles the response from the product creation or update request.
     productPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
+          // Callback function on successful submission.
           if (onSuccessfulSubmit) onSuccessfulSubmit();
-          response.toast();
-          setIsSubmitting(false);
-          handleClose();
+          response.toast(); // Triggers a success toast message.
+          setIsSubmitting(false); // Resets the submitting state.
+          handleClose(); // Closes the modal.
         }, 1000);
       } else {
+        // Displays an error toast if the submission fails.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
-        setIsSubmitting(false);
+        setIsSubmitting(false); // Resets the submitting state.
       }
     });
   };
 
   return (
     <>
+      {/* Conditional rendering of the button based on 'homeShowModal' state.
+      Displays an edit button if 'productObj' exists, otherwise a create button. */}
       {!homeShowModal && (
         <Button
           variant={productObj ? "outline-success" : "success"}
@@ -272,13 +316,16 @@ const ProductModal = ({
         </Button>
       )}
 
+      {/* Modal component that displays the form for creating or editing a product. */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>{productObj ? "Edit" : "Create"} Product</Modal.Title>
         </Modal.Header>
 
+        {/* Formik component for form management, including validation and submission. */}
         <Formik
           initialValues={{
+            // Initial values are set based on 'productObj' if editing, otherwise they're empty.
             productName: productObj ? productObj.name : "",
             catalogueNumber: productObj ? productObj.cat_num : "",
             category: productObj ? productObj.category : "",
@@ -292,10 +339,11 @@ const ProductModal = ({
             productUrl: productObj ? productObj.url : "",
             productImages: null,
           }}
-          validationSchema={formSchema}
+          validationSchema={formSchema} // Validation schema for the form fields.
           onSubmit={(values) => {
-            handleSubmit(values);
+            handleSubmit(values); // Submission handler for the form.
           }}
+          // Sets which fields are initially touched if editing an existing product.
           initialTouched={
             productObj
               ? {
@@ -314,10 +362,12 @@ const ProductModal = ({
                 }
               : {}
           }
-          validateOnMount={!!productObj}
-          enableReinitialize={true}
+          validateOnMount={!!productObj} // Enables validation on mount for editing.
+          enableReinitialize={true} // Allows reinitializing values when 'productObj' changes.
         >
+          {/* Form rendering and handling logic. */}
           {({
+            // Destructuring various helpers and states provided by Formik.
             handleSubmit,
             handleChange,
             values,
@@ -332,11 +382,14 @@ const ProductModal = ({
             return (
               <Form id="productForm" noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
+                  {/* Form groups for various product attributes. */}
+                  {/* Each group handles its own validation and display logic. */}
                   <Form.Group
                     controlId="formProductName"
                     className="field-margin"
                   >
                     <Form.Label>Product Name</Form.Label>
+                    {/* Input for product name with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="productName"
@@ -347,6 +400,7 @@ const ProductModal = ({
                       isInvalid={touched.productName && !!errors.productName}
                       isValid={touched.productName && !errors.productName}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
@@ -359,6 +413,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Catalogue Number</Form.Label>
+                    {/* Input for catalogue number with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="catalogueNumber"
@@ -382,6 +437,7 @@ const ProductModal = ({
                         !isCheckingCatNum
                       }
                     />
+                    {/* Feedback for valid or invalid input. */}
                     {catalogueNumberUniqueValidator.validate() &&
                       !isCheckingCatNum && (
                         <Form.Control.Feedback type="valid">
@@ -403,6 +459,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Product Category</Form.Label>
+                    {/* Input for product category with validation feedback. */}
                     <Form.Select
                       name="category"
                       value={values.category}
@@ -417,6 +474,7 @@ const ProductModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="invalid">
                       {errors.category}
                     </Form.Control.Feedback>
@@ -428,6 +486,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Measurement Unit</Form.Label>
+                    {/* Input for measurement unit with validation feedback. */}
                     <Form.Select
                       name="unit"
                       value={values.unit}
@@ -442,6 +501,7 @@ const ProductModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="invalid">
                       {errors.unit}
                     </Form.Control.Feedback>
@@ -451,6 +511,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Volume</Form.Label>
+                    {/* Input for volume with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="volume"
@@ -461,6 +522,7 @@ const ProductModal = ({
                       isInvalid={touched.volume && !!errors.volume}
                       isValid={touched.volume && !errors.volume}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
@@ -475,6 +537,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Storage Conditions</Form.Label>
+                    {/* Input for storage condition with validation feedback. */}
                     <Form.Select
                       name="storageConditions"
                       value={values.storageConditions}
@@ -489,6 +552,7 @@ const ProductModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="invalid">
                       {errors.storageConditions}
                     </Form.Control.Feedback>
@@ -498,6 +562,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Stock</Form.Label>
+                    {/* Input for existing stock with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="stock"
@@ -510,6 +575,7 @@ const ProductModal = ({
                       }
                       isValid={touched.stock && values.stock && !errors.stock}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
@@ -522,6 +588,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Price</Form.Label>
+                    {/* Input for price with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="price"
@@ -534,6 +601,7 @@ const ProductModal = ({
                       }
                       isValid={touched.price && values.volume && !errors.price}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
@@ -548,6 +616,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Manufacturer</Form.Label>
+                    {/* Input for manufacturer with validation feedback. */}
                     <Form.Select
                       name="manufacturer"
                       value={values.manufacturer}
@@ -562,6 +631,7 @@ const ProductModal = ({
                         </option>
                       ))}
                     </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="invalid">
                       {errors.manufacturer}
                     </Form.Control.Feedback>
@@ -576,6 +646,7 @@ const ProductModal = ({
                         className="field-margin"
                       >
                         <Form.Label>Supplier</Form.Label>
+                        {/* Input for supplier with validation feedback. */}
                         <Form.Select
                           name="supplier"
                           value={values.supplier}
@@ -590,6 +661,7 @@ const ProductModal = ({
                             </option>
                           ))}
                         </Form.Select>
+                        {/* Feedback for valid or invalid input. */}
                         <Form.Control.Feedback type="invalid">
                           {errors.supplier}
                         </Form.Control.Feedback>
@@ -601,6 +673,7 @@ const ProductModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Product Link</Form.Label>
+                    {/* Input for product link with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="productUrl"
@@ -611,6 +684,7 @@ const ProductModal = ({
                       isInvalid={touched.productUrl && !!errors.productUrl}
                       isValid={touched.productUrl && !errors.productUrl}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
@@ -618,8 +692,10 @@ const ProductModal = ({
                       {errors.productUrl}
                     </Form.Control.Feedback>
                   </Form.Group>
+                  {/* Dynamic rendering of product images. */}
                   <div className="field-margin">
                     {images.map((image) => {
+                      // Determines the URL for each image and checks if it's a PDF.
                       let imageUrl =
                         image.image_url || URL.createObjectURL(image.file);
 
@@ -666,6 +742,7 @@ const ProductModal = ({
                       );
                     })}
                   </div>
+                  {/* Upload field for product images. */}
                   <Form.Group
                     controlId="formProductImages"
                     className="field-margin"
@@ -689,12 +766,14 @@ const ProductModal = ({
                       }}
                       isValid={values.productImages || images.length}
                     />
+                    {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
+                  {/* Conditional rendering of a spinner or submit button based on submission state. */}
                   {isSubmitting ? (
                     <Button variant="primary" disabled>
                       <Spinner

@@ -14,6 +14,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import EditIcon from "@mui/icons-material/Edit";
 import { showToast } from "../../config_and_helpers/helpers";
 
+// Validation schema for each quote item
 const itemSchema = yup.object().shape({
   quantity: yup
     .string()
@@ -25,6 +26,7 @@ const itemSchema = yup.object().shape({
     .matches(/^\d+(\.\d+)?$/, "Current price must be a valid number"),
 });
 
+// Form validation schema creation function
 const createFormSchema = ({ hasQuotePdf }) =>
   yup.object().shape({
     items: yup.array().of(itemSchema),
@@ -46,6 +48,21 @@ const createFormSchema = ({ hasQuotePdf }) =>
       ),
   });
 
+/**
+ * Component: QuoteModal
+ * @component
+ *
+ * @description
+ * Renders a modal for creating or editing a quote. It includes functionalities for selecting suppliers,
+ * products, managing quote items, and uploading a quote PDF.
+ *
+ * @prop {Function} onSuccessfulSubmit - Callback function to be called after a successful form submission.
+ * @prop {Object} quoteObj - Object containing the quote data for editing. If not provided, the modal is in 'Create' mode.
+ * @prop {boolean} homeShowModal - Flag to control modal visibility from the parent component.
+ * @prop {Function} setHomeShowModal - Function to update the modal visibility in the parent component.
+ *
+ */
+
 const QuoteModal = ({
   onSuccessfulSubmit,
   quoteObj,
@@ -53,6 +70,7 @@ const QuoteModal = ({
   setHomeShowModal,
 }) => {
   const { token } = useContext(AppContext);
+  // State declarations for managing form data and UI state
   const [hasQuotePdf, setHasQuotePdf] = useState(false);
   const formSchema = createFormSchema({
     hasQuotePdf,
@@ -83,6 +101,7 @@ const QuoteModal = ({
     homeShowModal ? homeShowModal : false,
   );
 
+  // Effect for initializing or resetting the PDF-related state
   useEffect(() => {
     if (quoteFile) {
       setHasQuotePdf(true);
@@ -91,72 +110,91 @@ const QuoteModal = ({
     }
   }, [quoteFile]);
 
+  // Fetch supplier list on component mount
   useEffect(() => {
     getSupplierSelectList(token, setSupplierSelectList);
   }, []);
 
+  // Functions for fetching product list and managing state updates
   const fetchProductSelectList = () => {
+    // Fetch product list based on the selected supplier
     getProductSelectList(token, setProductSelectList, supplier);
   };
 
+  // Initialize a default item in the form when the product list is loaded
   useEffect(() => {
     if (productSelectList.length && items.length === 0) {
       setItems([{ product: "", quantity: "", price: "" }]);
     }
   }, [productSelectList]);
 
+  // Fetch product list based on selected supplier
   useEffect(() => {
     if (supplier) {
       fetchProductSelectList();
     }
   }, [supplier]);
 
+  // Closes the modal and resets the form state
   const handleClose = () => {
+    // Conditionally update the modal state in the parent component if applicable
     if (setHomeShowModal) setHomeShowModal(false);
     resetModal();
     setShowModal(false);
   };
 
+  // Resets the modal fields to their default values
   const resetModal = () => {
+    // Only reset if creating a new quote (i.e., quoteObj is not provided)
     if (!quoteObj) {
       setQuoteFile("");
       setItems([{ product: "", quantity: "", price: "" }]);
     }
   };
 
-  const handleShow = () => setShowModal(true);
+  // Handles the logic for showing the modal
+  const handleShow = () => {
+    setShowModal(true);
+  };
 
+  // Handles changes to the file input field
   const handleFileChange = (file) => {
-    if (file) {
-      setQuoteFile(file);
-    }
+    // Sets the selected file to the quoteFile state
+    setQuoteFile(file);
+    // Indicates that the file has been changed
     setFileChanged(true);
   };
 
+  // Adds a new quote item to the items array
   const addItem = (e) => {
     e.preventDefault();
+    // Appends a new item object to the items array
     setItems([...items, { product: "", quantity: "", price: "" }]);
   };
 
+  // Updates a specific item in the items array
   const updateItem = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
     setItems(newItems);
   };
 
+  // Removes an item from the items array
   const removeItem = (e, index) => {
     e.preventDefault();
     if (items.length === 1) {
-      return;
+      return; // Prevents removing the last item
     }
     const newItems = [...items];
     newItems.splice(index, 1);
     setItems(newItems);
   };
 
+  // Handles the submission of the form
   const handleSubmit = (values) => {
-    setIsSubmitting(true);
+    setIsSubmitting(true); // Indicates the start of the submission process
 
+    // Prepares the data for submission
     const quoteData = {
       supplier: values.supplier,
       items: JSON.stringify(items),
@@ -166,6 +204,7 @@ const QuoteModal = ({
       quoteData.quote_file_type = quoteFile.type;
     }
 
+    // Determines whether to create or update a quote
     const quotePromise = quoteObj
       ? updateQuote(
           token,
@@ -175,6 +214,7 @@ const QuoteModal = ({
         )
       : createQuoteManually(token, quoteData, quoteFile);
 
+    // Processes the promise returned from quote creation or update
     quotePromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
@@ -199,6 +239,7 @@ const QuoteModal = ({
 
   return (
     <>
+      {/* Button to trigger the modal - conditional render based on quoteObj existence */}
       {!homeShowModal && (
         <Button
           variant={quoteObj ? "outline-success" : "success"}
@@ -208,11 +249,16 @@ const QuoteModal = ({
         </Button>
       )}
 
+      {/* Main Modal Component */}
       <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
+          {/* Dynamic Modal Title based on whether creating a new quote or editing an existing one */}
           <Modal.Title>{quoteObj ? "Edit" : "Create"} Quote</Modal.Title>
         </Modal.Header>
+
+        {/* Formik Component for form handling */}
         <Formik
+          // Formik configurations like initial values, validation schema, etc.
           key={items.length}
           initialTouched={
             quoteObj
@@ -247,6 +293,7 @@ const QuoteModal = ({
           }}
         >
           {({
+            // Destructuring useful properties and functions from Formik
             handleChange,
             handleSubmit,
             values,
@@ -261,6 +308,7 @@ const QuoteModal = ({
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
+                  {/* Form Group for Supplier Selection */}
                   <Form.Group
                     as={Col}
                     md="8"
@@ -268,6 +316,7 @@ const QuoteModal = ({
                     className="field-margin"
                   >
                     <Form.Label>Select Supplier</Form.Label>
+                    {/* Dropdown for selecting supplier */}
                     <Form.Select
                       name="supplier"
                       value={values.supplier}
@@ -277,6 +326,7 @@ const QuoteModal = ({
                         setSupplier(value);
                       }}
                     >
+                      {/* Mapping over supplierSelectList to create dropdown options */}
                       <option value="" disabled>
                         -- Select Supplier --
                       </option>
@@ -295,11 +345,15 @@ const QuoteModal = ({
                       </Form.Text>
                     )}
                   </Form.Group>
+
+                  {/* Conditional rendering for displaying quote items */}
                   {items.length > 0 && productSelectList.length > 0 ? (
                     <div>
                       <div>
+                        {/* Mapping and rendering each QuoteItemComponent */}
                         {items.map((item, index) => (
                           <QuoteItemComponent
+                            // Passing necessary props to QuoteItemComponent
                             key={index}
                             productList={productSelectList}
                             onItemChange={updateItem}
@@ -320,6 +374,7 @@ const QuoteModal = ({
                           />
                         ))}
                       </div>
+                      {/* Button to add a new quote item */}
                       <Button
                         className="field-margin"
                         onClick={(e) => {
@@ -379,6 +434,7 @@ const QuoteModal = ({
                   ) : null}
                 </Modal.Body>
                 <Modal.Footer>
+                  {/* Submit and close buttons with conditional rendering and event handlers */}
                   {quoteObj?.status !== "Arrived, unfulfilled" &&
                   quoteObj?.status !== "Fulfilled" ? (
                     isSubmitting ? (

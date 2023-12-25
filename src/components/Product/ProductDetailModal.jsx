@@ -6,6 +6,35 @@ import InventoryModal from "./InventoryModal";
 import ShopModal from "../Shop/ShopModal";
 import { Spinner } from "react-bootstrap";
 
+/**
+ * Represents a modal component to display detailed information about a product.
+ *
+ * This component can be configured to display product details in different contexts,
+ * such as a shopping view or an inventory management view. It fetches product details
+ * if not provided and handles updating of product information.
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object} [props.productObj=null] - The product object to display.
+ * @param {string} [props.productId=null] - The ID of the product to fetch details for.
+ * @param {boolean} [props.shopView=false] - Flag to determine if the modal is used in a shop view.
+ * @param {Function} [props.updateProducts] - Callback function to update products list.
+ * @param {boolean} [props.showShopModal] - Flag to control the visibility of the shop modal.
+ * @param {Function} [props.setShowShopModal] - Function to set the visibility state of the shop modal.
+ * @returns The ProductDetailModal component.
+ *
+ * Usage:
+ * ```jsx
+ * <ProductDetailModal
+ *    productObj={product}
+ *    productId="12345"
+ *    shopView={true}
+ *    updateProducts={updateHandler}
+ *    showShopModal={showModal}
+ *    setShowShopModal={setShowModal}
+ * />
+ * ```
+ */
 const ProductDetailModal = ({
   productObj,
   productId,
@@ -14,29 +43,38 @@ const ProductDetailModal = ({
   showShopModal,
   setShowShopModal,
 }) => {
+  // Access token from context for authenticated API requests.
   const { token } = useContext(AppContext);
+
+  // Ref to track the loading state of the component.
   const isLoadingRef = useRef(false);
+
+  // State to store the product details.
   const [product, setProduct] = useState(productObj);
+
+  // Determine the product ID to use based on the provided props.
   const productIdToUse = productObj ? productObj.id : productId;
 
+  // Function to fetch product details from the server.
   const fetchProduct = () => {
     isLoadingRef.current = true;
-    getProductDetails(token, productIdToUse, setProduct).then((response) => {
+    getProductDetails(token, productIdToUse, setProduct).then(() => {
       isLoadingRef.current = false;
     });
   };
 
+  // useEffect to fetch product details on component mount if not provided.
   useEffect(() => {
     if (!product && productIdToUse) fetchProduct();
   }, []);
 
+  // Function to handle product edits and fetch updated data.
   const handleEdit = () => {
-    if (updateProducts) {
-      updateProducts();
-    }
+    if (updateProducts) updateProducts();
     fetchProduct();
   };
 
+  // Display a spinner while loading product data.
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -49,6 +87,8 @@ const ProductDetailModal = ({
     );
   }
 
+  // Render the appropriate modal based on 'shopView'.
+  // ShopModal for shopping context, InventoryModal for inventory management.
   return (
     <div>
       {product &&

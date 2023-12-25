@@ -11,11 +11,25 @@ import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import { Accordion } from "react-bootstrap";
 
+/**
+ * Component: QuoteTable
+ *
+ * @description
+ * The QuoteTable component renders a table displaying a list of quotes. Each row in the table
+ * represents a quote and includes actions like viewing, editing, and deleting the quote. It also
+ * provides a detailed view of each quote item using an accordion.
+ *
+ * @prop {Array} quoteList - Array of quote objects to display in the table.
+ * @prop {Function} handleEdit - Function to call when a quote is edited.
+ *
+ */
 const QuoteTable = ({ quoteList, handleEdit }) => {
   return (
     <Table striped bordered hover>
+      {/* Table header defining the columns */}
       <thead>
         <tr className="text-center">
+          {/* Column headers like ID, Dates, URL, etc. */}
           <th>#</th>
           <th>ID</th>
           <th>Request Date</th>
@@ -29,9 +43,11 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
         </tr>
       </thead>
       <tbody>
+        {/* Mapping over quoteList to create rows for each quote */}
         {quoteList.map((quote, index) => (
           <React.Fragment key={index}>
             <tr key={index} className="text-center align-middle">
+              {/* Rendering individual data cells with quote information */}
               <td>{index + 1}</td>
               <td>
                 <QuoteDetailModal quoteId={quote.id} />
@@ -71,14 +87,20 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 />
               </td>
             </tr>
+
+            {/* Additional row for accordion with quote items */}
             <tr>
+              {/* Accordion for detailed quote item view */}
               <td></td>
               <td>
                 <Accordion flush>
+                  {/* Accordion item for quote items */}
                   <Accordion.Item eventKey={0}>
                     <Accordion.Header>Quote Items</Accordion.Header>
                     <Accordion.Body>
+                      {/* Table for listing quote items */}
                       <Table striped bordered hover>
+                        {/* Table header and body for quote items */}
                         <thead>
                           <tr className="text-center bold-italic-text">
                             <td>#</td>

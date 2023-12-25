@@ -1,11 +1,39 @@
+/**
+ * CSS Class: .field-margin
+ * Description: Applies a margin to the bottom of an element. 
+ * Usage: This class is used to create a consistent vertical spacing between elements,
+ *        especially in forms or stacked components.
+ * Style: 
+ *     - margin-bottom: 0.5rem; Sets a bottom margin of 0.5 rem units.
+ */
+
 .field-margin {
     margin-bottom: 0.5rem;
 }
+
+/**
+ * CSS Class: .bold-italic-text
+ * Description: Combines bold and italic styling for text.
+ * Usage: This class is suitable for emphasizing text that requires both bold and italic formatting, 
+ *        often used in titles, headers, or important notes within content.
+ * Style: 
+ *     - font-weight: bold; Makes the text bold.
+ *     - font-style: italic; Makes the text italicized.
+ */
 
 .bold-italic-text {
     font-weight: bold;
     font-style: italic;
 }
+
+/**
+ * CSS Class: .italic-text
+ * Description: Applies italic styling to text.
+ * Usage: Used for emphasizing a segment of text by making it italic. 
+ *        Commonly used in quotes, citations, or to distinguish certain words or phrases.
+ * Style: 
+ *     - font-style: italic; Makes the text italicized.
+ */
 
 .italic-text {
     font-style: italic;

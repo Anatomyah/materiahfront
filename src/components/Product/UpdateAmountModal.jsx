@@ -15,13 +15,40 @@ import {
 } from "../../clients/product_client";
 import DropdownSelect from "../Generic/DropdownSelect";
 
+/**
+ * Represents a modal component for updating the stock amount of a product.
+ *
+ * This component offers a user interface for increasing or decreasing the stock level of a product.
+ * It includes validation to prevent setting a negative stock level. The component can operate in two modes:
+ * standalone or integrated within a larger component (like a home page), determined by the 'homeShowModal' prop.
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object} props.product - The product object containing details like current stock and product ID.
+ * @param {Function} props.onSuccessfulUpdate - Callback function to execute after a successful stock update.
+ * @param {boolean} [props.homeShowModal] - Flag to control the visibility of the modal in integrated mode.
+ * @param {Function} [props.setHomeShowModal] - Function to set the visibility state of the modal in integrated mode.
+ * @returns The UpdateAmountModal component.
+ *
+ * Usage:
+ * ```jsx
+ * <UpdateAmountModal
+ *    product={productDetails}
+ *    onSuccessfulUpdate={updateHandler}
+ *    homeShowModal={showModalFlag}
+ *    setHomeShowModal={setShowModalFlag}
+ * />
+ * ```
+ */
 const UpdateAmountModal = ({
   product,
   onSuccessfulUpdate,
   homeShowModal,
   setHomeShowModal,
 }) => {
+  // Context to access the application-wide token.
   const { token } = useContext(AppContext);
+  // State management for various component functionalities.
   const [showModal, setShowModal] = useState(
     homeShowModal ? homeShowModal : false,
   );
@@ -29,21 +56,25 @@ const UpdateAmountModal = ({
   const [amount, setAmount] = useState(0);
   const [productSelectList, setProductSelectList] = useState([]);
   const [fetchedProduct, setFetchedProduct] = useState(null);
-  const [action, setAction] = useState(false);
+  const [action, setAction] = useState(false); // Action: true for adding, false for subtracting stock.
   const [negativeStockError, setNegativeStockError] = useState(false);
 
+  // Function to fetch a list of products for the dropdown.
   const fetchProductSelectList = async () => {
     await getProductSelectList(token, setProductSelectList);
   };
 
+  // Function to fetch details of a specific product.
   const fetchProduct = async (product) => {
     await getProductDetails(token, product.value, setFetchedProduct);
   };
 
+  // useEffect to fetch the product select list on component mount.
   useEffect(() => {
     fetchProductSelectList();
   }, []);
 
+  // useEffect to validate stock amount to prevent negative stock levels.
   useEffect(() => {
     const relevantStock = fetchedProduct
       ? fetchedProduct?.stock
@@ -56,12 +87,16 @@ const UpdateAmountModal = ({
     }
   }, [amount]);
 
+  // Function to close the modal.
   const handleClose = () => {
     if (setHomeShowModal) setHomeShowModal(false);
     setShowModal(false);
   };
+
+  // Function to open the modal.
   const handleShow = () => setShowModal(true);
 
+  // Function to handle submission of stock update.
   function handleSubmit() {
     const productIdToUse = fetchedProduct
       ? fetchedProduct?.id
@@ -69,6 +104,7 @@ const UpdateAmountModal = ({
     setIsSubmitting(true);
     const adjustedAmount = action ? Math.abs(amount) : -Math.abs(amount);
 
+    // API call to update the product stock.
     updateProductStock(token, productIdToUse, adjustedAmount).then(
       (response) => {
         if (response && response.success) {
@@ -89,6 +125,7 @@ const UpdateAmountModal = ({
 
   return (
     <div>
+      {/* Input group for stock adjustment outside of home modal context. */}
       {!homeShowModal && (
         <InputGroup>
           <Button
@@ -118,6 +155,7 @@ const UpdateAmountModal = ({
         </InputGroup>
       )}
 
+      {/* Modal for updating stock amount. */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Update Stock</Modal.Title>
@@ -154,6 +192,7 @@ const UpdateAmountModal = ({
           )}
           {negativeStockError && <h6>Product stock cannot be negative!</h6>}
         </Modal.Body>
+        {/* Modal footer with action buttons. */}
         <Modal.Footer>
           {isSubmitting ? (
             <Button variant="danger" disabled>

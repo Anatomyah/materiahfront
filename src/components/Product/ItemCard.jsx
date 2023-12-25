@@ -10,26 +10,54 @@ import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
 import { CartAppContext } from "../../App";
 
+/**
+ * Represents an item card component, displaying key details of a product and providing quick actions.
+ *
+ * This component shows a product's information like its name, catalogue number, supplier, manufacturer, category,
+ * and volume. It allows users to view more details about the product and to add the product to a shopping cart.
+ * The card uses Material UI components for a consistent and responsive design.
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object} props.product - The product object containing information to display on the card.
+ * @param {Function} props.handleEdit - Callback function to handle updates to the product.
+ * @returns The ItemCard component.
+ *
+ * Usage:
+ * ```jsx
+ * <ItemCard
+ *    product={productDetails}
+ *    handleEdit={editHandler}
+ * />
+ * ```
+ */
 const ItemCard = ({ product, handleEdit }) => {
+  // Context for managing cart items.
   const { cart, setCart } = useContext(CartAppContext);
-  const [show, setShow] = useState();
+
+  // State for controlling the visibility of the product detail modal.
+  const [show, setShow] = useState(false);
+
+  // URL for the product's image, falling back to a default if none is available.
   const imageUrl = product?.images[0]?.image_url || defaultImageUrl;
 
+  // Function to handle adding the product to the cart.
   const handleQuickAddToCart = () => {
+    // Check if the product is already in the cart.
     const itemExists = cart.some((item) => item.cat_num === product.cat_num);
 
+    // Update the cart based on whether the product is already present.
     if (itemExists) {
-      setCart((prevCart) => {
-        return prevCart.map((item) =>
+      // If the product is in the cart, increase its quantity.
+      setCart((prevCart) =>
+        prevCart.map((item) =>
           item.cat_num === product.cat_num
-            ? {
-                ...item,
-                quantity: Number(item.quantity) + Number(1),
-              }
+            ? { ...item, quantity: Number(item.quantity) + Number(1) }
             : item,
-        );
-      });
+        ),
+      );
     } else {
+      // If the product is not in the cart, add it as a new item.
       const newItem = {
         product: product.id,
         cat_num: product.cat_num,
@@ -39,19 +67,23 @@ const ItemCard = ({ product, handleEdit }) => {
         supplier: product.supplier,
         quantity: Number(1),
       };
-      setCart((prevCart) => {
-        return [...prevCart, newItem];
-      });
+      setCart((prevCart) => [...prevCart, newItem]);
     }
+    // Show a toast notification for adding to the cart.
     showToast("Product added to cart", "success", "bottom-right");
   };
 
   return (
     <>
+      {/* Material UI Card component containing product details. */}
       <Card sx={{ maxWidth: 345 }}>
+        {/* Area for user interaction, opens the detail modal on click. */}
         <CardActionArea onClick={() => setShow(true)}>
+          {/* Product image. */}
           <CardMedia component="img" height="200" image={imageUrl} />
+          {/* Content section with product details. */}
           <CardContent>
+            {/* Display product name, catalogue number, and other attributes. */}
             <Typography gutterBottom variant="h4" component="div">
               {product.name}
             </Typography>
@@ -78,9 +110,10 @@ const ItemCard = ({ product, handleEdit }) => {
             </Typography>
           </CardContent>
         </CardActionArea>
+        {/* Action area for the card, with a button to add the product to the cart. */}
         <CardActions>
           <IconButton
-            aria-label="add"
+            aria-label="add to cart"
             sx={{ color: "primary.main" }}
             onClick={handleQuickAddToCart}
           >
@@ -88,6 +121,8 @@ const ItemCard = ({ product, handleEdit }) => {
           </IconButton>
         </CardActions>
       </Card>
+
+      {/* Modal for displaying detailed product information. */}
       <ProductDetailModal
         productObj={product}
         shopView={true}
