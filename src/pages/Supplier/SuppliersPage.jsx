@@ -25,10 +25,23 @@ import SupplierTable from "../../components/Supplier/SupplierTable";
 import { Spinner } from "react-bootstrap";
 import debounce from "lodash/debounce";
 
+/**
+ * Represents the suppliers page component in the application.
+ *
+ * This component handles the display and management of suppliers. It includes functionalities
+ * like searching for suppliers, filtering by manufacturer, and infinite scrolling to load
+ * more suppliers. It uses an InfiniteScroll component for lazy loading and a SupplierTable
+ * component to display the list of suppliers.
+ */
 const SuppliersPage = () => {
+  // Context to access the global token.
+  const { token } = useContext(AppContext);
+
+  // Refs to track loading state and component mount status.
   const isLoadingRef = useRef(false);
   const isMountedRef = useRef(false);
-  const { token } = useContext(AppContext);
+
+  // State hooks for supplier data management.
   const [baseSuppliers, setBaseSuppliers] = useState([]);
   const [viewSuppliers, setViewSuppliers] = useState([]);
   const [manufacturerSelectList, setManufacturerSelectList] = useState([]);
@@ -36,8 +49,8 @@ const SuppliersPage = () => {
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [searchInput, setSearchInput] = useState("");
-  const [typingTimeout, setTypingTimeout] = useState(null);
 
+  // Effect hook to extract manufacturer select list once base suppliers are loaded.
   useEffect(() => {
     if (!baseSuppliers.length) return;
     if (baseSuppliers) {
@@ -49,6 +62,7 @@ const SuppliersPage = () => {
     }
   }, [baseSuppliers]);
 
+  // Effect hook to filter suppliers based on selected manufacturer.
   useEffect(() => {
     if (!isMountedRef.current) return;
     if (!manufacturer) {
@@ -63,6 +77,7 @@ const SuppliersPage = () => {
     );
   }, [manufacturer]);
 
+  // Function to fetch suppliers from the API with optional search and pagination.
   const fetchSuppliers = ({ searchValue = "", nextPage = null } = {}) => {
     isLoadingRef.current = true;
     getSuppliers(token, setBaseSuppliers, {
@@ -88,6 +103,7 @@ const SuppliersPage = () => {
     });
   };
 
+  // Effect hook to perform search operation with debounce.
   useEffect(() => {
     if (!isMountedRef.current) {
       isMountedRef.current = true;
@@ -99,6 +115,7 @@ const SuppliersPage = () => {
     });
   }, [searchInput]);
 
+  // Debounced function for search input handling.
   const handleSearchInput = useCallback(
     debounce((value) => {
       setSearchInput(value);
@@ -106,12 +123,14 @@ const SuppliersPage = () => {
     [],
   );
 
+  // Function to handle key down event in the search input.
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       setSearchInput(event.target.value);
     }
   };
 
+  // Conditional rendering to display a spinner during loading.
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -126,12 +145,19 @@ const SuppliersPage = () => {
 
   return (
     <div>
+      {/* Main container for the supplier management interface */}
       <Container className="my-3">
+        {/* Row for alignment and spacing of supplier management components */}
         <Row className="align-items-center justify-content-md-evenly">
+          {/* Column for the supplier modal trigger */}
           <Col md="auto" className="m">
+            {/* Supplier modal for adding or editing suppliers */}
             <SupplierModal onSuccessfulSubmit={fetchSuppliers} />
           </Col>
+
+          {/* Column for the search input group */}
           <Col xs={5} className="ms-2">
+            {/* Input group for search functionality */}
             <InputGroup>
               <InputGroup.Text id="basic-addon1">
                 <SearchIcon />
@@ -147,9 +173,13 @@ const SuppliersPage = () => {
               />
             </InputGroup>
           </Col>
+
+          {/* Column for the manufacturer filter dropdown */}
           <Col md="auto" sm>
+            {/* Conditional rendering of manufacturer select list */}
             {manufacturerSelectList && (
               <InputGroup>
+                {/* Dropdown for selecting a manufacturer */}
                 <Form.Select
                   value={manufacturer}
                   onChange={(e) => {
@@ -159,12 +189,15 @@ const SuppliersPage = () => {
                   <option value="" disabled>
                     -- Select Manufacturer --
                   </option>
+                  {/* Mapping through manufacturers for dropdown options */}
                   {manufacturerSelectList.map((choice, index) => (
                     <option key={index} value={choice.id}>
                       {choice.name}
                     </option>
                   ))}
                 </Form.Select>
+
+                {/* Refresh icon to clear the manufacturer filter */}
                 <InputGroup.Text
                   onClick={() => setManufacturer("")}
                   style={{ cursor: "pointer" }}
@@ -176,10 +209,13 @@ const SuppliersPage = () => {
           </Col>
         </Row>
       </Container>
+      {/* Infinite scroll component for lazy loading supplier data */}
       <InfiniteScroll
         pageStart={0}
         loadMore={() => {
+          // Prevent multiple triggers if already loading
           if (isLoadingRef.current) return;
+          // Fetch next page of suppliers
           fetchSuppliers({
             searchValue: searchInput,
             nextPage: nextPageUrl,
@@ -187,6 +223,7 @@ const SuppliersPage = () => {
         }}
         hasMore={hasMore}
         loader={
+          // Spinner indicating loading state
           <Spinner
             className="loader"
             key={0}
@@ -198,6 +235,7 @@ const SuppliersPage = () => {
           />
         }
       >
+        // Supplier table component for displaying supplier data
         <SupplierTable
           supplierList={viewSuppliers.length ? viewSuppliers : baseSuppliers}
           handleEdit={fetchSuppliers}

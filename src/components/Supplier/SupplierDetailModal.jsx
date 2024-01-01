@@ -15,38 +15,55 @@ import {
 import SupplierModal from "./SupplierModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
-import { showToast } from "../../config_and_helpers/helpers";
 
+/**
+ * `SupplierDetailModal` is a functional component that displays a modal with detailed information about a supplier.
+ * It fetches the supplier data via the supplier details API on mount if supplier data is not passed as a prop.
+ * It also provides options to edit or delete the supplier data.
+ *
+ * @component
+ * @prop {Object} supplierObj - The supplier object to display in the modal, if not passed, the data will be fetched using supplierId
+ * @prop {Function} updateSuppliers - The function to run after a supplier has been edited or deleted
+ * @prop {string} supplierId - The ID of the supplier to fetch data for, used if supplierObj is not passed
+ *
+ * @example
+ * <SupplierDetailModal supplierObj={supplier} updateSuppliers={handleEdit} supplierId={supplierId} />
+ */
 const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
-  const { token } = useContext(AppContext);
-  const isLoadingRef = useRef(false);
-  const [show, setShow] = useState(false);
-  const [supplier, setSupplier] = useState(supplierObj);
-  const supplierIdToUse = supplierObj ? supplierObj.id : supplierId;
+  const { token } = useContext(AppContext); // Fetching the token from the AppContext
+  const isLoadingRef = useRef(false); // Reference variable to hold loading state
+  const [show, setShow] = useState(false); // State-variable for handling the visibility of the modal
+  const [supplier, setSupplier] = useState(supplierObj); // State-variable for holding supplier data
+  const supplierIdToUse = supplierObj ? supplierObj.id : supplierId; // deciding the supplierId to be used
 
+  // Function to fetch supplier details
   const fetchSupplier = () => {
-    isLoadingRef.current = true;
+    isLoadingRef.current = true; // Setting loading state to true before API call
     getSupplierDetails(token, supplierIdToUse, setSupplier).then((response) => {
-      isLoadingRef.current = false;
+      isLoadingRef.current = false; // Setting loading state to false after API call
     });
   };
 
+  // useEffect to call fetchSupplier function if supplier data is not present
   useEffect(() => {
     if (!supplier && supplierIdToUse) {
       fetchSupplier();
     }
   }, []);
 
+  // Function to handle data update
   const handleEdit = () => {
     if (updateSuppliers) {
+      // If updateSuppliers function is provided, call it
       updateSuppliers();
     }
-    fetchSupplier();
+    fetchSupplier(); // Refetch supplier data
   };
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false); // Function to hide the modal
+  const handleShow = () => setShow(true); // Function to show the modal
 
+  // If  isLoadingRef is true, show the spinner
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -61,9 +78,11 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
 
   return (
     <div>
-      {supplier && (
+      {supplier && ( // If the supplier data is available, render the following JSX
         <>
+          // Button to open the modal
           <Button variant="link" onClick={handleShow}>
+            {" "}
             {supplier.name}
           </Button>
           <Modal
@@ -77,6 +96,14 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
             </Modal.Header>
             <Modal.Body>
               <Container>
+                {/*
+                Using a Bootstrap Container for nice margins and padding.
+                Below are Rows and Columns for each supplier attribute.
+                Each Row contains two Columns - one for the attribute name and one for the attribute value.
+                Below this are tables for suppliers' manufacturers and products,
+                with conditional rendering based on whether the respective arrays are not empty.
+                In the tables, each row corresponds to a manufacturer or product.
+                */}
                 <Row>
                   <Col>
                     <p className="fs-6 fw-bold">Website:</p>
@@ -194,8 +221,11 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                 </Table>
               </Container>
             </Modal.Body>
+
             <Modal.Footer className="d-flex flex-row justify-content-between">
               <div className="d-flex flex-row">
+                // Two buttons - one to open the supplier edit modal, and one to
+                delete the supplier
                 <div className="me-2">
                   <SupplierModal
                     supplierObj={supplier}
@@ -210,6 +240,7 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                   onSuccessfulDelete={updateSuppliers}
                 />
               </div>
+              // A button to close the modal
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>

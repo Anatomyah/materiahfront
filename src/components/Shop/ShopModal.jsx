@@ -14,10 +14,27 @@ import TextField from "@mui/material/TextField";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
 
+/**
+ * Represents the modal component for a shop product.
+ *
+ * This component displays detailed information about a product, including its
+ * catalogue number, stock, category, supplier, unit, volume, and storage details.
+ * It provides functionality to add the product to the cart with a specified quantity,
+ * and showcases product images through a carousel.
+ *
+ * @param {object} props - The component props.
+ * @param {object} props.product - The product data to be displayed.
+ * @param {boolean} props.show - Flag to control the visibility of the modal.
+ * @param {function} props.setShow - Function to update the visibility state of the modal.
+ */
 const ShopModal = ({ product, show = false, setShow }) => {
+  // Context for global cart state and function to update it.
   const { cart, setCart } = useContext(CartAppContext);
+
+  // State for tracking the selected product amount.
   const [productAmount, setProductAmount] = useState("");
 
+  // Decreases the product amount, ensuring it doesn't go below 1.
   const handleMinusClick = () => {
     if (productAmount <= 1) {
       setProductAmount("");
@@ -26,6 +43,7 @@ const ShopModal = ({ product, show = false, setShow }) => {
     }
   };
 
+  // Increases the product amount.
   const handlePlusClick = () => {
     if (productAmount === 0) {
       setProductAmount(1);
@@ -34,6 +52,7 @@ const ShopModal = ({ product, show = false, setShow }) => {
     }
   };
 
+  // Handles input change for the product amount.
   const handleInputChange = (value) => {
     if (value < 1) {
       setProductAmount("");
@@ -42,39 +61,50 @@ const ShopModal = ({ product, show = false, setShow }) => {
     }
   };
 
+  // Adds the product to the cart and updates the global cart state.
   const handleAddToCart = () => {
+    // Checks if the product already exists in the cart.
     const itemExists = cart.some((item) => item.cat_num === product.cat_num);
 
     if (itemExists) {
+      // If the product exists, increment its quantity in the cart.
       setCart((prevCart) => {
         return prevCart.map((item) =>
           item.cat_num === product.cat_num
             ? {
                 ...item,
+                // Update the quantity by adding the selected amount.
                 quantity: Number(item.quantity) + Number(productAmount),
               }
             : item,
         );
       });
     } else {
+      // If the product does not exist, create a new item entry.
       const newItem = {
+        // Product details to be added.
         product: product.id,
         cat_num: product.cat_num,
         name: product.name,
         image_url:
+          // Use the first image URL or null if no images are available.
           product.images.length > 0 ? product.images[0].image_url : null,
         supplier: product.supplier,
         quantity: Number(productAmount),
       };
+      // Add the new item to the cart.
       setCart((prevCart) => {
         return [...prevCart, newItem];
       });
     }
+    // Show a toast message indicating successful addition.
     showToast("Product added to cart", "success", "bottom-right");
   };
 
+  // Closes the modal and resets the visibility state.
   const handleClose = () => setShow(false);
 
+  // Styling for the modal component.
   const modalStyle = {
     position: "absolute",
     top: "50%",
@@ -92,12 +122,19 @@ const ShopModal = ({ product, show = false, setShow }) => {
   return (
     <>
       <Modal open={show} onClose={handleClose} aria-labelledby="product-modal">
+        {/* Styling for the modal box */}
         <Box sx={modalStyle}>
+          {/* Product name as the modal title */}
           <Typography id="product-modal" variant="h3" component="h2">
             {product.name}
           </Typography>
+
+          {/* Dividers for visual separation */}
           <Divider sx={{ my: 2, borderColor: "#424242" }} />
+
+          {/* Product details displayed in a grid layout */}
           <Container>
+            {/* Various product attributes like catalogue number, stock, etc. */}
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Typography variant="subtitle1" className="fw-bold">
@@ -169,17 +206,27 @@ const ShopModal = ({ product, show = false, setShow }) => {
               </Grid>
             </Grid>
           </Container>
+
           <Divider sx={{ my: 2, borderColor: "#424242" }} />
+
+          {/* Carousel component to display product images */}
           <CarouselComponent images={product.images} />
+
           <Divider sx={{ my: 2, borderColor: "#424242" }} />
+
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-            <Box>
+            {/* Action area for adding product to cart */}
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+            >
+              {/* Button group for product amount selection */}
               <ButtonGroup
                 disableElevation
                 variant="contained"
                 aria-label="Disabled elevation buttons"
                 sx={{ mr: 2 }}
               >
+                {/* Buttons for incrementing/decrementing product amount */}
                 <Button onClick={handleMinusClick}>-</Button>
                 <TextField
                   value={productAmount}
@@ -197,6 +244,8 @@ const ShopModal = ({ product, show = false, setShow }) => {
                 />
                 <Button onClick={handlePlusClick}>+</Button>
               </ButtonGroup>
+
+              {/* Button to add the product to the cart */}
               <Button
                 variant="outlined"
                 onClick={handleAddToCart}
@@ -205,6 +254,8 @@ const ShopModal = ({ product, show = false, setShow }) => {
                 <AddShoppingCartIcon />
               </Button>
             </Box>
+
+            {/* Button to close the modal */}
             <Button variant="outlined" onClick={handleClose}>
               Close
             </Button>

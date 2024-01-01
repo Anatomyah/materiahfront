@@ -25,83 +25,102 @@ import QuoteTable from "../../components/Quote/QuoteTable";
 import { Spinner } from "react-bootstrap";
 import debounce from "lodash/debounce";
 
-const QuotesPage = () => {
-  const { token } = useContext(AppContext);
-  const isMountedRef = useRef(false);
-  const isLoadingRef = useRef(false);
-  const [baseQuotes, setBaseQuotes] = useState([]);
-  const [viewQuotes, setViewQuotes] = useState([]);
-  const [supplierSelectList, setSupplierSelectList] = useState([]);
-  const [supplier, setSupplier] = useState("");
-  const [nextPageUrl, setNextPageUrl] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [searchInput, setSearchInput] = useState("");
+/**
+ * Component: QuotesPage
+ *
+ * @description
+ * This component renders a page for displaying quotes with functionalities like
+ * search, filtering by supplier, and infinite scrolling. It makes use of the InfiniteScroll
+ * component for loading more quotes on scroll and includes the QuoteModal for creating new quotes.
+ */
 
+const QuotesPage = () => {
+  // Context and state initialization
+  const { token } = useContext(AppContext); // Accessing the global context
+  const isMountedRef = useRef(false); // Ref to track if the component is mounted
+  const isLoadingRef = useRef(false); // Ref to track the loading state
+  const [baseQuotes, setBaseQuotes] = useState([]); // State for storing all fetched quotes
+  const [viewQuotes, setViewQuotes] = useState([]); // State for storing quotes to display
+  const [supplierSelectList, setSupplierSelectList] = useState([]); // State for storing the list of suppliers for filtering
+  const [supplier, setSupplier] = useState(""); // State to store the selected supplier for filtering
+  const [nextPageUrl, setNextPageUrl] = useState(null); // State to store the URL for the next page (for infinite scrolling)
+  const [hasMore, setHasMore] = useState(true); // State to determine if more quotes can be fetched
+  const [searchInput, setSearchInput] = useState(""); // State to store the current search input
+
+  // Effect to extract and set the supplier select list from the fetched quotes
   useEffect(() => {
-    if (!baseQuotes.length) return;
-    if (baseQuotes) {
-      extractEntitiesSelectList(baseQuotes, setSupplierSelectList, "supplier");
-    }
+    if (!baseQuotes.length) return; // Exit if no quotes are fetched yet
+    // Extract supplier list from the baseQuotes and update the state
+    extractEntitiesSelectList(baseQuotes, setSupplierSelectList, "supplier");
   }, [baseQuotes]);
 
+  // Effect to filter quotes based on the selected supplier
   useEffect(() => {
-    if (!isMountedRef.current) return;
+    if (!isMountedRef.current) return; // Exit if the component is not yet mounted
     if (!supplier) {
-      setViewQuotes([]);
+      setViewQuotes([]); // Reset the viewQuotes if no supplier is selected
+    } else {
+      // Filter the baseQuotes based on the selected supplier and update viewQuotes
+      filterObjectsByEntity(supplier, baseQuotes, setViewQuotes, "supplier");
     }
-
-    filterObjectsByEntity(supplier, baseQuotes, setViewQuotes, "supplier");
   }, [supplier]);
 
+  // Function to fetch quotes from the server
   const fetchQuotes = ({ searchValue = "", nextPage = null } = {}) => {
-    isLoadingRef.current = true;
+    isLoadingRef.current = true; // Set loading state to true
+    // Fetch quotes with the given search value and next page URL
     getQuotes(token, setBaseQuotes, {
       searchInput: searchValue,
       nextPage: nextPage,
     }).then((response) => {
       if (response && response.success) {
         if (response.reachedEnd) {
+          // If the end of the list is reached, update state to stop further fetching
           setNextPageUrl(null);
           setHasMore(false);
         } else {
+          // Otherwise, update the nextPageUrl for the next fetch call
           setNextPageUrl(response.nextPage);
           setHasMore(true);
         }
       } else {
+        // Show error toast if the fetch call fails
         showToast(
           "An unexpected error occurred. Please try again",
           "danger",
           "top-center",
         );
       }
-      isLoadingRef.current = false;
+      isLoadingRef.current = false; // Reset loading state
     });
   };
 
+  // Effect to fetch quotes based on search input
   useEffect(() => {
     if (!isMountedRef.current) {
-      isMountedRef.current = true;
+      isMountedRef.current = true; // Set the mounted ref to true on initial render
       return;
     }
-    fetchQuotes({
-      searchValue: searchInput,
-      nextPage: null,
-    });
+    // Fetch quotes with the current search input
+    fetchQuotes({ searchValue: searchInput, nextPage: null });
   }, [searchInput]);
 
+  // Debounced search input handler
   const handleSearchInput = useCallback(
     debounce((value) => {
-      setSearchInput(value);
+      setSearchInput(value); // Update the search input state
     }, 500),
     [],
   );
 
+  // Handler for keydown event in the search input
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      setSearchInput(event.target.value);
+      setSearchInput(event.target.value); // Set search input if Enter key is pressed
     }
   };
 
+  // Render a loading spinner while the quotes are being fetched
   if (isLoadingRef.current) {
     return (
       <Spinner
@@ -116,11 +135,16 @@ const QuotesPage = () => {
 
   return (
     <div>
+      {/* Container for the top control elements like add quote, search bar, and supplier filter */}
       <Container className="my-3">
+        {/* Row for aligning controls */}
         <Row className="align-items-center justify-content-md-evenly">
+          {/* Column for the QuoteModal trigger button */}
           <Col md="auto" className="m">
             <QuoteModal onSuccessfulSubmit={fetchQuotes} />
           </Col>
+
+          {/* Column for the search input field */}
           <Col xs={5} className="ms-2">
             <InputGroup>
               <InputGroup.Text id="basic-addon1">
@@ -130,21 +154,21 @@ const QuotesPage = () => {
                 size="lg"
                 type="text"
                 placeholder="Free Search"
-                aria-label="Search "
+                aria-label="Search"
                 aria-describedby="basic-addon1"
                 onChange={(e) => handleSearchInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
             </InputGroup>
           </Col>
+
+          {/* Column for the supplier filter dropdown */}
           <Col md="auto" sm>
             {supplierSelectList && (
               <InputGroup>
                 <Form.Select
                   value={supplier}
-                  onChange={(e) => {
-                    setSupplier(e.target.value);
-                  }}
+                  onChange={(e) => setSupplier(e.target.value)}
                 >
                   <option value="" disabled>
                     -- Select Supplier --
@@ -166,6 +190,8 @@ const QuotesPage = () => {
           </Col>
         </Row>
       </Container>
+
+      {/* InfiniteScroll component for loading and displaying quotes */}
       <InfiniteScroll
         pageStart={0}
         loadMore={() => {
@@ -176,18 +202,9 @@ const QuotesPage = () => {
           });
         }}
         hasMore={hasMore}
-        loader={
-          <Spinner
-            className="loader"
-            key={0}
-            size="lg"
-            as="span"
-            animation="border"
-            role="status"
-            aria-hidden="true"
-          />
-        }
+        loader={<Spinner className="loader" key={0} /* ... */ />}
       >
+        {/* QuoteTable component to display the list of quotes */}
         <QuoteTable
           quoteList={viewQuotes.length ? viewQuotes : baseQuotes}
           handleEdit={fetchQuotes}
