@@ -26,6 +26,7 @@ import ShowPassword from "../Generic/ShowPassword";
 import debounce from "lodash/debounce";
 import { showToast } from "../../config_and_helpers/helpers";
 
+// Yup schema for the user Formik form
 const createFormSchema = ({ isSignUp }) =>
   yup.object().shape({
     username: yup
@@ -110,44 +111,83 @@ const createFormSchema = ({ isSignUp }) =>
     }),
   });
 
+/**
+ * `AccountModal` is a React component used for handling user account operations including signup and profile editing
+ * It presents a form that lets users input account details such as username, email, name, phone number, and, for signup, password
+ *
+ * The component performs real-time validation for fields such as the username and email, ensuring their uniqueness
+ * It also enforces certain standards for entry fields – e.g., the password must contain at least one uppercase letter
+ *
+ * @param {object} props - The properties object
+ * @param {boolean} props.isSignUp - Whether this modal is being used for signup (true) or profile editing (false). Default is false
+ * @returns a Bootstrap `Modal` containing a `Formik` form with fields for account details
+ */
 const AccountModal = ({ isSignUp = false }) => {
+  // Context values from AppContext
+  // token: The authentication token of the logged-in user
+  // setToken: Function to set the authentication token
+  // userDetails: The details of the logged-in user
+  // setUserDetails: Function to set the user details
+  // setNotifications: Function to handle showing notifications
   const { token, setToken, userDetails, setUserDetails, setNotifications } =
     useContext(AppContext);
-  const formSchema = createFormSchema({
-    isSignUp,
-  });
+
+  // formSchema: Validation schema for the signup form
+  const formSchema = createFormSchema({ isSignUp });
+
+  // Formik: Importing the Formik component from formik
   const { Formik } = formik;
+
+  // nav: Navigation function from react-router
   const nav = useNavigate();
+
+  // showModal: State for controlling the visibility of the Modal
   const [showModal, setShowModal] = useState(false);
+
+  // isSubmitting: State to manage if form is being currently submitted
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // isUsernameUnique, isEmailUnique, and isPhoneUnique: States to manage the uniqueness check of username, email, and phone
   const [isUsernameUnique, setIsUsernameUnique] = useState(true);
+  const [isEmailUnique, setIsEmailUnique] = useState(true);
+  const [isPhoneUnique, setIsPhoneUnique] = useState(true);
+
+  // username, emailAddress, phonePrefix, phoneSuffix: State to store the input values for the username, email, phone prefix, and phone suffix fields
+  // If the modal is for signing up, these state variables start with empty strings or predefined values like "050" for phonePrefix
+  // If the modal is for editing, these state variables start with corresponding user's current values
   const [username, setUsername] = useState(
     isSignUp ? "" : userDetails.username,
   );
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [isEmailUnique, setIsEmailUnique] = useState(true);
   const [emailAddress, setEmailAddress] = useState(
     isSignUp ? "" : userDetails.email,
   );
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [phonePrefix, setPhonePrefix] = useState(
     isSignUp ? "050" : userDetails.phone_prefix,
   );
   const [phoneSuffix, setPhoneSuffix] = useState(
     isSignUp ? "" : userDetails.phone_suffix,
   );
-  const [isPhoneUnique, setIsPhoneUnique] = useState(true);
 
+  // isCheckingUsername, isCheckingEmail, and isCheckingPhone: States to manage if the system is currently checking the uniqueness of username, email, and phone
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+
+  // showPasswords: State to manage the visibility of passwords in the form
   const [showPasswords, setShowPasswords] = useState(false);
 
+  // checkmarkIcon: The icon for indicating passed validation
   const checkmarkIcon = (
     <i className="fa fa-check-circle" style={{ color: "green" }}></i>
   );
+
+  // invalidIcon: The icon for indicating failed validation
   const invalidIcon = (
     <i className="fa fa-exclamation-circle" style={{ color: "red" }}></i>
   );
 
+  // usernameUniqueValidator, emailUniqueValidator, and phoneUniqueValidator are objects used to check the uniqueness
+  // of username, email, and phone respectively
   const usernameUniqueValidator = {
     id: "unique",
     text: "Username is already taken.",
@@ -166,6 +206,9 @@ const AccountModal = ({ isSignUp = false }) => {
     validate: () => (isCheckingPhone ? true : isPhoneUnique),
   };
 
+  // These functions are used to validate the username, email and phone number by checking if they are already taken
+  // For sign up, we just check if these values are unique.
+  // For edit, we check if the new values require re-authentication.
   const validateSignUpPhone = async (prefix, suffix) => {
     const response = await checkPhoneNumber(prefix, suffix);
     setIsCheckingPhone(false);
@@ -202,6 +245,8 @@ const AccountModal = ({ isSignUp = false }) => {
     setIsEmailUnique(response);
   };
 
+  // debounce function is used to wait until the user has stopped typing for 1500ms
+  // This is to prevent unnecessary requests when the user is still typing
   const debouncedCheckSignUpUsername = useCallback(
     debounce(validateSignUpUsername, 1500),
     [],
@@ -232,6 +277,8 @@ const AccountModal = ({ isSignUp = false }) => {
     [],
   );
 
+  // useEffect hooks are used to trigger the checks whenever username, email or phone number is changed.
+  // Different checks are made based on whether the user is signing up or editing profile.
   useEffect(() => {
     if (username && isSignUp) {
       debouncedCheckSignUpUsername(username);
@@ -279,6 +326,8 @@ const AccountModal = ({ isSignUp = false }) => {
     debouncedCheckSignUpPhone,
   ]);
 
+  // passwordRequirements: Array of objects each containing a password requirement such as length, presence of uppercase letter, number, or special character
+  // Along with a function to validate that requirement
   const passwordRequirements = [
     {
       id: "length",
@@ -303,15 +352,22 @@ const AccountModal = ({ isSignUp = false }) => {
     },
   ];
 
+  // handleClose: A function to close the modal by setting the showModal state to false
   const handleClose = () => {
     setShowModal(false);
   };
 
+  // handleShow: A function to open the modal by setting the showModal state to true
   const handleShow = () => setShowModal(true);
 
+  // handleSubmit: Function to be executed when the form is submitted.
+  // It constructs the user data based on the form values and initiates either signup or update user profile process.
+  // After the process is done, it closes the modal and
+  // If it is signup, it then navigates to the home page "/".
   const handleSubmit = (values) => {
     setIsSubmitting(true);
 
+    // Construct userData object based on provided form values
     const userData = {
       username: values.username,
       email: values.email,
@@ -323,52 +379,63 @@ const AccountModal = ({ isSignUp = false }) => {
       },
     };
 
+    // If it is a sign up operation, add password to the userData object
     if (isSignUp) {
       userData.password = values.password;
     }
 
+    // Based on whether it is a signup or profile update operation, make the appropriate API request
     const accountPromise =
       isSignUp !== false
-        ? signup(userData, setToken, setUserDetails, setNotifications)
+        ? signup(userData, setToken, setUserDetails, setNotifications) // On signup, call `signup` function
         : updateUserProfile(
             token,
             userDetails.user_id,
             userData,
             setUserDetails,
-          );
+          ); // On profile update, call `updateUserProfile` function
 
+    // Once the API request resolves,
     accountPromise.then((response) => {
       setIsSubmitting(true);
       if (response && response.success) {
         handleClose();
+        // If a signup operation was completed successfully, navigate to the home page
         if (isSignUp) {
           nav("/");
         } else {
+          // Otherwise, show a success toast message
           response.toast();
         }
       } else {
+        // If the request isn't successful, show a generic error toast
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
         );
       }
+      // Set isSubmitting to false to indicate that the submission process is complete
       setIsSubmitting(false);
     });
   };
 
   return (
     <>
+      {/* Button to either sign up or edit account details, depending on the isSignUp prop */}
       <Button variant={isSignUp ? "link" : "primary"} onClick={handleShow}>
         {isSignUp ? "Signup to Materiah" : "Edit Account Details"}
       </Button>
 
+      {/* Modal for displaying the form. It shows based on the showModal state and can be closed */}
       <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title>
             {isSignUp ? "Enter User Details" : "Edit Account Details"}
           </Modal.Title>
         </Modal.Header>
+
+        {/* Formik component for form management with initial values, validation schema, and onSubmit function */}
         <Formik
           initialValues={{
             username: !isSignUp ? userDetails.username : "",
@@ -414,6 +481,7 @@ const AccountModal = ({ isSignUp = false }) => {
             return (
               <Form onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
+                  {/* Form group for username with real-time validation and custom feedback messages */}
                   <Form.Group
                     controlId="signupUsername"
                     className="field-margin"
@@ -422,6 +490,8 @@ const AccountModal = ({ isSignUp = false }) => {
                     <Form.Control
                       type="text"
                       name="username"
+                      // Inline event handlers for various form events
+                      // Other attributes and conditional rendering...
                       value={values.username}
                       onChange={(event) => {
                         const { value } = event.target;
@@ -450,6 +520,7 @@ const AccountModal = ({ isSignUp = false }) => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.username}
+                      {/* Conditional rendering of feedback messages based on validation state */}
                       {!usernameUniqueValidator.validate() &&
                         !isCheckingUsername &&
                         usernameUniqueValidator.text}
@@ -460,6 +531,8 @@ const AccountModal = ({ isSignUp = false }) => {
                         : "150 characters or fewer. Letters, digits and @.+-_ only."}
                     </Form.Text>
                   </Form.Group>
+
+                  {/* Rest of the form groups for email, first name, last name, and phone number follow a similar pattern */}
                   <Form.Group controlId="signupEmail" className="field-margin">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
@@ -604,8 +677,11 @@ const AccountModal = ({ isSignUp = false }) => {
                       {isCheckingPhone && <Form.Text>Checking...</Form.Text>}
                     </Form.Group>
                   </Row>
+                  {/* Additional logic for password fields shown only during signup */}
                   {isSignUp && (
                     <>
+                      {/* Form groups for password and password confirmation */}
+                      {/* Similar structure with validation feedback */}
                       <Form.Group controlId="signupPassword">
                         <div className="d-flex flex-row">
                           <Form.Label className="me-2">Password </Form.Label>
@@ -679,6 +755,8 @@ const AccountModal = ({ isSignUp = false }) => {
                   )}
                 </Modal.Body>
                 <Modal.Footer>
+                  {/* Conditional rendering of submit button with a spinner to indicate submitting state */}
+                  {/* The button is disabled based on various conditions like form validity and ongoing validations */}
                   {isSubmitting ? (
                     <Button variant="primary" disabled>
                       <Spinner

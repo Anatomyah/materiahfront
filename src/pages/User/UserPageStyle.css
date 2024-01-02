@@ -1,3 +1,7 @@
+/*
+.login-box-style: This class provides styles for the login box.
+It includes relative positioning, padding, border-radius for rounded edge, background color, and box-shadow for shadow effect.
+*/
 .login-box-style {
     position: relative;
     padding: 4px;
@@ -6,6 +10,11 @@
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
+/*
+.background-image-login: This class is for setting the login page's background image.
+You can change the URL to change the background image.
+It also includes background size to cover the entire area, and position set to center to fit the image properly.
+*/
 .background-image-login {
     position: relative;
     background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg');
@@ -13,12 +22,24 @@
     background-position: center;
 }
 
+/*
+.bordered-shadow-container: This class is for making a container with a shadow and a border.
+It includes a 1px solid border and border-radius for rounded corners.
+The box-shadow provides the shadow around the container.
+*/
 .bordered-shadow-container {
     border: 1px solid #000;
     border-radius: 10px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
+/*
+.background-image-user: This class is for setting the user page's background image.
+You can replace the current URL with the one of your choice.
+It uses a cover size to fully cover the area and positions it in the center.
+The minimum height is set to 100vh to occupy the full height of the viewport.
+Padding and margin are set to 0 to remove any undesired spacing.
+*/
 .background-image-user {
     background-image: url('https://materiah1.s3.eu-central-1.amazonaws.com/design/5098401.jpg');
     background-size: cover;
@@ -28,6 +49,11 @@
     margin: 0;
 }
 
+/*
+.overlay-user: This class adds a layer over the user page.
+It covers the entire area from top, bottom, left, and right with a white background of 0.5 opacity.
+It sets the z-index to 1 to make sure this layer is above the background image.
+*/
 .overlay-user {
     position: fixed;
     top: 0;
@@ -38,7 +64,10 @@
     z-index: 1;
 }
 
-
+/*
+.content-user: This class is used for the entire content of the user page.
+The position is set to relative, and the z-index is set to 2 to ensure it lies above the overlay.
+*/
 .content-user {
     position: relative;
     z-index: 2;

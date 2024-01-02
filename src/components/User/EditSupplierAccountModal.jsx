@@ -21,6 +21,7 @@ import {
 } from "../../clients/supplier_client";
 import { showToast } from "../../config_and_helpers/helpers";
 
+// Yup schema for the Supplier Account Formik form
 const schema = yup.object().shape({
   firstName: yup
     .string()
@@ -62,35 +63,89 @@ const schema = yup.object().shape({
     .required("Supplier website is required."),
 });
 
+/**
+ * `EditSupplierAccountModal` component allows a supplier to edit their personal account details, including contact details and supplier information.
+ * This component is a Form placed within a Modal for consumption.
+ *
+ * @component
+ * @example
+ *
+ * // It is used in the parent component as follows:
+ * return (
+ *   <EditSupplierAccountModal />
+ * );
+ *
+ * @param {none} None - This component doesn't have any props.
+ *
+ * @returns {JSX.Element} A React Modal contains a Form for editing user details.
+ *
+ */
 const EditSupplierAccountModal = () => {
+  // Importing the token, user details and setUserDetails function from the AppContext
   const { token, userDetails, setUserDetails } = useContext(AppContext);
+
+  // State hook for controlling the visibility of the modal.
   const [showModal, setShowModal] = useState(false);
+
+  // State hook for handling the contact email value.
   const [contactEmail, setContactEmail] = useState("");
+
+  // State hook for handling the supplier email value.
   const [supplierEmail, setSupplierEmail] = useState("");
+
+  // State hook for handling the uniqueness of the contact email. It's initially true.
   const [isContactEmailUnique, setIsContactEmailUnique] = useState(true);
+
+  // State hook indicating whether the contact email is being checked for uniqueness.
   const [isCheckingContactEmail, setIsCheckingContactEmail] = useState(false);
+
+  // State hook for tracking the uniqueness of the supplier email. It's initially true.
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
+
+  // State hook indicating whether the supplier email is being checked for uniqueness.
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
+
+  // State hook for handling the prefix of supplier phone number.
   const [supplierPhonePrefix, setSupplierPhonePrefix] = useState(
     userDetails ? userDetails.supplier_phone_prefix : "",
   );
+
+  // State hook for handling the suffix of supplier phone number.
   const [supplierPhoneSuffix, setSupplierPhoneSuffix] = useState(
     userDetails ? userDetails.supplier_phone_suffix : "",
   );
+
+  // State hook for determining the uniqueness of the supplier's phone number. It's initially true.
   const [isSupplierPhoneUnique, setIsSupplierPhoneUnique] = useState(true);
+
+  // State hook indicating whether the supplier phone is being checked for uniqueness.
   const [isCheckingSupplierPhone, setIsCheckingSupplierPhone] = useState(false);
+
+  // State hook for handling the prefix of supplier's contact phone number.
   const [supplierContactPhonePrefix, setSupplierContactPhonePrefix] = useState(
     userDetails ? userDetails.phone_prefix : "",
   );
+
+  // State hook for handling the suffix of supplier's contact phone number.
   const [supplierContactPhoneSuffix, setSupplierContactPhoneSuffix] = useState(
     userDetails ? userDetails.phone_suffix : "",
   );
+
+  // State hook for tracking the uniqueness of the supplier's contact phone number. It's initially true.
   const [isSupplierContactPhoneUnique, setIsSupplierContactPhoneUnique] =
     useState(true);
+
+  // State hook indicating whether the supplier contact phone is being checked for uniqueness.
   const [isCheckingSupplierContactPhone, setIsCheckingSupplierContactPhone] =
     useState(false);
+
+  // State hook indicating whether the form is being submitted or not.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Defines validator objects for contact email, supplier contact phone, supplier email,
+  // and supplier phone. Each validator consists of an id, a text message,
+  // and a validate function which checks if the item is still being checked (returns true)
+  // or if the item is unique (returns the calculated uniqueness from state).
   const contactEmailUniqueValidator = {
     id: "unique",
     text: "Email address already taken.",
@@ -116,6 +171,9 @@ const EditSupplierAccountModal = () => {
     validate: () => (isCheckingSupplierPhone ? true : isSupplierPhoneUnique),
   };
 
+  // Asynchronous functions, which send HTTP requests to check the uniqueness
+  // of contact email, supplier contact phone, supplier email, and supplier phone.
+  // If the request is successful the response is saved to appropriate state variables
   const validateContactEmail = async (value) => {
     const response = await checkEmailAuthRequired(token, value);
     setIsCheckingContactEmail(false);
@@ -140,6 +198,9 @@ const EditSupplierAccountModal = () => {
     setIsSupplierPhoneUnique(response);
   };
 
+  // Declares debounced version of validation functions where the invocation of the
+  // function will be delayed by 1500ms after each invocation.
+  // This is to prevent excessive HTTP requests being sent as the user is typing.
   const debouncedCheckContactEmail = useCallback(
     debounce(validateContactEmail, 1500),
     [],
@@ -160,6 +221,12 @@ const EditSupplierAccountModal = () => {
     [],
   );
 
+  // useEffect hooks which are run whenever the conditions in the dependency arrays are met.
+  // In this case, it checks if the value has changed and if the value is different
+  // from the value stored in user details.
+  // If these conditions are met, it runs the debounced version of validate function.
+  // If conditions are not met, it sets the checking status to false
+  // and item unique status to true (by default).
   useEffect(() => {
     if (contactEmail && userDetails && contactEmail !== userDetails.email) {
       debouncedCheckContactEmail(contactEmail);
@@ -225,9 +292,13 @@ const EditSupplierAccountModal = () => {
   };
   const handleShow = () => setShowModal(true);
 
+  // handleSubmit function: This function is for handling form submission.
   const handleSubmit = (values) => {
+    // Using useState, setting 'isSubmitting' to true to denote the form is being submitted
     setIsSubmitting(true);
 
+    // Constructing the data object which will be passed to the updateUserProfile function
+    // This object is constructed using the values entered by the user in the form
     const updatedData = {
       email: values.email,
       first_name: values.firstName,
@@ -244,6 +315,8 @@ const EditSupplierAccountModal = () => {
         website: values.supplierWebsite,
       },
     };
+
+    // Making a call to the 'updateUserProfile' function with the required parameters
     updateUserProfile(
       token,
       userDetails.user_id,
@@ -251,10 +324,15 @@ const EditSupplierAccountModal = () => {
       setUserDetails,
       true,
     ).then((response) => {
+      // If response received from the updateUserProfile call is successful
+      // The modal is closed using the 'handleClose' function and a toast message is displayed
       if (response && response.success) {
         handleClose();
         response.toast();
-      } else {
+      }
+      // If response received from the updateUserProfile call is unsuccessful
+      // An error toast message is displayed
+      else {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
           "error",
@@ -266,17 +344,22 @@ const EditSupplierAccountModal = () => {
 
   return (
     <>
+      {/* Button to open the modal for editing supplier details */}
       <Button variant="primary" onClick={handleShow}>
         Edit details
       </Button>
 
+      {/* Modal component for displaying the form. It shows based on the showModal state */}
       <Modal show={showModal} onHide={handleClose}>
+        {/* Modal header with a close button */}
         <Modal.Header closeButton>
           <Modal.Title>Edit your personal details</Modal.Title>
         </Modal.Header>
 
+        {/* Formik component to manage the form state, validation, and submission */}
         <Formik
           initialValues={{
+            // Initial values are set based on the userDetails context
             contactEmail: userDetails.email,
             firstName: userDetails.first_name,
             lastName: userDetails.last_name,
@@ -288,6 +371,7 @@ const EditSupplierAccountModal = () => {
             supplierWebsite: userDetails.supplier_website,
           }}
           initialTouched={{
+            // Fields are marked as touched initially
             contactEmail: true,
             firstName: true,
             lastName: true,
@@ -306,6 +390,7 @@ const EditSupplierAccountModal = () => {
           }}
         >
           {({
+            // Destructuring various helpers from Formik's render props
             handleSubmit,
             handleChange,
             values,
@@ -320,11 +405,13 @@ const EditSupplierAccountModal = () => {
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
+                  {/* Form group for contact email with validation and custom feedback */}
                   <Form.Group controlId="contactEmail" className="field-margin">
                     <Form.Label>Contact Email</Form.Label>
                     <Form.Control
                       type="text"
                       name="contactEmail"
+                      // Event handlers for form control interactions
                       value={values.contactEmail}
                       onChange={(event) => {
                         const { value } = event.target;
@@ -353,6 +440,7 @@ const EditSupplierAccountModal = () => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.contactEmail}
+                      {/* Conditional rendering of feedback messages based on validation state */}
                       {errors.contactEmail &&
                         !contactEmailUniqueValidator.validate() &&
                         !isCheckingContactEmail &&
@@ -361,6 +449,9 @@ const EditSupplierAccountModal = () => {
                     {isCheckingContactEmail &&
                       !errors.contactEmail(<Form.Text>Checking...</Form.Text>)}
                   </Form.Group>
+
+                  {/* Similar structure for other form groups like first name, last name, contact phone, supplier email, supplier phone, and supplier website */}
+                  {/* Additional form groups for first name, last name, contact phone, supplier email, supplier phone, and supplier website follow a similar pattern */}
                   <Form.Group
                     controlId="contactFirstName"
                     className="field-margin"
@@ -605,6 +696,8 @@ const EditSupplierAccountModal = () => {
                   </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
+                  {/* Conditional rendering of submit button with a spinner indicating submission state */}
+                  {/* The button is disabled based on various conditions like form validity and ongoing validations */}
                   {isSubmitting ? (
                     <Button variant="primary" disabled>
                       <Spinner

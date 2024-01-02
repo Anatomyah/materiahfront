@@ -13,6 +13,7 @@ import { Formik } from "formik";
 import debounce from "lodash/debounce";
 import { showToast } from "../../config_and_helpers/helpers";
 
+// Yup schema for the change password Formik form
 const schema = yup.object().shape({
   email: yup
     .string()
@@ -41,30 +42,52 @@ const schema = yup.object().shape({
     .oneOf([yup.ref("newPassword"), null], "Passwords must match"),
 });
 
+/**
+ * Provides a modal form for users to change their password.
+ * Users can either supply their account email, or use the prepopulated email if it's supplied as a prop.
+ * They need to verify that their account email exists, then they are sent a token.
+ * They input this token in the form, along with their new password, to reset their password.
+ * Form validation rules is managed by Formik and Yup validation schema, both client-side form handling libraries.
+ *
+ * @component
+ * @param {Object} props The props argument.
+ * @param {string} [props.userEmail=null] The user's email, if it's available.
+ *
+ * @returns {React.ElementType} Returns a Button that opens up a password reset modal form,
+ *                              where users can input their new email and submit it.
+ *
+ * @example
+ * // Use it inside a component JSX
+ * <ChangePasswordModal userEmail="usersemail@test.com" />
+ */
 const ChangePasswordModal = ({ userEmail }) => {
-  const [showModal, setShowModal] = useState(false);
+  // State Hooks
+  const [showModal, setShowModal] = useState(false); // A state to manage the visibility of the modal
   const [recoveryEmail, setRecoveryEmail] = useState(
     userEmail ? userEmail : "",
-  );
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [emailExists, setEmailExists] = useState(true);
-  const [tokenSent, setTokenSent] = useState(false);
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  ); // A state to manage the recovery email value
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false); // A state to manage the status when checking the validity of email
+  const [emailExists, setEmailExists] = useState(true); // A state to manage the email existence status
+  const [tokenSent, setTokenSent] = useState(false); // A state to manage the status when token has been sent
+  const [showPasswords, setShowPasswords] = useState(false); // A state to manage the visibility of password
+  const [isSubmitting, setIsSubmitting] = useState(false); // A state to manage the status when form is being submitted
 
+  // Definition of icons for validation feedback
   const checkmarkIcon = (
     <i className="fa fa-check-circle" style={{ color: "green" }}></i>
-  );
+  ); // Icon for successful validation
   const invalidIcon = (
     <i className="fa fa-exclamation-circle" style={{ color: "red" }}></i>
-  );
+  ); // Icon for unsuccessful validation
 
+  // Object for evaluating if email exists
   const emailExistingValidator = {
     id: "unique",
     text: "This Email address does not exist in our database.",
-    validate: () => (isCheckingEmail ? true : emailExists),
+    validate: () => (isCheckingEmail ? true : emailExists), // Returns true if email is checking or exists
   };
 
+  // Set of requirement rules for password
   const passwordRequirements = [
     {
       id: "length",
@@ -89,12 +112,14 @@ const ChangePasswordModal = ({ userEmail }) => {
     },
   ];
 
+  // Async function to validate recovery email
   const validateRecoveryEmail = async (value) => {
     const response = await checkEmail(value);
     setIsCheckingEmail(false);
     setEmailExists(!response);
   };
 
+  // Debounced function to validate recovery email with some delay to optimize performance
   const debouncedCheckRecoveryEmail = useCallback(
     debounce((value) => {
       if (value && value.length > 0) {
@@ -104,6 +129,7 @@ const ChangePasswordModal = ({ userEmail }) => {
     [],
   );
 
+  // UseEffect to trigger the debounced recovery email validation
   useEffect(() => {
     if (recoveryEmail && !userEmail) {
       debouncedCheckRecoveryEmail(recoveryEmail);
@@ -144,9 +170,14 @@ const ChangePasswordModal = ({ userEmail }) => {
     }
   };
 
+  // Function handling the form submission
   const handleSubmit = (values) => {
+    // Indicates the form is being submitted
     setIsSubmitting(true);
+
+    // Calls the resetPassword function which makes a request to the server to change the password
     resetPassword(values.token, values.newPassword).then((response) => {
+      // If the request has failed, a toast message will be showed to the user
       if (response && !response.success) {
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
@@ -154,23 +185,30 @@ const ChangePasswordModal = ({ userEmail }) => {
           "top-right",
         );
       } else {
+        // If the request is successful, the modal will be closed and a toast message will be showed to the user
         handleClose();
         response.toast();
       }
+
+      // Indicates that the form has finished submitting
       setIsSubmitting(false);
     });
   };
 
   return (
     <>
+      {/* Button to trigger the modal. Text and style vary based on userEmail prop */}
       <Button variant={userEmail ? "primary" : "link"} onClick={handleShow}>
         {userEmail ? "Change Password" : "Forgot your password?"}
       </Button>
 
+      {/* Modal component for displaying the form */}
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Change Your Password</Modal.Title>
         </Modal.Header>
+
+        {/* Formik component for form management with validation and submission handling */}
         <Formik
           initialValues={{
             email: "",
@@ -195,11 +233,14 @@ const ChangePasswordModal = ({ userEmail }) => {
             dirty,
             setFieldValue,
           }) => {
+            // Destructuring various helpers from Formik's render props
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
+                  {/* Conditional rendering based on tokenSent state */}
                   {!tokenSent ? (
                     <>
+                      {/* Form group for email input */}
                       <Form.Group
                         controlId="recoveryEmail"
                         className="field-margin"
@@ -208,6 +249,7 @@ const ChangePasswordModal = ({ userEmail }) => {
                         <Form.Control
                           type="text"
                           name="email"
+                          // Inline event handlers for form control interactions
                           value={values.email}
                           onChange={(event) => {
                             const { value } = event.target;
@@ -227,6 +269,7 @@ const ChangePasswordModal = ({ userEmail }) => {
                             !isCheckingEmail
                           }
                         />
+                        {/* Conditional rendering of feedback messages based on validation state */}
                         {emailExistingValidator.validate() &&
                           !isCheckingEmail && (
                             <Form.Control.Feedback type="valid">
@@ -245,8 +288,11 @@ const ChangePasswordModal = ({ userEmail }) => {
                             : "Please enter your email address below. Once it's identified a token will be sent your way"}
                         </Form.Text>
                       </Form.Group>
+
+                      {/* Button to send token to user's email */}
                       <Button
                         disabled={
+                          // Conditional disabling of the button
                           !emailExistingValidator.validate() || isCheckingEmail
                         }
                         onClick={fetchPasswordToken}
@@ -256,6 +302,7 @@ const ChangePasswordModal = ({ userEmail }) => {
                     </>
                   ) : (
                     <>
+                      {/* Form group for token input */}
                       <Form.Group
                         controlId="resetToken"
                         className="field-margin"
@@ -264,6 +311,7 @@ const ChangePasswordModal = ({ userEmail }) => {
                         <Form.Control
                           type="text"
                           name="token"
+                          // Event handlers and validation feedback for token input
                           value={values.token}
                           onChange={handleChange}
                           onFocus={() => setFieldTouched("token", true)}
@@ -278,6 +326,9 @@ const ChangePasswordModal = ({ userEmail }) => {
                           {errors.token}
                         </Form.Control.Feedback>
                       </Form.Group>
+
+                      {/* Additional form groups for new password and password confirmation */}
+                      {/* Similar structure with validation feedback */}
                       <Form.Group controlId="signupPassword">
                         <div className="d-flex flex-row">
                           <Form.Label className="me-2">Password </Form.Label>
@@ -352,6 +403,8 @@ const ChangePasswordModal = ({ userEmail }) => {
                     </>
                   )}
                 </Modal.Body>
+
+                {/* Modal footer with submit and close buttons, rendered only if token is sent */}
                 {tokenSent && (
                   <Modal.Footer>
                     {isSubmitting ? (

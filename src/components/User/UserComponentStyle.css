@@ -1,3 +1,7 @@
+/**
+ * .field-margin: This class applies a bottom margin of 0.5rem to an element.
+ * Typically used to provide vertical spacing between form fields or similar elements where some separation is needed for readability and aesthetics.
+ */
 .field-margin {
     margin-bottom: 0.5rem;
 }
