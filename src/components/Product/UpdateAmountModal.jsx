@@ -6,8 +6,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { showToast } from "../../config_and_helpers/helpers";
 import { AppContext } from "../../App";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+import CheckIcon from "@mui/icons-material/Check";
 import {
   getProductDetails,
   getProductSelectList,
@@ -56,8 +55,7 @@ const UpdateAmountModal = ({
   const [amount, setAmount] = useState(0);
   const [productSelectList, setProductSelectList] = useState([]);
   const [fetchedProduct, setFetchedProduct] = useState(null);
-  const [action, setAction] = useState(false); // Action: true for adding, false for subtracting stock.
-  const [negativeStockError, setNegativeStockError] = useState(false);
+  const [isInputNegative, setIsInputNegative] = useState(false);
 
   // Function to fetch a list of products for the dropdown.
   const fetchProductSelectList = async () => {
@@ -74,19 +72,6 @@ const UpdateAmountModal = ({
     fetchProductSelectList();
   }, []);
 
-  // useEffect to validate stock amount to prevent negative stock levels.
-  useEffect(() => {
-    const relevantStock = fetchedProduct
-      ? fetchedProduct?.stock
-      : product?.currentStock;
-
-    if (Number(relevantStock) - amount < 0) {
-      setNegativeStockError(true);
-    } else {
-      setNegativeStockError(false);
-    }
-  }, [amount]);
-
   // Function to close the modal.
   const handleClose = () => {
     if (setHomeShowModal) setHomeShowModal(false);
@@ -102,56 +87,62 @@ const UpdateAmountModal = ({
       ? fetchedProduct?.id
       : product?.productId;
     setIsSubmitting(true);
-    const adjustedAmount = action ? Math.abs(amount) : -Math.abs(amount);
 
     // API call to update the product stock.
-    updateProductStock(token, productIdToUse, adjustedAmount).then(
-      (response) => {
-        if (response && response.success) {
-          handleClose();
-          if (onSuccessfulUpdate) onSuccessfulUpdate();
-          response.toast();
-        } else {
-          showToast(
-            "An unexpected error occurred. Please try again in a little while.",
-            "error",
-            "top-right",
-          );
-        }
-        setIsSubmitting(false);
-      },
-    );
+    updateProductStock(token, productIdToUse, amount).then((response) => {
+      if (response && response.success) {
+        handleClose();
+        if (onSuccessfulUpdate) onSuccessfulUpdate();
+        response.toast();
+      } else {
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+        );
+      }
+      setIsSubmitting(false);
+    });
   }
 
   return (
     <div>
-      {/* Input group for stock adjustment outside of home modal context. */}
+      {/* If accessed from the Inventory Detail view, this input group for stock adjustment will appear. */}
       {!homeShowModal && (
         <InputGroup>
-          <Button
-            variant="outline-success"
-            onClick={() => {
-              setAction(true);
-              handleShow();
-            }}
-          >
-            <AddIcon />
-          </Button>
           <Form.Control
             style={{ textAlign: "center" }}
             value={amount}
-            placeholder="Amount"
-            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Updated Amount"
+            isInvalid={isInputNegative}
+            onChange={(e) => {
+              const inputValue = Number(e.target.value);
+              // Check if the entered value is negative
+              if (inputValue < 0) {
+                setIsInputNegative(true);
+              } else {
+                setIsInputNegative(false);
+              }
+              setAmount(e.target.value);
+            }}
           />
+
+          {/* Button to execute the stock update. Disabled if the input is negative */}
           <Button
-            variant="outline-danger"
+            disabled={isInputNegative}
+            variant="outline-success"
             onClick={() => {
-              setAction(false);
               handleShow();
             }}
+            className="rounded-edge-button-right"
           >
-            <RemoveIcon />
+            <CheckIcon />
           </Button>
+
+          {/* Negative feedback if the number entered is negative */}
+          <Form.Control.Feedback type="invalid">
+            Number cannot be negative!
+          </Form.Control.Feedback>
         </InputGroup>
       )}
 
@@ -161,37 +152,51 @@ const UpdateAmountModal = ({
           <Modal.Title>Update Stock</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {homeShowModal ? (
-            <DropdownSelect
-              optionsList={productSelectList}
-              label="Product"
-              selectedValue={productSelectList.find(
-                (p) => p.value === fetchedProduct?.id,
-              )}
-              setSelectedValue={fetchProduct}
-              disabledOptions={[]}
-            />
-          ) : negativeStockError ? null : (
-            <p>
-              {action ? `Add ${amount} to ` : `Subtract ${amount} from `}
-              {product?.catNum} stock?
-            </p>
+          {/* If accessed viww the Inventory Detail view, a confirmation message will appear. */}
+          {!homeShowModal && (
+            <h4>
+              Update {product.catNum}'s stock from {product.currentStock} to{" "}
+              {amount}?
+            </h4>
           )}
-          {fetchedProduct && (
-            <Form.Group className="mb-3 mt-3">
-              <Form.Label htmlFor="amountInput">Amount</Form.Label>
-              <Form.Control
-                id="amountInput"
-                style={{ textAlign: "center" }}
-                className="w-25"
-                value={amount}
-                placeholder="Amount"
-                onChange={(e) => setAmount(e.target.value)}
+
+          {/* If accessed via the home page's quick actions, a dropdown menu of the lab's products will appear. */}
+          <div className="d-flex flex-column align-items-center text-center">
+            {homeShowModal ? (
+              <DropdownSelect
+                optionsList={productSelectList}
+                label="Product"
+                selectedValue={productSelectList.find(
+                  (p) => p.value === fetchedProduct?.id,
+                )}
+                setSelectedValue={fetchProduct}
+                disabledOptions={[]}
               />
-            </Form.Group>
-          )}
-          {negativeStockError && <h6>Product stock cannot be negative!</h6>}
+            ) : null}
+
+            {/* Once the product is chosen, the input field to enter the updates stock and confirmation button will appear */}
+            {fetchedProduct && (
+              <>
+                <div className="d-flex flex-row align-items-center mt-3">
+                  <h6 className="mt-1">Current stock:</h6>
+                  <p className="ms-2 mb-1">{fetchedProduct.stock}</p>
+                </div>
+                <Form.Group className="d-flex flex-column justify-content-center mt-3 mb-2">
+                  <Form.Label>Updated Amount</Form.Label>
+                  <Form.Control
+                    id="amountInput"
+                    style={{ textAlign: "center" }}
+                    className="w-50 mx-auto"
+                    value={amount}
+                    placeholder="Updated Amount"
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </Form.Group>
+              </>
+            )}
+          </div>
         </Modal.Body>
+
         {/* Modal footer with action buttons. */}
         <Modal.Footer>
           {isSubmitting ? (
@@ -206,7 +211,6 @@ const UpdateAmountModal = ({
             </Button>
           ) : (
             <Button
-              disabled={negativeStockError}
               variant="success"
               onClick={(e) => {
                 handleSubmit(e);

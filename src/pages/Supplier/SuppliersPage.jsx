@@ -235,7 +235,7 @@ const SuppliersPage = () => {
           />
         }
       >
-        // Supplier table component for displaying supplier data
+        {/* Supplier table component for displaying supplier data */}
         <SupplierTable
           supplierList={viewSuppliers.length ? viewSuppliers : baseSuppliers}
           handleEdit={fetchSuppliers}

@@ -220,6 +220,7 @@ const OrderItemComponent = ({
                   name={selectedReasonFieldName}
                   onChange={(event) => {
                     const { value } = event.target;
+                    console.log("Select field value: ", value); // Add console.log to debug the value
                     formik.handleChange(event);
                     handleInstantChange("status", value);
                   }}

@@ -35,13 +35,6 @@ const formSchema = yup.object().shape({
     .required("Website is required")
     .url("Enter a valid URL"),
 });
-const formSchema = yup.object().shape({
-  name: yup.string().required("Supplier name is required"),
-  websiteUrl: yup
-    .string()
-    .required("Website is required")
-    .url("Enter a valid URL"),
-});
 
 /**
  * ManufacturerModal Component.

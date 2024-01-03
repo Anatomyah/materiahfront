@@ -609,35 +609,38 @@ const ProductModal = ({
                       {errors.price}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group
-                    as={Col}
-                    md="8"
-                    controlId="formProductManufacturer"
-                    className="field-margin"
-                  >
-                    <Form.Label>Manufacturer</Form.Label>
-                    {/* Input for manufacturer with validation feedback. */}
-                    <Form.Select
-                      name="manufacturer"
-                      value={values.manufacturer}
-                      onChange={handleChange}
-                    >
-                      <option value="" disabled>
-                        --Select Manufacturer--
-                      </option>
-                      {manufacturerList.map((choice, index) => (
-                        <option key={index} value={choice.value}>
-                          {choice.label}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    {/* Feedback for valid or invalid input. */}
-                    <Form.Control.Feedback type="invalid">
-                      {errors.manufacturer}
-                    </Form.Control.Feedback>
-                  </Form.Group>
 
-                  {!isSupplier && (
+                  {manufacturerList && (
+                    <Form.Group
+                      as={Col}
+                      md="8"
+                      controlId="formProductManufacturer"
+                      className="field-margin"
+                    >
+                      <Form.Label>Manufacturer</Form.Label>
+                      {/* Input for manufacturer with validation feedback. */}
+                      <Form.Select
+                        name="manufacturer"
+                        value={values.manufacturer}
+                        onChange={handleChange}
+                      >
+                        <option value="" disabled>
+                          --Select Manufacturer--
+                        </option>
+                        {manufacturerList.map((choice, index) => (
+                          <option key={index} value={choice.value}>
+                            {choice.label}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      {/* Feedback for valid or invalid input. */}
+                      <Form.Control.Feedback type="invalid">
+                        {errors.manufacturer}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  )}
+
+                  {!isSupplier && supplierList && (
                     <>
                       <Form.Group
                         as={Col}

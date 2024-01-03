@@ -11,3 +11,11 @@ Makes an icon larger than usual for prominent visual elements
 .large-icon {
     font-size: 36px;
 }
+
+/*
+Rounds the right-side corners of a button
+*/
+.rounded-edge-button-right {
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
+}

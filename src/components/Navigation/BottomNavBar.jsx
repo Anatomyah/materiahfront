@@ -28,11 +28,11 @@ function BottomNavBar() {
     >
       <Container>
         {" "}
-        // Bootstrap Container component serves as a responsive wrapper
+        {/* Bootstrap Container component serves as a responsive wrapper */}
         <Row className="align-middle">
           {" "}
-          // Bootstrap Row for grid-like layout
-          <p>© 2023 Materiah</p> // Copyright text
+          {/* Bootstrap Row for grid-like layout */}
+          <p>© 2023 Materiah</p> {/* Copyright text */}
         </Row>
       </Container>
     </Navbar>

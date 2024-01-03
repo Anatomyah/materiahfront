@@ -32,7 +32,6 @@ import { showToast } from "../../config_and_helpers/helpers";
  *   />
  * );
  *
- * @returns {React.Node} - The `DeleteButton` component with delete confirmation modal.
  */
 const DeleteButton = ({
   objectType,
@@ -119,9 +118,8 @@ const DeleteButton = ({
               />
             </Button>
           ) : (
-            {
-              /* Confirmation Button */
-            }(
+            // Confirmation button
+            <>
               <Button
                 variant="danger"
                 onClick={(e) => {
@@ -129,13 +127,13 @@ const DeleteButton = ({
                 }}
               >
                 Yes, i'm certain
-              </Button>,
-            )
+              </Button>
+              {/* Cancel button */}
+              <Button variant="secondary" onClick={handleClose}>
+                Oops!
+              </Button>
+            </>
           )}
-          {/* Cancel Button */}
-          <Button variant="secondary" onClick={handleClose}>
-            Oops!
-          </Button>
         </Modal.Footer>
       </Modal>
     </div>

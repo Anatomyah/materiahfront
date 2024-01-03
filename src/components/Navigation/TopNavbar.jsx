@@ -53,7 +53,7 @@ function TopNavBar() {
       <Container>
         <Row className="w-100 align-items-center">
           <Col xs="auto">
-            // Navbar brand logo and text
+            {/*Navbar brand logo and text*/}
             <Navbar.Brand as={Link} to="/">
               <img
                 alt=""

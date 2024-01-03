@@ -80,7 +80,7 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
     <div>
       {supplier && ( // If the supplier data is available, render the following JSX
         <>
-          // Button to open the modal
+          {/* Button to open the modal */}
           <Button variant="link" onClick={handleShow}>
             {" "}
             {supplier.name}
@@ -224,8 +224,8 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
 
             <Modal.Footer className="d-flex flex-row justify-content-between">
               <div className="d-flex flex-row">
-                // Two buttons - one to open the supplier edit modal, and one to
-                delete the supplier
+                {/* Two buttons - one to open the supplier edit modal, and one to
+                delete the supplier */}
                 <div className="me-2">
                   <SupplierModal
                     supplierObj={supplier}
@@ -240,7 +240,7 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                   onSuccessfulDelete={updateSuppliers}
                 />
               </div>
-              // A button to close the modal
+              {/* A button to close the modal */}
               <Button variant="secondary" onClick={handleClose}>
                 Close
               </Button>
