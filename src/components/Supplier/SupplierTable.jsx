@@ -17,11 +17,9 @@ import SupplierDetailModal from "./SupplierDetailModal";
 const SupplierTable = ({ supplierList, handleEdit }) => {
   return (
     <Table striped bordered hover>
-      {" "}
       {/* Start of the Table component */}
       <thead>
         <tr className="text-center">
-          {" "}
           {/* Table header row */}
           <th>#</th> {/* Index column */}
           <th>Name</th> {/* Name column */}
@@ -34,7 +32,6 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
       <tbody>
         {supplierList.map((supplier, index) => (
           <tr key={supplier.id} className="text-center align-middle">
-            {" "}
             {/* table row for each supplier */}
             <td>{index + 1}</td> {/* Display suppliers index */}
             <td>
@@ -54,7 +51,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
             </td>
             <td>{supplier.email}</td> {/* Display supplier's office email */}
             <td>
-              {supplier.phone_prefix}-{supplier.phone_suffix}{" "}
+              {supplier.phone_prefix}-{supplier.phone_suffix}
               {/* Display supplier's office phone number */}
             </td>
             <td className="d-flex flex-row align-items-center justify-content-evenly">
