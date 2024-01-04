@@ -272,6 +272,6 @@ export const showToast = (message, type, position) => {
     pauseOnHover: true, // Pause the timer when mouse hovers over the toast
     draggable: true, // Make the toast draggable
     progress: undefined, // Do not set a custom progress bar value
-    theme: "colored", // Use the colored theme for the toast
+    theme: "light", // Use the colored theme for the toast
   });
 };

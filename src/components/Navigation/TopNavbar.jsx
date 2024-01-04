@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import "./NavBarStyle.css";
+import { showToast } from "../../config_and_helpers/helpers";
 
 /**
  * TopNavBar Component
@@ -42,7 +43,7 @@ function TopNavBar() {
           setIsSupplier(false);
           setToken(null);
           setRememberMe(false);
-          toast("See you soon!"); // Gives feedback that logout was a success
+          showToast("See you soon!", "success", "top-right"); // Gives feedback that logout was a success
         }
       });
   };

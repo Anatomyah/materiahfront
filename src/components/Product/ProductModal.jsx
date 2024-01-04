@@ -52,10 +52,10 @@ const createFormSchema = ({ isSupplier }) =>
       }),
     category: yup.string().required("Product category is required"),
     unit: yup.string().required("Measurement unit is required"),
-    volume: yup
+    unit_quantity: yup
       .string()
-      .required("Volume is required")
-      .matches(/^\d+$/, "Volume must be a positive number"),
+      .required("Unit quantity is required")
+      .matches(/^\d+$/, "Unit quantity must be a positive number"),
     storageConditions: yup.string().required("Storage condition is required"),
     stock: yup
       .string()
@@ -238,7 +238,7 @@ const ProductModal = ({
       cat_num: values.catalogueNumber,
       category: values.category,
       unit: values.unit,
-      volume: values.volume,
+      unit_quantity: values.unit_quantity,
       storage: values.storageConditions,
       stock: values.stock,
       price: values.price,
@@ -295,7 +295,7 @@ const ProductModal = ({
         // Displays an error toast if the submission fails.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
-          "error",
+          "success",
           "top-right",
         );
         setIsSubmitting(false); // Resets the submitting state.
@@ -330,7 +330,7 @@ const ProductModal = ({
             catalogueNumber: productObj ? productObj.cat_num : "",
             category: productObj ? productObj.category : "",
             unit: productObj ? productObj.unit : "",
-            volume: productObj ? productObj.volume : "",
+            unit_quantity: productObj ? productObj.unit_quantity : "",
             storageConditions: productObj ? productObj.storage : "",
             stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
@@ -351,7 +351,7 @@ const ProductModal = ({
                   catalogueNumber: true,
                   category: true,
                   unit: true,
-                  volume: true,
+                  unit_quantity: true,
                   storageConditions: true,
                   stock: true,
                   price: true,
@@ -507,27 +507,29 @@ const ProductModal = ({
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
-                    controlId="formProductVolume"
+                    controlId="formProductUnitQuantity"
                     className="field-margin"
                   >
-                    <Form.Label>Volume</Form.Label>
-                    {/* Input for volume with validation feedback. */}
+                    <Form.Label>Unit Quantity</Form.Label>
+                    {/* Input for unit quantity with validation feedback. */}
                     <Form.Control
                       type="text"
-                      name="volume"
-                      value={values.volume}
+                      name="unit_quantity"
+                      value={values.unit_quantity}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("volume", true)}
+                      onFocus={() => setFieldTouched("unit_quantity", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.volume && !!errors.volume}
-                      isValid={touched.volume && !errors.volume}
+                      isInvalid={
+                        touched.unit_quantity && !!errors.unit_quantity
+                      }
+                      isValid={touched.unit_quantity && !errors.unit_quantity}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
-                      {errors.volume}
+                      {errors.unit_quantity}
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group
@@ -597,9 +599,9 @@ const ProductModal = ({
                       onFocus={() => setFieldTouched("price", true)}
                       onBlur={handleBlur}
                       isInvalid={
-                        touched.price && values.volume && !!errors.price
+                        touched.price && values.price && !!errors.price
                       }
-                      isValid={touched.price && values.volume && !errors.price}
+                      isValid={touched.price && values.price && !errors.price}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">

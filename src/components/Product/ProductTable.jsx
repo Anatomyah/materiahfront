@@ -41,7 +41,7 @@ const ProductTable = ({ productList, handleEdit }) => {
           <th>CAT #</th>
           <th>Name</th>
           <th>Category</th>
-          <th>Volume</th>
+          <th>Unit Quantity</th>
           <th>Unit</th>
           <th>Stock</th>
           <th>Storage</th>
@@ -66,6 +66,8 @@ const ProductTable = ({ productList, handleEdit }) => {
                     : defaultImageUrl
                 }
                 className="link-"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <img
                   style={{ width: "150px", height: "150px" }}
@@ -87,7 +89,7 @@ const ProductTable = ({ productList, handleEdit }) => {
             </td>
             <td>{product.cat_num}</td>
             <td>{product.category}</td>
-            <td>{product.volume}</td>
+            <td>{product.unit_quantity}</td>
             <td>{product.unit}</td>
             <td>{product.stock}</td>
             <td>{product.storage}</td>

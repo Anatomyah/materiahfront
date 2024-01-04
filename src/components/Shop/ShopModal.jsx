@@ -18,7 +18,7 @@ import { showToast } from "../../config_and_helpers/helpers";
  * Represents the modal component for a shop product.
  *
  * This component displays detailed information about a product, including its
- * catalogue number, stock, category, supplier, unit, volume, and storage details.
+ * catalogue number, stock, category, supplier, unit, unit_quantity, and storage details.
  * It provides functionality to add the product to the cart with a specified quantity,
  * and showcases product images through a carousel.
  *
@@ -180,11 +180,13 @@ const ShopModal = ({ product, show = false, setShow }) => {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="subtitle1" className="fw-bold">
-                  Volume:
+                  Unit Quantity:
                 </Typography>
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="subtitle1">{product.volume}</Typography>
+                <Typography variant="subtitle1">
+                  {product.unit_quantity}
+                </Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="subtitle1" className="fw-bold">

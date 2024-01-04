@@ -14,7 +14,7 @@ import { CartAppContext } from "../../App";
  * Represents an item card component, displaying key details of a product and providing quick actions.
  *
  * This component shows a product's information like its name, catalogue number, supplier, manufacturer, category,
- * and volume. It allows users to view more details about the product and to add the product to a shopping cart.
+ * and unit quantity. It allows users to view more details about the product and to add the product to a shopping cart.
  * The card uses Material UI components for a consistent and responsive design.
  *
  * @component
@@ -104,8 +104,8 @@ const ItemCard = ({ product, handleEdit }) => {
                 {product.category}
               </div>
               <div>
-                <span style={{ fontWeight: "bold" }}>Volume:</span>{" "}
-                {product.volume}
+                <span style={{ fontWeight: "bold" }}>Unit Quantity:</span>{" "}
+                {product.unit_quantity}
               </div>
             </Typography>
           </CardContent>

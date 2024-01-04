@@ -193,10 +193,6 @@ const OrderModal = ({
     setItems(newItems);
   };
 
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
-
   // Function to handle file change events and update the images state.
   const handleFileChange = (files) => {
     const newImages = files.map((file) => ({
@@ -390,7 +386,6 @@ const OrderModal = ({
             receivedBy: orderObj ? orderObj.received_by : "",
           }}
           validateOnMount={!!orderObj}
-          enableReinitialize={true}
           validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);
@@ -409,7 +404,6 @@ const OrderModal = ({
             setFieldValue,
           }) => {
             // Formik provides these props to be utilized in the form fields for handling form state.
-            console.log("Value after formik.handleChange: ", values.items[0]);
             return (
               // The form itself
               <Form noValidate onSubmit={handleSubmit}>

@@ -130,10 +130,10 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
             </Row>
             <Row md={3}>
               <Col>
-                <p className="fs-6 fw-bold">Volume: </p>
+                <p className="fs-6 fw-bold">Unit Quantity: </p>
               </Col>
               <Col>
-                <p className="fs-6">{product.volume}</p>
+                <p className="fs-6">{product.unit_quantity}</p>
               </Col>
             </Row>
             <Row md={3}>
