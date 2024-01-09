@@ -506,7 +506,7 @@ export const updateProductStock = async (token, productId, value) => {
   try {
     // Make a POST request to the backend to update the stock level
     await axios.post(
-      `${BACKEND_URL}products/update_stock_item/`,
+      `${BACKEND_URL}products/update_product_stock/`,
       {
         value: value,
         product_id: productId,
@@ -527,6 +527,80 @@ export const updateProductStock = async (token, productId, value) => {
           "success",
           "top-right",
         ),
+    };
+
+    // Catch any errors during update and return them
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
+  }
+};
+
+// todo - DOCUMENTATION
+export const createStockItem = async (token, productId, itemData) => {
+  try {
+    // Make a POST request to the backend to update the stock level
+    await axios.post(
+      `${BACKEND_URL}products/create_stock_item/`,
+      {
+        product_id: productId,
+        batch: itemData.batch,
+        in_use: itemData.in_use,
+        expiry: itemData.expiry,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    // Return the success status and a function to show success toast
+    return {
+      success: true,
+      toast: () =>
+        showToast("Stock item created successfully!", "success", "top-right"),
+    };
+
+    // Catch any errors during update and return them
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
+  }
+};
+
+// todo - DOCUMENTATION
+export const updateStockItem = async (
+  token,
+  itemId,
+  itemData,
+  updateItemsArray,
+) => {
+  try {
+    // Make a PATCH request to the backend to update the stock level
+    const response = await axios.patch(
+      `${BACKEND_URL}products/update_stock_item/`,
+      {
+        item_id: itemId,
+        batch: itemData.batch,
+        in_use: itemData.in_use,
+        expiry: itemData.expiry,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    console.log(response.data);
+
+    // Return the success status and a function to show success toast
+    return {
+      success: true,
+      stockItem: response.data.stock_item,
+      toast: () =>
+        showToast("Stock item updated successfully!", "success", "top-right"),
     };
 
     // Catch any errors during update and return them
