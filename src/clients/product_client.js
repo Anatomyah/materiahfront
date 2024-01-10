@@ -642,10 +642,7 @@ export const deleteStockItem = async (token, itemId) => {
   try {
     // Make a delete request to the backend to delete a stock item
     await axios.delete(
-      `${BACKEND_URL}products/delete_stock_item/`,
-      {
-        item_id: itemId,
-      },
+      `${BACKEND_URL}products/delete_stock_item/?item_id=${itemId}`,
       {
         headers: {
           Authorization: `Token ${token}`,
