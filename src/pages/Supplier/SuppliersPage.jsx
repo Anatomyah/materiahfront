@@ -95,7 +95,7 @@ const SuppliersPage = () => {
       } else {
         showToast(
           "An unexpected error occurred. Please try again",
-          "danger",
+          "error",
           "top-center",
         );
       }

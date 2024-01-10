@@ -87,7 +87,7 @@ const QuotesPage = () => {
         // Show error toast if the fetch call fails
         showToast(
           "An unexpected error occurred. Please try again",
-          "danger",
+          "error",
           "top-center",
         );
       }

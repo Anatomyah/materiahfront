@@ -295,7 +295,7 @@ const ProductModal = ({
         // Displays an error toast if the submission fails.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
-          "success",
+          "error",
           "top-right",
         );
         setIsSubmitting(false); // Resets the submitting state.

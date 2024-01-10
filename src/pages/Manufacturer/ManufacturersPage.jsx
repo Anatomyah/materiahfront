@@ -95,7 +95,7 @@ const ManufacturersPage = () => {
       } else {
         showToast(
           "An unexpected error occurred. Please try again",
-          "danger",
+          "error",
           "top-center",
         ); // Displays an error message if fetching fails
       }

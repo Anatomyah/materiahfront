@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {
@@ -9,6 +9,7 @@ import {
 import { showToast } from "../../config_and_helpers/helpers";
 import { Spinner } from "react-bootstrap";
 import { AppContext } from "../../App";
+import "./ProductComponentStyle.css";
 
 // checkmarkIcon: The icon for item save
 const checkmarkIcon = (
@@ -68,6 +69,10 @@ const StockItemComponent = ({
     inUse: itemObj ? itemObj.in_use : false,
   });
 
+  useEffect(() => {
+    console.log(itemObj);
+  }, [itemObj]);
+
   // Use state hook to manage the submitting state of the form.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -122,7 +127,7 @@ const StockItemComponent = ({
         // Displays an error toast if the submission fails.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
-          "success",
+          "error",
           "top-right",
         );
         setIsSubmitting(false); // Resets the submitting state.
@@ -147,7 +152,7 @@ const StockItemComponent = ({
         // Displays an error toast if the submission fails.
         showToast(
           "An unexpected error occurred. Please try again in a little while.",
-          "success",
+          "error",
           "top-right",
         );
         setIsSubmitting(false); // Resets the submitting state.
@@ -158,7 +163,11 @@ const StockItemComponent = ({
   return (
     <>
       {/* We create a new table row for each stock item */}
-      <tr className="text-center align-middle">
+      <tr
+        className={`text-center align-middle ${
+          itemData.inUse && showEdit && "in-use-item"
+        }`}
+      >
         {/* This table data shows the index of the stock item (we add 1 because indices start at 0 while we want to start counting from 1)*/}
         <td>{index + 1 || ""}</td>
         {/* Here we show the order id of the stock item if it exists */}

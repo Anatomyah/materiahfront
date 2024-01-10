@@ -9,6 +9,7 @@ import QuoteDetailModal from "../Quote/QuoteDetailModal";
 import OrderDetailModal from "./OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import { Accordion } from "react-bootstrap";
+import ProductDetailModal from "../Product/ProductDetailModal";
 
 /**
  * OrderTable Component
@@ -115,11 +116,9 @@ const OrderTable = ({ orderList, handleEdit }) => {
                               <tr className="text-center italic-text">
                                 <td>{index + 1}</td>
                                 <td key={index}>
-                                  <a
-                                    href={`/product-details/${item.product.id}`}
-                                  >
-                                    {item.product.cat_num}
-                                  </a>
+                                  <ProductDetailModal
+                                    productId={item.product.id}
+                                  />
                                 </td>
                                 <td>{item.quantity}</td>
                                 <td>{item.batch}</td>
