@@ -536,11 +536,22 @@ export const updateProductStock = async (token, productId, value) => {
   }
 };
 
-// todo - DOCUMENTATION
+/**
+ * Creates a stock item.
+ * @param {string} token - The authentication token.
+ * @param {string} productId - The ID of the product.
+ * @param {Object} itemData - The data of the stock item.
+ * @param {string} itemData.batch - The batch number of the stock item.
+ * @param {boolean} itemData.in_use - Indicates whether the stock item is in use.
+ * @param {string} itemData.expiry - The expiry date of the stock item.
+ * @returns {Promise<Object>} A promise that resolves to an object containing the success status,
+ * the created stock item, and a function to show a success toast. Rejects with an array of
+ * error messages if an error occurs during creation.
+ */
 export const createStockItem = async (token, productId, itemData) => {
   try {
-    // Make a POST request to the backend to update the stock level
-    await axios.post(
+    // Make a POST request to the backend to create the stock item
+    const response = await axios.post(
       `${BACKEND_URL}products/create_stock_item/`,
       {
         product_id: productId,
@@ -555,9 +566,12 @@ export const createStockItem = async (token, productId, itemData) => {
       },
     );
 
+    console.log(response);
+
     // Return the success status and a function to show success toast
     return {
       success: true,
+      stockItem: response.data.stock_item,
       toast: () =>
         showToast("Stock item created successfully!", "success", "top-right"),
     };
@@ -569,21 +583,28 @@ export const createStockItem = async (token, productId, itemData) => {
   }
 };
 
-// todo - DOCUMENTATION
-export const updateStockItem = async (
-  token,
-  itemId,
-  itemData,
-  updateItemsArray,
-) => {
+/**
+ * Updates a stock item.
+ *
+ * @async
+ * @param {string} token - The user token used for authorization.
+ * @param {string} itemId - The ID of the stock item to update.
+ * @param {object} itemData - The new data for the stock item.
+ * @param {string} itemData.batch - The new batch number for the stock item.
+ * @param {boolean} itemData.inUse - The new in use status for the stock item.
+ * @param {string} itemData.expiry - The new expiry date for the stock item.
+ * @returns {Promise} A Promise that resolves to an object containing the success status and a function to show a success toast message in the UI, or rejects with an array of error messages
+ *.
+ */
+export const updateStockItem = async (token, itemId, itemData) => {
   try {
-    // Make a PATCH request to the backend to update the stock level
-    const response = await axios.patch(
+    // Make a PATCH request to the backend to update the stock item
+    await axios.patch(
       `${BACKEND_URL}products/update_stock_item/`,
       {
         item_id: itemId,
         batch: itemData.batch,
-        in_use: itemData.in_use,
+        in_use: itemData.inUse,
         expiry: itemData.expiry,
       },
       {
@@ -593,14 +614,50 @@ export const updateStockItem = async (
       },
     );
 
-    console.log(response.data);
+    // Return the success status and a function to show success toast
+    return {
+      success: true,
+      toast: () =>
+        showToast("Stock item updated successfully!", "success", "top-right"),
+    };
+
+    // Catch any errors during update and return them
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
+  }
+};
+
+/**
+ * Deletes a stock item from the backend.
+ *
+ * @param {string} token - The authentication token.
+ * @param {string} itemId - The ID of the stock item to delete.
+ * @returns {Promise<Object>} - A promise that resolves to an object with the following properties:
+ *   - success {boolean}: Indicates whether the deletion was successful.
+ *   - toast {Function}: A function to show a success toast message.
+ * @throws {Error} - If an error occurs during the deletion process.
+ */
+export const deleteStockItem = async (token, itemId) => {
+  try {
+    // Make a delete request to the backend to delete a stock item
+    await axios.delete(
+      `${BACKEND_URL}products/delete_stock_item/`,
+      {
+        item_id: itemId,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
 
     // Return the success status and a function to show success toast
     return {
       success: true,
-      stockItem: response.data.stock_item,
       toast: () =>
-        showToast("Stock item updated successfully!", "success", "top-right"),
+        showToast("Stock item deleted successfully!", "success", "top-right"),
     };
 
     // Catch any errors during update and return them

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
@@ -13,12 +13,18 @@ import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
 import UpdateAmountModal from "./UpdateAmountModal";
 import Table from "react-bootstrap/Table";
-import StockItemCreateOrEdit from "./StockItemCreateOrEdit";
+import StockItemComponent from "./StockItemComponent";
+import "./ProductComponentStyle.css";
+
+// plusIcon: The icon for adding a stock item
+const plusIcon = (
+  <i className="fa fa-solid fa-plus" style={{ color: "green" }}></i>
+);
 
 /**
  * Represents an inventory modal component for displaying and managing product details.
  *
- * This component shows detailed information about a product and provides options
+ * This component shows detailed information about a product and it's related stock items, provides options
  * to edit, update stock amounts, or delete the product. It uses a modal layout to
  * display the product details and includes embedded components like `UpdateAmountModal`,
  * `ProductModal`, `SupplierDetailModal`, and `ManufacturerDetailModal` for specific functionalities.
@@ -44,6 +50,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   const [show, setShow] = useState(false);
   // State for managing the product items in stock
   const [items, setItems] = useState(product ? product.items : []);
+  // State for managing the showing of a new empty item table row
   const [addNewItem, setAddNewItem] = useState(false);
 
   // Function to close the modal.
@@ -56,9 +63,21 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
     setAddNewItem(!addNewItem);
   };
 
-  const updateStockItems = (addedItem) => {
-    setItems((prevItems) => [...prevItems, addedItem]);
+  // Function to update the stock items array
+  const updateStockItems = (itemObj, deleteItem) => {
+    // if the 'addNewItem' state is true, this is a creation of a new product, thus returning 'addNewItem' to false
+    if (addNewItem) addStockItem();
+    // if the deleteItem param was passed, remove it from the items array via filtering
+    if (deleteItem) {
+      setItems((prevItems) =>
+        prevItems.filter((item) => item.id !== itemObj.id),
+      );
+      // else, update the items array when the passed in itemObj
+    } else {
+      setItems((prevItems) => [...prevItems, itemObj]);
+    }
   };
+
   return (
     <>
       {/* Button to open the modal, displaying the product's name. */}
@@ -178,16 +197,9 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               <Col className="text-start">
                 <p className="fs-6 fw-bold">Items in Stock:</p>
               </Col>
-              <Col className="text-end">
-                <Button
-                  className="field-margin"
-                  variant="outline-success"
-                  onClick={addStockItem}
-                >
-                  Add Item
-                </Button>
-              </Col>
             </Row>
+
+            {/* Render a table to display the stock items related to the product */}
             <Table striped bordered hover>
               <thead>
                 <tr className="text-center">
@@ -197,25 +209,45 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                   <th>Batch</th>
                   <th>Expiry</th>
                   <th>In Use?</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {/*todo - add documentation*/}
-                {addNewItem && <StockItemCreateOrEdit productId={product.id} />}
-                {items?.length ? (
-                  <>
-                    {items.map((item, index) => (
-                      <StockItemCreateOrEdit
-                        itemObj={item}
-                        index={index}
-                        editItem={true}
-                        onSuccessfulSubmit={updateStockItems}
-                      />
-                    ))}
-                  </>
-                ) : (
-                  <span></span>
+                {/* Render a new table row when the plus button at the bottom of the table is clicked */}
+                {addNewItem && (
+                  <StockItemComponent
+                    productId={product.id}
+                    onSuccessfulSubmit={updateStockItems}
+                    showAddNewItem={addStockItem}
+                  />
                 )}
+
+                {/* Render a mapping function mapping over the items related to the product */}
+                {items.map((item, index) => (
+                  <StockItemComponent
+                    key={index}
+                    itemObj={item}
+                    index={index}
+                    editItem={true}
+                    onSuccessfulSubmit={updateStockItems}
+                  />
+                ))}
+
+                {/* If there are no items in the items array or if not in the process of adding a new item, render this row */}
+                {items.length === 0 && !addNewItem ? (
+                  <tr className="text-center align-middle">
+                    <td colSpan="7">No items related to this product</td>
+                  </tr>
+                ) : null}
+
+                {/* Render the plus button to add a new item row */}
+                <tr className="text-center align-middle">
+                  <td colSpan="7">
+                    <Button variant="outline-light" onClick={addStockItem}>
+                      {plusIcon}
+                    </Button>
+                  </td>
+                </tr>
               </tbody>
             </Table>
           </Container>
