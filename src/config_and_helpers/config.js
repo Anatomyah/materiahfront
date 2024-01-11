@@ -13,12 +13,12 @@
 
 // When specifically using the Organoids EC2 instance for backend
 // ORGANOIDS EC2
-export const BACKEND_URL = "https://materiahstock.com/v1/";
+// export const BACKEND_URL = "https://materiahstock.com/v1/";
 
 // When specifically using the Demo EC2 instance for backend
 // DEMO EC2
-// export const BACKEND_URL =
-//   "https://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
+export const BACKEND_URL =
+  "http://ec2-3-70-176-24.eu-central-1.compute.amazonaws.com/v1/";
 
 // Default URLs for images and pdfs when no specific image or pdf is provided
 export const defaultImageUrl =

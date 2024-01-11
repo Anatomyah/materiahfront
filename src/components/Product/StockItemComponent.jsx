@@ -10,6 +10,7 @@ import { showToast } from "../../config_and_helpers/helpers";
 import { Spinner } from "react-bootstrap";
 import { AppContext } from "../../App";
 import "./ProductComponentStyle.css";
+import OrderDetailModal from "../Order/OrderDetailModal";
 
 // checkmarkIcon: The icon for item save
 const checkmarkIcon = (
@@ -171,9 +172,15 @@ const StockItemComponent = ({
         {/* This table data shows the index of the stock item (we add 1 because indices start at 0 while we want to start counting from 1)*/}
         <td>{index + 1 || ""}</td>
         {/* Here we show the order id of the stock item if it exists */}
-        <td>{itemObj?.order ? itemObj?.order.order_id : "N/A"}</td>
+        <td>
+          {itemObj?.order ? (
+            <OrderDetailModal orderId={itemObj.order.id} />
+          ) : (
+            "N/A"
+          )}
+        </td>
         {/* Here we show the order date of the stock item if it exists */}
-        <td>{itemObj?.order ? itemObj?.order.order_date : "N/A"}</td>
+        <td>{itemObj?.order ? itemObj.order.arrival_date : "N/A"}</td>
         <td>
           {/* This section is a conditional rendering. If showEdit is true, we display the batch number else we display the input to edit it*/}
           {showEdit ? (
