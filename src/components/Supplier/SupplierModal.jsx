@@ -107,7 +107,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   const [supplierEmail, setSupplierEmail] = useState(
     supplierObj ? supplierObj?.email : "",
   );
-  const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(false);
+  const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false); // State for controlling the modal visibility
