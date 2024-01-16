@@ -667,8 +667,7 @@ const ProductModal = ({
                         name="manufacturer"
                         value={values.manufacturer}
                         onChange={handleChange}
-                        disabled={!supplierId}  {/* Input disabled until a supplier is selected */}
-
+                        disabled={!supplierId} // Input disabled until a supplier is selected
                       >
                         <option value="" disabled>
                           --Select Manufacturer--
