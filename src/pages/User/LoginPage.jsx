@@ -176,7 +176,7 @@ const LoginPage = () => {
 
         {/* Links to the account creation and password reset modals */}
         <div className="d-flex justify-content-between align-items-end">
-          <AccountModal isSignUp={true} />
+          {/*<AccountModal isSignUp={true} />*/}
           <ChangePasswordModal />
         </div>
       </div>
