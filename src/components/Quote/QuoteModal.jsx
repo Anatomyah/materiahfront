@@ -9,7 +9,6 @@ import QuoteItemComponent from "./QuoteItemComponent";
 import * as yup from "yup";
 import { Formik } from "formik";
 import { Col, Form, Spinner } from "react-bootstrap";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import EditIcon from "@mui/icons-material/Edit";
 import { showToast } from "../../config_and_helpers/helpers";
@@ -27,20 +26,20 @@ const itemSchema = yup.object().shape({
 });
 
 // Form validation schema creation function
-const createFormSchema = ({ hasQuotePdf }) =>
+const createFormSchema = ({ hasQuoteFile }) =>
   yup.object().shape({
     items: yup.array().of(itemSchema),
     supplier: yup.string().required("Supplier is required"),
-    quotePdf: yup
+    quoteFile: yup
       .mixed()
       .when([], () => {
-        return hasQuotePdf
+        return hasQuoteFile
           ? yup.mixed()
-          : yup.mixed().required("Uploading a quote PDF is required.");
+          : yup.mixed().required("Uploading a quote file is required.");
       })
       .test(
         "fileType",
-        "Unsupported file format. Only PDF format is accepted.",
+        "Unsupported file format. Only PDF, Word and Excel format is accepted.",
         (value) => {
           if (!value) return true; // Bypass the test if no file is uploaded
           return value.every((file) => ["application/pdf"].includes(file.type));
@@ -54,7 +53,7 @@ const createFormSchema = ({ hasQuotePdf }) =>
  *
  * @description
  * Renders a modal for creating or editing a quote. It includes functionalities for selecting suppliers,
- * products, managing quote items, and uploading a quote PDF.
+ * products, managing quote items, and uploading a quote file.
  *
  * @prop {Function} onSuccessfulSubmit - Callback function to be called after a successful form submission.
  * @prop {Object} quoteObj - Object containing the quote data for editing. If not provided, the modal is in 'Create' mode.
@@ -71,9 +70,9 @@ const QuoteModal = ({
 }) => {
   const { token } = useContext(AppContext);
   // State declarations for managing form data and UI state
-  const [hasQuotePdf, setHasQuotePdf] = useState(false);
+  const [hasQuoteFile, setHasQuoteFile] = useState(false);
   const formSchema = createFormSchema({
-    hasQuotePdf,
+    hasQuoteFile: hasQuoteFile,
   });
   const [supplierSelectList, setSupplierSelectList] = useState([]);
   const [supplier, setSupplier] = useState(
@@ -101,12 +100,12 @@ const QuoteModal = ({
     homeShowModal ? homeShowModal : false,
   );
 
-  // Effect for initializing or resetting the PDF-related state
+  // Effect for initializing or resetting the file-related state
   useEffect(() => {
     if (quoteFile) {
-      setHasQuotePdf(true);
+      setHasQuoteFile(true);
     } else {
-      setHasQuotePdf(false);
+      setHasQuoteFile(false);
     }
   }, [quoteFile]);
 
@@ -268,7 +267,7 @@ const QuoteModal = ({
                     price: true,
                   })),
                   supplier: true,
-                  quotePdf: true,
+                  quoteFile: true,
                 }
               : {}
           }
@@ -283,7 +282,7 @@ const QuoteModal = ({
                   price: item.price || "",
                 })),
             supplier: supplier ? supplier : "",
-            quotePdf: "",
+            quoteFile: "",
           }}
           validateOnMount={!!quoteObj}
           enableReinitialize={true}
@@ -388,27 +387,30 @@ const QuoteModal = ({
                         controlId="formOrderImages"
                         className="field-margin"
                       >
-                        <Form.Label>Upload Quote (pdf)</Form.Label>
+                        <Form.Label>Upload Quote File</Form.Label>
                         <Form.Control
                           type="file"
-                          accept="application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                          name="quotePdf"
+                          accept="application/pdf,
+                                  application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+                                  application/vnd.ms-excel,
+                                  application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                          name="quoteFile"
                           onChange={(event) => {
                             const files = Array.from(event.target.files);
                             handleFileChange(files[0]);
-                            setFieldValue("quotePdf", files);
+                            setFieldValue("quoteFile", files);
                           }}
-                          isValid={touched.quotePdf && quoteFile}
+                          isValid={touched.quoteFile && quoteFile}
                           isInvalid={
-                            touched.quotePdf &&
-                            (!!errors.quotePdf || !quoteFile)
+                            touched.quoteFile &&
+                            (!!errors.quoteFile || !quoteFile)
                           }
                         />
                         <Form.Control.Feedback type="valid">
                           Looks good!
                         </Form.Control.Feedback>
                         <Form.Control.Feedback type="invalid">
-                          {errors.quotePdf}
+                          {errors.quoteFile}
                         </Form.Control.Feedback>
                       </Form.Group>
                       {quoteFile && (
@@ -423,8 +425,7 @@ const QuoteModal = ({
                             rel="noopener noreferrer"
                             className="btn btn-outline-dark"
                           >
-                            {"View Quote "}
-                            <PictureAsPdfIcon />
+                            {"View Quote File"}
                           </a>
                         </div>
                       )}

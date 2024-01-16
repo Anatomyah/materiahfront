@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Spinner } from "react-bootstrap";
+import { OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { showToast } from "../../config_and_helpers/helpers";
 
 /**
@@ -20,6 +20,7 @@ import { showToast } from "../../config_and_helpers/helpers";
  * @prop {string} objectId - Id of the object to delete.
  * @prop {Function} deleteFetchFunc - Function that handles the deletion. This function should return a promise.
  * @prop {Function} onSuccessfulDelete - Callback that is called after a successful deletion to update the UI accordingly.
+ * @prop {Function} disableDelete - A boolean prop to enable the disabling of the delete button when relevant
  *
  * @example
  * return (
@@ -29,6 +30,7 @@ import { showToast } from "../../config_and_helpers/helpers";
  *     objectId='p1'
  *     deleteFetchFunc={deletePost}
  *     onSuccessfulDelete={removePostFromList}
+ *     disableDelete={true}
  *   />
  * );
  *
@@ -39,6 +41,7 @@ const DeleteButton = ({
   objectId,
   deleteFetchFunc,
   onSuccessfulDelete,
+  disableDelete,
 }) => {
   // Access token from the app-wide context
   const { token } = useContext(AppContext);
@@ -49,6 +52,47 @@ const DeleteButton = ({
   // Function to close the confirmation modal
   const handleClose = () => {
     setShowModal(false);
+  };
+
+  const renderButton = () => {
+    // Tooltip rendering function
+    const renderTooltip = (props) => (
+      <Tooltip id={`tooltip-delete-${objectId}`} {...props}>
+        Cannot delete: Quote linked to an order.
+      </Tooltip>
+    );
+
+    if (disableDelete) {
+      return (
+        <OverlayTrigger
+          overlay={renderTooltip}
+          placement="top"
+          delay={{ show: 50, hide: 400 }}
+        >
+          {/* Wrapping disabled button in a span */}
+          <span className="d-inline-block">
+            {/* Button is displayed but disabled to communicate that the button's action is unavailable */}
+            <Button
+              variant="outline-danger"
+              disabled
+              // 'pointerEvents: "none"' ensures that it doesn't capture any events like clicking or hovering.
+              style={{ pointerEvents: "none" }}
+            >
+              {/* DeleteIcon represents the trash bin or delete icon */}
+              <DeleteIcon />
+            </Button>
+          </span>
+        </OverlayTrigger>
+      );
+    } else {
+      return (
+        // If the 'disableDelete' variable is false,
+        // return an active button that triggers the handleShow function on click.
+        <Button variant="outline-danger" onClick={handleShow}>
+          <DeleteIcon />
+        </Button>
+      );
+    }
   };
 
   // Function to show the confirmation modal
@@ -87,10 +131,8 @@ const DeleteButton = ({
   // Render the delete button along with the confirmation modal
   return (
     <div>
-      {/* Delete Button*/}
-      <Button variant="outline-danger" onClick={handleShow}>
-        <DeleteIcon />
-      </Button>
+      {/* Render button with or without overlay based on disableDelete */}
+      {renderButton()}
 
       {/* Confirmation Modal */}
       <Modal show={showModal} onHide={handleClose}>

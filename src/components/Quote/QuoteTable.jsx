@@ -79,6 +79,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                   />
                 </div>
                 <DeleteButton
+                  // Disable quote deletion if quote is related to an order
+                  disableDelete={quote.hasOwnProperty("order")}
                   objectType="quoteObj"
                   objectName={quote.id}
                   objectId={quote.id}

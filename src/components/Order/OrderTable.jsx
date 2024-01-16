@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import Table from "react-bootstrap/Table";
 import DeleteButton from "../Generic/DeleteButton";
 import OrderModal from "./OrderModal";
@@ -10,6 +10,7 @@ import OrderDetailModal from "./OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import { Accordion } from "react-bootstrap";
 import ProductDetailModal from "../Product/ProductDetailModal";
+import { OrderDeletionContext } from "../../App";
 
 /**
  * OrderTable Component
@@ -23,6 +24,15 @@ import ProductDetailModal from "../Product/ProductDetailModal";
  * @param {function} handleEdit - A function that tell parent component to refresh the order data.
  */
 const OrderTable = ({ orderList, handleEdit }) => {
+  // Fetches the isOrderDeleted context to manage follow up actions
+  const { toggleOrderDeleted } = useContext(OrderDeletionContext);
+
+  // Callback function on order deletion
+  const onOrderDelete = () => {
+    toggleOrderDeleted();
+    handleEdit();
+  };
+
   return (
     <Table striped bordered hover>
       <thead>
@@ -86,7 +96,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                   objectName={order.id}
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
-                  onSuccessfulDelete={handleEdit}
+                  onSuccessfulDelete={onOrderDelete}
                 />
               </td>
             </tr>

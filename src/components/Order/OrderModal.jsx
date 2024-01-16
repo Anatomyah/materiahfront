@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext } from "../../App";
+import { AppContext, OrderDeletionContext } from "../../App";
 import {
   getOpenQuotesSelectList,
   getQuoteDetails,
@@ -129,6 +129,10 @@ const OrderModal = ({
   // useContext - Fetches the user token from the overall app context.
   const { token } = useContext(AppContext);
 
+  // useContext - Fetches the isOrderDeleted boolean in order to reset the openQuotesSelectList.
+  const { isOrderDeleted, toggleOrderDeleted } =
+    useContext(OrderDeletionContext);
+
   // useState - Initializes the state variables for the component.
   const [hasExistingImages, setHasExistingImages] = useState(false);
   const formSchema = createFormSchema({
@@ -165,10 +169,13 @@ const OrderModal = ({
     getQuoteDetails(token, quoteId, setRelatedQuoteObj);
   };
 
-  // useEffect Hook to load the list of open quotes when the component renders.
+  // useEffect Hook to load the list of open quotes when the component renders or when an order is deleted.
   useEffect(() => {
     getOpenQuotesSelectList(token, setOpenQuotesSelectList);
-  }, []);
+    if (isOrderDeleted) {
+      toggleOrderDeleted();
+    }
+  }, [isOrderDeleted]);
 
   // useEffect Hook to set the Items state based on the relatedQuoteObj state.
   // Runs when relatedQuoteObj changes.
@@ -342,7 +349,8 @@ const OrderModal = ({
         {/* It uses 'orderObj' to conditionally setup its properties
         for the modal's create or edit forms. */}
         <Formik
-          key={items.length}
+          // The items array is passed in as a key to make sure the form is updated when the items state is updated
+          key={items}
           initialTouched={
             orderObj
               ? {
@@ -367,6 +375,7 @@ const OrderModal = ({
                   batch: item.batch,
                   expiryDate: item.expiry,
                   itemFulfilled: item.status === "OK" || false,
+                  selectedReason: item.status,
                   otherReasonDetail: item.issue_detail || "",
                 }))
               : items.map((item) => ({

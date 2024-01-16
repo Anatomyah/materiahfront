@@ -210,13 +210,23 @@ export const getManufacturers = async (
  * @async
  * @param {string} token - The access token for the current user.
  * @param {Function} setManufacturers - The function to update the manufacturer list in the component's state.
+ * @param {string} supplierId - When creating a product, a supplier ID will be used to filter the associated
+ * manufacturers with that supplier
  * @returns {Promise<Object>} An object with key "success" with value true if the API call was successful. If it fails, returns an array containing error messages.
  * @throws {Error} Will throw an error if the request fails.
  */
-export const getManufacturerSelectList = async (token, setManufacturers) => {
+export const getManufacturerSelectList = async (
+  token,
+  setManufacturers,
+  supplierId,
+) => {
+  // Create the URL and conditionally add the supplier ID query param
+  let URL = `${BACKEND_URL}manufacturers/get_manufacturer_select_list/`;
+  if (supplierId) URL += `?supplier_id=${supplierId}`;
+
   try {
     // Send a GET request to the backend API to fetch the list of manufacturer names
-    const response = await axios.get(`${BACKEND_URL}manufacturers/names/`, {
+    const response = await axios.get(URL, {
       headers: {
         Authorization: `Token ${token}`,
       },

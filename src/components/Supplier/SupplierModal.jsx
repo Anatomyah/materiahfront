@@ -30,10 +30,7 @@ const formSchema = yup.object().shape({
     .string()
     .required("Website is required")
     .url("Enter a valid URL"),
-  email: yup
-    .string()
-    .required("Email is required")
-    .matches(emailRegex, "Enter a valid email"),
+  email: yup.string().matches(emailRegex, "Enter a valid email"),
   phonePrefix: yup.string(),
   phoneSuffix: yup
     .string()

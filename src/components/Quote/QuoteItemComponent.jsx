@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DropdownSelect from "../Generic/DropdownSelect";
 import { Form, FormControl, Spinner } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -35,6 +35,11 @@ const QuoteItemComponent = ({
 
   // State to manage the selected product
   const [product, setProduct] = useState(foundProduct);
+
+  // Reset the product state when productList changes
+  useEffect(() => {
+    setProduct(null);
+  }, [productList]);
 
   /**
    * Function: handleDelayedChange
@@ -88,7 +93,7 @@ const QuoteItemComponent = ({
       {/* Product selection dropdown */}
       <DropdownSelect
         optionsList={productList}
-        label="Product"
+        label="Select a product"
         selectedValue={product}
         setSelectedValue={handleProductChange}
         disabledOptions={disabledOptions}

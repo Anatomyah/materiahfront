@@ -187,7 +187,7 @@ const SuppliersPage = () => {
                   }}
                 >
                   <option value="" disabled>
-                    -- Select Manufacturer --
+                    -- Filter by Manufacturer --
                   </option>
                   {/* Mapping through manufacturers for dropdown options */}
                   {manufacturerSelectList.map((choice, index) => (

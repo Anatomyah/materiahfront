@@ -70,10 +70,6 @@ const StockItemComponent = ({
     inUse: itemObj ? itemObj.in_use : false,
   });
 
-  useEffect(() => {
-    console.log(itemObj);
-  }, [itemObj]);
-
   // Use state hook to manage the submitting state of the form.
   const [isSubmitting, setIsSubmitting] = useState(false);
 

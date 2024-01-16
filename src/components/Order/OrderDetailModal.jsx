@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { AppContext } from "../../App";
+import { AppContext, OrderDeletionContext } from "../../App";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteOrder, getOrderDetails } from "../../clients/order_client";
 import OrderModal from "./OrderModal";
@@ -36,10 +36,15 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
   // Hooks for necessary states and context values
   const { token } = useContext(AppContext);
+  const { toggleOrderDeleted } = useContext(OrderDeletionContext);
+
   // Provide a mutable value that exists for the whole lifetime of the component
   const isLoadingRef = useRef(false);
+  // State for controlling the showing of the modal
   const [show, setShow] = useState(false);
+  // State for manging the Order object
   const [order, setOrder] = useState(orderObj);
+  // Constant stores the relevant order ID to us, passed in prop or from existing order object
   const orderIdToUse = orderObj ? orderObj.id : orderId;
 
   // Fetches specific order data
@@ -63,6 +68,12 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
       updateOrders();
     }
     fetchOrder();
+  };
+
+  // Callback for when an order is deleted
+  const onOrderDelete = () => {
+    toggleOrderDeleted();
+    updateOrders();
   };
 
   // Handlers for opening and closing the modal
@@ -205,7 +216,7 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                   objectName={order.id}
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
-                  onSuccessfulDelete={updateOrders} // Triggers the provided onDelete function when the delete operation is successful
+                  onSuccessfulDelete={onOrderDelete} // Triggers the provided onDelete function when the delete operation is successful
                 />
               </div>
 

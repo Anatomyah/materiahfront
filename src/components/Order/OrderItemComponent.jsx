@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Form, FormControl, Spinner } from "react-bootstrap";
 import "./OrderComponentStyle.css";
+import { useFormikContext } from "formik";
 
 /**
  * OrderItemComponent
@@ -25,23 +26,104 @@ const OrderItemComponent = ({
   quoteItem,
   formik,
 }) => {
+  // Formik context for enabling Formik functionality in side this child component
+  const formikContext = useFormikContext();
+
   // State hook for managing delay in updating form field changes.
   const [typingTimeout, setTypingTimeout] = useState(null);
 
-  // Handler for when the checkbox changes. It modifies the status and quantity fields appropriately.
+  // Function for handling the selected reason change for the item not being fulfilled
+  const handleReasonChange = (value) => {
+    // Copy current form values for the order items
+    const updatedItems = [...formikContext.values.items];
+
+    // Call function to instantly update the items state managed separately in the OrderModal component and for the
+    // Formik form management.
+    // 'status' for this state is selectedReason for the Formik state.
+    handleInstantChange("status", value);
+    updatedItems[index] = {
+      ...updatedItems[index],
+      selectedReason: value,
+    };
+
+    // If 'value' is neither 'Different amount' nor 'Did not arrive',
+    // the item's quantity should be set to match the related quote item quantity
+    if (value !== "Different amount" && value !== "Did not arrive") {
+      handleInstantChange(
+        "quantity",
+        quoteItem ? quoteItem.quantity : item.quote_item.quantity,
+      );
+      updatedItems[index] = {
+        ...updatedItems[index],
+        quantity: quoteItem ? quoteItem.quantity : item.quote_item.quantity,
+      };
+    }
+
+    // If the item did not arrive, it's quantity should be set to 0
+    if (value === "Did not arrive") {
+      handleInstantChange("quantity", 0);
+      updatedItems[index] = {
+        ...updatedItems[index],
+        quantity: 0,
+      };
+    }
+
+    // Update formik values with updated items
+    formikContext.setValues({
+      ...formikContext.values,
+      items: updatedItems,
+    });
+  };
+
+  // Handler for when the item fulfillment checkbox changes.
   const handleCheckbox = () => {
+    // Copy current form values for the order items
+    const updatedItems = [...formikContext.values.items];
+
+    // When the checkbox is unchecked (i.e., item is unfulfilled), the 'status' and 'selectedReason' are
+    // reset to an empty string both for the items separate state and the Formik state
+    // 'status' = selectedReason for the Formik field
+    // The separate state does not have and itemFulfilled field as the item fulfillment is determined in the backend
+    // via the object's status
     if (formik.values.items[index].itemFulfilled) {
-      handleInstantChange("status", "Did not arrive");
+      handleInstantChange("status", "");
+      updatedItems[index] = {
+        ...updatedItems[index],
+        itemFulfilled: false,
+        selectedReason: "",
+      };
     } else {
+      // Otherwise, when the checkbox is checked (i.e., item is fulfilled), the 'status' is set to "OK"
+      // and the 'quantity' is restored to its original quote item value
       handleInstantChange("status", "OK");
+      handleInstantChange(
+        "quantity",
+        quoteItem ? quoteItem.quantity : item.quote_item.quantity,
+      );
+      updatedItems[index] = {
+        ...updatedItems[index],
+        status: "OK",
+        quantity: quoteItem ? quoteItem.quantity : item.quote_item.quantity,
+        selectedReason: "Did not arrive",
+        itemFulfilled: true,
+      };
+
+      // If 'otherReasonDetail' exists, clear it out (in case the selectedReason for the
+      // item being unfulfilled is 'Other')
+      if (formik.values.items[index].otherReasonDetail !== "") {
+        handleDelayedChange("issue_detail", "");
+        updatedItems[index] = {
+          ...updatedItems[index],
+          issue_detail: "",
+        };
+      }
     }
-    handleDelayedChange(
-      "quantity",
-      quoteItem ? quoteItem.quantity : item.quote_item.quantity,
-    );
-    if (formik.values.items[index].otherReasonDetail !== "") {
-      handleDelayedChange("issue_detail", "");
-    }
+
+    // Update the Formik state
+    formikContext.setValues({
+      ...formikContext.values,
+      items: updatedItems,
+    });
   };
 
   // Handler for inputs that has delay in updating their changes.
@@ -104,7 +186,7 @@ const OrderItemComponent = ({
               // isValid and isInvalid for displaying validation feedback //
               name={quantityFieldName}
               type="text"
-              value={formik.values?.items[index]?.quantity || ""}
+              value={formik.values?.items[index]?.quantity || 0}
               onChange={(event) => {
                 formik.handleChange(event);
                 const { value } = event.target;
@@ -198,11 +280,7 @@ const OrderItemComponent = ({
               type="checkbox"
               label="Item arrived in full & In good condition"
               checked={formik.values?.items[index]?.itemFulfilled}
-              onChange={(event) => {
-                const { value } = event.target;
-                formik.handleChange(event);
-                handleCheckbox(value);
-              }}
+              onChange={handleCheckbox}
               onBlur={formik.handleBlur}
             />
           </Form.Group>
@@ -220,8 +298,7 @@ const OrderItemComponent = ({
                   name={selectedReasonFieldName}
                   onChange={(event) => {
                     const { value } = event.target;
-                    formik.handleChange(event);
-                    handleInstantChange("status", value);
+                    handleReasonChange(value);
                   }}
                   value={formik.values?.items[index]?.selectedReason || ""}
                   onBlur={formik.handleBlur}

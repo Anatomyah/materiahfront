@@ -549,7 +549,6 @@ export const updateProductStock = async (token, productId, value) => {
  * error messages if an error occurs during creation.
  */
 export const createStockItem = async (token, productId, itemData) => {
-  console.log(itemData);
   try {
     // Make a POST request to the backend to create the stock item
     const response = await axios.post(
@@ -566,8 +565,6 @@ export const createStockItem = async (token, productId, itemData) => {
         },
       },
     );
-
-    console.log(response);
 
     // Return the success status and a function to show success toast
     return {

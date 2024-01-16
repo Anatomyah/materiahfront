@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
@@ -52,10 +52,6 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   const [items, setItems] = useState(product ? product.items : []);
   // State for managing the showing of a new empty item table row
   const [addNewItem, setAddNewItem] = useState(false);
-
-  useEffect(() => {
-    console.log(product);
-  }, [product]);
 
   // Function to close the modal.
   const handleClose = () => setShow(false);

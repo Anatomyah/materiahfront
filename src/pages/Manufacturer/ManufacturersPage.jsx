@@ -189,7 +189,7 @@ const ManufacturersPage = () => {
                   }}
                 >
                   <option value="" disabled>
-                    -- Select Supplier --
+                    -- Filter by Supplier --
                   </option>
                   {supplierSelectList.map((choice, index) => (
                     <option key={index} value={choice.id}>

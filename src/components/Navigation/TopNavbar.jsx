@@ -85,23 +85,26 @@ function TopNavBar() {
                     <Nav.Link as={Link} to="/orders">
                       Orders
                     </Nav.Link>
-                    <NavDropdown title="Database" id="collapsible-nav-dropdown">
-                      <NavDropdown.Item as={Link} to="/suppliers">
-                        Suppliers
-                      </NavDropdown.Item>
-                      <NavDropdown.Item as={Link} to="/manufacturers">
-                        Manufacturers
-                      </NavDropdown.Item>
-                      <NavDropdown.Item as={Link} to="/quotes">
-                        Quotes
-                      </NavDropdown.Item>
-                    </NavDropdown>
+                    <Nav.Link as={Link} to="/quotes">
+                      Quotes
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/suppliers">
+                      Suppliers
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/Manufacturers">
+                      Manufacturers
+                    </Nav.Link>
                     <Nav.Link as={Link} to="/shop">
                       Shop
                     </Nav.Link>
                     <Nav.Link onClick={() => setShowCart(true)}>
                       <ShoppingCartIcon />
                     </Nav.Link>
+                    <NavDropdown title="Lab Data" id="collapsible-nav-dropdown">
+                      <NavDropdown.Item as={Link} to="/suppliers" disabled>
+                        Coming Soon!
+                      </NavDropdown.Item>
+                    </NavDropdown>
                   </>
                 )}
               </Nav>

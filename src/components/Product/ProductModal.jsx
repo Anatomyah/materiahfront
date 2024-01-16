@@ -54,8 +54,8 @@ const createFormSchema = ({ isSupplier }) =>
     unit: yup.string().required("Measurement unit is required"),
     unit_quantity: yup
       .string()
-      .required("Unit quantity is required")
-      .matches(/^\d+$/, "Unit quantity must be a positive number"),
+      .required("Unit volume/quantity is required")
+      .matches(/^\d+$/, "Unit volume/quantity must be a positive number"),
     storageConditions: yup.string().required("Storage condition is required"),
     stock: yup
       .string()
@@ -129,6 +129,10 @@ const ProductModal = ({
   const [manufacturerList, setManufacturerList] = useState(null);
   // Stores the list of available suppliers retrieved from the backend. Initialized as `null` by default.
   const [supplierList, setSupplierList] = useState(null);
+  // Stores the Supplier ID for fetching  the filtered manufacturers accordingly
+  const [supplierId, setSupplierId] = useState(
+    productObj ? productObj.supplier.id : "",
+  );
   /* Stores the images related to the product.
     If the product object is provided, it stores the images of the product, otherwise, an empty array is used as default. */
   const [images, setImages] = useState(productObj ? productObj.images : []);
@@ -140,13 +144,15 @@ const ProductModal = ({
   // Indicates whether the form is being submitted or not. Initialized as `false` by default.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // useEffect hook to initialize manufacturer and supplier lists.
-  // It's triggered once after the component mounts. The dependencies array is empty,
-  // indicating that this effect does not depend on any props or state and should only run once.
+  // useEffect hook to initialize the supplier list
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList); // Fetches the manufacturer list.
     getSupplierSelectList(token, setSupplierList); // Fetches the supplier list.
   }, []);
+
+  // useEffect hook to fetch the filtered manufacturer list related to the selected supplier
+  useEffect(() => {
+    getManufacturerSelectList(token, setManufacturerList, supplierId);
+  }, [supplierId]);
 
   // Object for validating the uniqueness of the catalogue number.
   // It contains an id, error text, and a validation function.
@@ -510,7 +516,7 @@ const ProductModal = ({
                     controlId="formProductUnitQuantity"
                     className="field-margin"
                   >
-                    <Form.Label>Unit Quantity</Form.Label>
+                    <Form.Label>Volume / Quantity</Form.Label>
                     {/* Input for unit quantity with validation feedback. */}
                     <Form.Control
                       type="text"
@@ -612,36 +618,6 @@ const ProductModal = ({
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  {manufacturerList && (
-                    <Form.Group
-                      as={Col}
-                      md="8"
-                      controlId="formProductManufacturer"
-                      className="field-margin"
-                    >
-                      <Form.Label>Manufacturer</Form.Label>
-                      {/* Input for manufacturer with validation feedback. */}
-                      <Form.Select
-                        name="manufacturer"
-                        value={values.manufacturer}
-                        onChange={handleChange}
-                      >
-                        <option value="" disabled>
-                          --Select Manufacturer--
-                        </option>
-                        {manufacturerList.map((choice, index) => (
-                          <option key={index} value={choice.value}>
-                            {choice.label}
-                          </option>
-                        ))}
-                      </Form.Select>
-                      {/* Feedback for valid or invalid input. */}
-                      <Form.Control.Feedback type="invalid">
-                        {errors.manufacturer}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  )}
-
                   {!isSupplier && supplierList && (
                     <>
                       <Form.Group
@@ -655,7 +631,11 @@ const ProductModal = ({
                         <Form.Select
                           name="supplier"
                           value={values.supplier}
-                          onChange={handleChange}
+                          onChange={(event) => {
+                            const supplierId = event.target.value;
+                            handleChange(event);
+                            setSupplierId(supplierId);
+                          }}
                         >
                           <option value="" disabled>
                             --Select Supplier--
@@ -673,6 +653,39 @@ const ProductModal = ({
                       </Form.Group>
                     </>
                   )}
+
+                  {manufacturerList && (
+                    <Form.Group
+                      as={Col}
+                      md="8"
+                      controlId="formProductManufacturer"
+                      className="field-margin"
+                    >
+                      <Form.Label>Manufacturer</Form.Label>
+                      {/* Input for manufacturer with validation feedback. */}
+                      <Form.Select
+                        name="manufacturer"
+                        value={values.manufacturer}
+                        onChange={handleChange}
+                        disabled={!supplierId}  {/* Input disabled until a supplier is selected */}
+
+                      >
+                        <option value="" disabled>
+                          --Select Manufacturer--
+                        </option>
+                        {manufacturerList.map((choice, index) => (
+                          <option key={index} value={choice.value}>
+                            {choice.label}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      {/* Feedback for valid or invalid input. */}
+                      <Form.Control.Feedback type="invalid">
+                        {errors.manufacturer}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  )}
+
                   <Form.Group
                     controlId="formProductUrl"
                     className="field-margin"

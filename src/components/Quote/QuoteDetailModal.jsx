@@ -217,6 +217,8 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                 </div>
                 {/* Delete button for the quote */}
                 <DeleteButton
+                  // Disable deletion if quote is related to an order
+                  disableDelete={quote.hasOwnProperty("order")}
                   objectType="quote"
                   objectName={quote.id}
                   objectId={quote.id}

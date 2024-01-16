@@ -16,6 +16,8 @@ export const AppContext = createContext(null);
 // Cart context responsible for the shopping cart states
 export const CartAppContext = createContext(null);
 
+// Order context responsible for updating states if an order is deleted
+export const OrderDeletionContext = createContext();
 /**
  * This is the root component of the application.
  * The entire app state is maintained here including token, user details, supplier status, notification settings, cart status and cart content.
@@ -38,6 +40,12 @@ function App() {
   const [showCart, setShowCart] = useState(false); // Flag for showing the cart modal
   const [cart, setCart] = useState([]); // List of items in the cart
   const [cartCount, setCartCount] = useState(0); // Number of items in the cart
+  const [isOrderDeleted, setIsOrderDeleted] = useState(false); // Is an order deleted
+
+  // Function for toggling the is order deleted state
+  const toggleOrderDeleted = () => {
+    setIsOrderDeleted((prevState) => !prevState);
+  };
 
   // useEffect hook for initialization
   useEffect(() => {
@@ -123,20 +131,25 @@ function App() {
             setCartCount,
           }}
         >
-          {token ? (
-            <>
-              {/* The TopNavBar, SiteRoutes and CartModal are only rendered when the user has a valid token (i.e., they are authenticated). */}
-              <TopNavBar />
-              <SiteRoutes />
-              <CartModal show={showCart} setShow={setShowCart} />
-            </>
-          ) : (
-            <>
-              {/* The LoginPage and BottomNavBar are rendered when the user is not authenticated (i.e., they do not have a valid token). */}
-              <LoginPage />
-              <BottomNavBar />
-            </>
-          )}
+          {/* Order deletion context provider for enabling follow-up actions to an order deletion */}
+          <OrderDeletionContext.Provider
+            value={{ isOrderDeleted, toggleOrderDeleted }}
+          >
+            {token ? (
+              <>
+                {/* The TopNavBar, SiteRoutes and CartModal are only rendered when the user has a valid token (i.e., they are authenticated). */}
+                <TopNavBar />
+                <SiteRoutes />
+                <CartModal show={showCart} setShow={setShowCart} />
+              </>
+            ) : (
+              <>
+                {/* The LoginPage and BottomNavBar are rendered when the user is not authenticated (i.e., they do not have a valid token). */}
+                <LoginPage />
+                <BottomNavBar />
+              </>
+            )}
+          </OrderDeletionContext.Provider>
         </CartAppContext.Provider>
       </AppContext.Provider>
     </div>

@@ -33,7 +33,7 @@ const createFormSchema = ({ isSignUp }) =>
       .string()
       .required("Username is required")
       .test("is-english", "Username must be in English", (value) => {
-        return /^[a-zA-Z0-9\s]+$/.test(value);
+        return /^[a-zA-Z0-9]+$/.test(value);
       }),
     email: yup
       .string()
