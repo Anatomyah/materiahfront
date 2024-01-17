@@ -26,16 +26,10 @@ import { showToast } from "../../config_and_helpers/helpers";
 // Yup schema for the supplier Formik form
 const formSchema = yup.object().shape({
   name: yup.string().required("Supplier name is required"),
-  websiteUrl: yup
-    .string()
-    .required("Website is required")
-    .url("Enter a valid URL"),
+  websiteUrl: yup.string().url("Enter a valid URL"),
   email: yup.string().matches(emailRegex, "Enter a valid email"),
   phonePrefix: yup.string(),
-  phoneSuffix: yup
-    .string()
-    .required("Phone number required")
-    .matches(/^\d*$/, "Phone number must be numeric"),
+  phoneSuffix: yup.string().matches(/^\d*$/, "Phone number must be numeric"),
 });
 
 /**
