@@ -82,7 +82,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
       : [], // Initialize with empty array if supplierObj is not provided
   );
   const [manufacturerList, setManufacturerList] = useState([]); // State to hold list of manufacturers
-  const [name, setName] = useState(supplierObj ? supplierObj?.name : ""); // State to hold name, default to provided supplier's name
+  const [name, setName] = useState(supplierObj?.name || ""); // State to hold name, default to provided supplier's name
   // State to hold the boolean whether supplier name is unique or not. Initialized as true
   const [isSupplierNameUnique, setIsSupplierNameUnique] = useState(true);
   // State to indicate whether the system is still checking for unique supplier name. Initialized as false
@@ -91,16 +91,14 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   // The rest is the same pattern as name
   // State variables for email and submitting status
   const [phonePrefix, setPhonePrefix] = useState(
-    supplierObj ? supplierObj?.phone_prefix : "",
+    supplierObj?.phone_prefix || "",
   );
   const [phoneSuffix, setPhoneSuffix] = useState(
-    supplierObj ? supplierObj?.phone_suffix : "",
+    supplierObj?.phone_suffix || "",
   );
   const [isSupplierPhoneUnique, setIsSupplierPhoneUnique] = useState(true);
   const [isCheckingSupplierPhone, setIsCheckingSupplierPhone] = useState(false);
-  const [supplierEmail, setSupplierEmail] = useState(
-    supplierObj ? supplierObj?.email : "",
-  );
+  const [supplierEmail, setSupplierEmail] = useState(supplierObj?.email || "");
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -296,10 +294,10 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
           }
           initialValues={{
             name: supplierObj ? supplierObj?.name : "",
-            websiteUrl: supplierObj ? supplierObj?.website : "",
-            email: supplierObj ? supplierObj?.email : "",
-            phonePrefix: supplierObj ? supplierObj?.phone_prefix : "",
-            phoneSuffix: supplierObj ? supplierObj?.phone_suffix : "",
+            websiteUrl: supplierObj?.website || "",
+            email: supplierObj?.email || "",
+            phonePrefix: supplierObj?.phone_prefix || "",
+            phoneSuffix: supplierObj?.phone_suffix || "",
           }}
           validateOnMount={!!supplierObj}
           enableReinitialize={true}
@@ -320,6 +318,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             setFieldTouched,
             dirty,
           }) => {
+            console.log(values);
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
