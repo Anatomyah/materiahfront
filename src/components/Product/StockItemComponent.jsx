@@ -73,8 +73,6 @@ const StockItemComponent = ({
     inUse: itemObj ? itemObj.in_use : false,
   });
 
-  console.log(itemObj);
-
   // Use state hook to manage the submitting state of the form.
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Use state hook to manage the editing state of the item.

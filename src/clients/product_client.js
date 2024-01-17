@@ -333,7 +333,6 @@ export const getProducts = async (token, setProducts, options = {}) => {
       },
     });
 
-    console.log(response.data);
     // Check if there is a next page in the pagination
     const nextCursor = response.data.next;
 
