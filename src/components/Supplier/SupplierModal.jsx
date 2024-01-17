@@ -91,7 +91,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   // The rest is the same pattern as name
   // State variables for email and submitting status
   const [phonePrefix, setPhonePrefix] = useState(
-    supplierObj ? supplierObj?.phone_prefix : "050",
+    supplierObj ? supplierObj?.phone_prefix : "",
   );
   const [phoneSuffix, setPhoneSuffix] = useState(
     supplierObj ? supplierObj?.phone_suffix : "",
@@ -298,7 +298,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             name: supplierObj ? supplierObj?.name : "",
             websiteUrl: supplierObj ? supplierObj?.website : "",
             email: supplierObj ? supplierObj?.email : "",
-            phonePrefix: supplierObj ? supplierObj?.phone_prefix : "050",
+            phonePrefix: supplierObj ? supplierObj?.phone_prefix : "",
             phoneSuffix: supplierObj ? supplierObj?.phone_suffix : "",
           }}
           validateOnMount={!!supplierObj}
@@ -437,7 +437,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                   </Form.Group>
                   <Row className="mb-4">
                     <Form.Label>Supplier Phone</Form.Label>
-                    <Form.Group as={Col} md="3" controlId="supplierPhonePrefix">
+                    <Form.Group as={Col} md="5" controlId="supplierPhonePrefix">
                       <Form.Select
                         name="phonePrefix"
                         value={values.phonePrefix}
@@ -448,6 +448,9 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                           setPhonePrefix(value);
                         }}
                       >
+                        <option value="" disabled>
+                          - Select Prefix -
+                        </option>
                         {PHONE_PREFIX_CHOICES.map((choice, index) => (
                           <option key={index} value={choice.value}>
                             {choice.label}
@@ -458,7 +461,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         {errors.phonePrefix}
                       </Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group as={Col} md="9" controlId="supplierPhoneSuffix">
+                    <Form.Group as={Col} md="7" controlId="supplierPhoneSuffix">
                       <Form.Control
                         type="text"
                         name="phoneSuffix"

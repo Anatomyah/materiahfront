@@ -51,7 +51,11 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
             </td>
             <td>{supplier.email}</td> {/* Display supplier's office email */}
             <td>
-              {supplier.phone_prefix}-{supplier.phone_suffix}
+              {supplier?.phone_prefix && supplier?.phone_suffix && (
+                <span>
+                  {supplier.phone_prefix}-{supplier.phone_suffix}
+                </span>
+              )}
               {/* Display supplier's office phone number */}
             </td>
             <td className="d-flex flex-row align-items-center justify-content-evenly">
