@@ -19,3 +19,14 @@ Rounds the right-side corners of a button
     border-top-right-radius: 5px !important;
     border-bottom-right-radius: 5px !important;
 }
+
+.bold-checkbox input[type="checkbox"] {
+    height: 20px; /* Increase size */
+    width: 20px; /* Increase size */
+    /*border-color: black; !* Change border color *!*/
+    /*background-color: #f0f0f0; !* Light background color *!*/
+}
+
+.in-use-row {
+    background-color: #fafa58; /* Light background color */
+}

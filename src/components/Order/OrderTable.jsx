@@ -27,6 +27,8 @@ const OrderTable = ({ orderList, handleEdit }) => {
   // Fetches the isOrderDeleted context to manage follow up actions
   const { toggleOrderDeleted } = useContext(OrderDeletionContext);
 
+  console.log(orderList);
+
   // Callback function on order deletion
   const onOrderDelete = () => {
     toggleOrderDeleted();

@@ -52,7 +52,7 @@ const UpdateAmountModal = ({
     homeShowModal ? homeShowModal : false,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("");
   const [productSelectList, setProductSelectList] = useState([]);
   const [fetchedProduct, setFetchedProduct] = useState(null);
   const [isInputNegative, setIsInputNegative] = useState(false);

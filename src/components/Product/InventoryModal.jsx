@@ -204,6 +204,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               <thead>
                 <tr className="text-center">
                   <th>#</th>
+                  <th>ID</th>
                   <th>Order</th>
                   <th>Received</th>
                   <th>Batch</th>
@@ -242,7 +243,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
 
                 {/* Render the plus button to add a new item row */}
                 <tr className="text-center align-middle">
-                  <td colSpan="7">
+                  <td colSpan="8">
                     <Button variant="outline-light" onClick={addStockItem}>
                       {plusIcon}
                     </Button>

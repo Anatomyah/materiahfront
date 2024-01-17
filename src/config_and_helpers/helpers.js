@@ -1,5 +1,10 @@
 import { validateToken } from "../clients/user_client";
 import { toast } from "react-toastify";
+import {
+  differenceInMonths,
+  differenceInWeeks,
+  differenceInDays,
+} from "date-fns";
 
 /**
  * Initializes the application by loading saved user information from storage.
@@ -274,4 +279,37 @@ export const showToast = (message, type, position) => {
     progress: undefined, // Do not set a custom progress bar value
     theme: "light", // Use the colored theme for the toast
   });
+};
+
+/**
+ * Check if the expiry date is within six months from the current date.
+ *
+ * @param {string} expiryDateString - The expiry date string in format "YYYY-MM-DD".
+ * @returns {string|boolean} - Returns a string representation of the time difference in months, weeks, and days if
+ * the expiry date is within six months, otherwise returns false.
+ */
+export const isExpiryInSixMonths = (expiryDateString) => {
+  const expiryDate = new Date(expiryDateString);
+  const currentDate = new Date();
+
+  // Calculate the difference in months between the current date and the expiry date
+  const monthDifference = differenceInMonths(expiryDate, currentDate);
+
+  // set the default result
+  let result = { expired: false };
+
+  // If the expiry date is within six months, a string with time left until expiry and store it in the result object
+  if (monthDifference <= 6) {
+    const daysAfterMonths = differenceInDays(
+      expiryDate,
+      new Date(currentDate.setMonth(currentDate.getMonth() + monthDifference)),
+    );
+    const weeks = Math.floor(daysAfterMonths / 7);
+    const days = daysAfterMonths % 7;
+
+    result.expired = true;
+    result.timeTillExpiry = `(${monthDifference} M, ${weeks} W, ${days} D)`;
+  }
+
+  return result;
 };
