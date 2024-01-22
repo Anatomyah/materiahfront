@@ -147,9 +147,11 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Manufacturer: </p>
               </Col>
               <Col>
-                <ManufacturerDetailModal
-                  manufacturerId={product.manufacturer.id}
-                />
+                {product?.manufacturer && (
+                  <ManufacturerDetailModal
+                    manufacturerId={product.manufacturer.id}
+                  />
+                )}
               </Col>
             </Row>
             <Row md={3}>

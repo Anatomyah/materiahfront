@@ -100,9 +100,11 @@ const ProductTable = ({ productList, handleEdit }) => {
             </td>
             <td>
               {/* Renders the manufacturer detail modal for each product */}
-              <ManufacturerDetailModal
-                manufacturerId={product.manufacturer.id}
-              />
+              {product?.manufacturer && (
+                <ManufacturerDetailModal
+                  manufacturerId={product.manufacturer.id}
+                />
+              )}
             </td>
             <td>
               {/* Renders the supplier detail modal for each product */}
