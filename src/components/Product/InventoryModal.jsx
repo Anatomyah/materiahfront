@@ -237,7 +237,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 {/* If there are no items in the items array or if not in the process of adding a new item, render this row */}
                 {items.length === 0 && !addNewItem ? (
                   <tr className="text-center align-middle">
-                    <td colSpan="7">No items related to this product</td>
+                    <td colSpan="8">No items related to this product</td>
                   </tr>
                 ) : null}
 

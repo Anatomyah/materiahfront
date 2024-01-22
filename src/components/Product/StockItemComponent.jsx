@@ -79,7 +79,7 @@ const StockItemComponent = ({
   const [showEdit, setShowEdit] = useState(editItem);
 
   // Const containing the object returned by the isExpiryInSixMonths function
-  const isExpiredObject = isExpiryInSixMonths(itemObj.expiry);
+  const isExpiredObject = isExpiryInSixMonths(itemObj?.expiry);
 
   // Handle the form input changes and update the related state.
   const handleInputChange = (e) => {
@@ -174,7 +174,7 @@ const StockItemComponent = ({
           {index + 1 || ""}
         </td>
         <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>
-          {itemObj.id}
+          {itemObj?.id || "N/A"}
         </td>
         {/* Here we show the order id of the stock item if it exists */}
         <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>

@@ -1,10 +1,6 @@
 import { validateToken } from "../clients/user_client";
 import { toast } from "react-toastify";
-import {
-  differenceInMonths,
-  differenceInWeeks,
-  differenceInDays,
-} from "date-fns";
+import { differenceInMonths, differenceInDays } from "date-fns";
 
 /**
  * Initializes the application by loading saved user information from storage.
