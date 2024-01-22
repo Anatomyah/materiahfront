@@ -10,6 +10,7 @@ import OrderModal from "../../components/Order/OrderModal";
 import QuoteModal from "../../components/Quote/QuoteModal";
 import UpdateAmountModal from "../../components/Product/UpdateAmountModal";
 import NotificationCard from "../../components/Generic/NotificationCard";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 const HomePage = () => {
   const { notifications, isSupplier } = useContext(AppContext);
@@ -17,6 +18,8 @@ const HomePage = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showUpdateStockModal, setShowUpdateStockModal] = useState(false);
+
+  console.log(notifications);
 
   const handleCreateProduct = () => {
     setShowProductModal(true);
@@ -50,7 +53,7 @@ const HomePage = () => {
             {!isSupplier && (
               <h1>
                 <Badge pill bg="secondary">
-                  Order Notifications
+                  Notifications
                 </Badge>
               </h1>
             )}
@@ -104,22 +107,42 @@ const HomePage = () => {
             </div>
           </Col>
           <Col sm={4}>
-            {!isSupplier && (
+            {!isSupplier && notifications && (
               <div className="scrollable-area">
-                {notifications &&
-                  notifications.map((notification) => (
-                    <NotificationCard
-                      key={notification.pk}
-                      props={{
-                        catNum: notification.fields.product_cat_num,
-                        productName: notification.fields.product_name,
-                        supplierName: notification.fields.supplier_name,
-                        currentStock: notification.fields.current_stock,
-                        lastOrdered: notification.fields.last_ordered,
-                        avgOrderTime: notification.fields.avg_order_time,
-                      }}
-                    />
-                  ))}
+                {notifications.order_notifications && (
+                  <div className="col-md-10 mx-auto notification-box-style">
+                    <Button
+                      variant="secondary"
+                      className="w-100 h-100"
+                      style={{ fontSize: "30px", fontWeight: "bold" }}
+                      onClick={handleCreateOrder}
+                    >
+                      <NotificationsActiveIcon
+                        fontSize="large"
+                        style={{ marginRight: "10px" }}
+                      />
+                      Re-stocking
+                    </Button>
+                  </div>
+                )}
+                {notifications.expiry_notifications && (
+                  <div className="col-md-10 mx-auto notification-box-style">
+                    <Button
+                      variant="secondary"
+                      className="w-100 h-100"
+                      style={{ fontSize: "30px", fontWeight: "bold" }}
+                      onClick={handleCreateOrder}
+                    >
+                      {
+                        <NotificationsActiveIcon
+                          fontSize="large"
+                          style={{ marginRight: "10px" }}
+                        />
+                      }
+                      Stock Expiry
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </Col>
