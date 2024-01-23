@@ -9,6 +9,8 @@ import ProductDetailModal from "./ProductDetailModal";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
 import { CartAppContext } from "../../App";
+import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
 /**
  * Represents an item card component, displaying key details of a product and providing quick actions.
@@ -91,13 +93,29 @@ const ItemCard = ({ product, handleEdit }) => {
               {product.catNum}
             </Typography>
             <Typography variant="body1" color="text.secondary" component="div">
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "start",
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ fontWeight: "bold" }}>Supplier:</span>
-                {product.supplier.name}
+                <SupplierDetailModal supplierId={product.supplier} />
               </div>
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "start",
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ fontWeight: "bold" }}>Manufacturer:</span>
-                {product.manufacturer.name}
+                {product?.manufacturer && (
+                  <ManufacturerDetailModal
+                    manufacturerId={product.manufacturer}
+                  />
+                )}
               </div>
               <div>
                 <span style={{ fontWeight: "bold" }}>Category:</span>

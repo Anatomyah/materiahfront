@@ -9,7 +9,6 @@ import ProductModal from "../../components/Product/ProductModal";
 import OrderModal from "../../components/Order/OrderModal";
 import QuoteModal from "../../components/Quote/QuoteModal";
 import UpdateAmountModal from "../../components/Product/UpdateAmountModal";
-import NotificationCard from "../../components/Generic/NotificationCard";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 const HomePage = () => {

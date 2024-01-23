@@ -102,13 +102,13 @@ const ProductTable = ({ productList, handleEdit }) => {
               {/* Renders the manufacturer detail modal for each product */}
               {product?.manufacturer && (
                 <ManufacturerDetailModal
-                  manufacturerId={product.manufacturer.id}
+                  manufacturerId={product.manufacturer}
                 />
               )}
             </td>
             <td>
               {/* Renders the supplier detail modal for each product */}
-              <SupplierDetailModal supplierId={product.supplier.id} />
+              <SupplierDetailModal supplierId={product.supplier} />
             </td>
             {/* Renders an edit button and a delete button for each product */}
             <td className="align-items-center">

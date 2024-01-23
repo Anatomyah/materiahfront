@@ -130,7 +130,7 @@ const ProductModal = ({
   const [supplierList, setSupplierList] = useState(null);
   // Stores the Supplier ID for fetching  the filtered manufacturers accordingly
   const [supplierId, setSupplierId] = useState(
-    productObj ? productObj.supplier.id : "",
+    productObj ? productObj.supplier : "",
   );
   /* Stores the images related to the product.
     If the product object is provided, it stores the images of the product, otherwise, an empty array is used as default. */
@@ -257,9 +257,7 @@ const ProductModal = ({
       : values.supplier;
 
     // Flags the product as a supplier catalog item if the user is a supplier.
-    if (isSupplier) {
-      productData.supplier_cat_item = true;
-    }
+    productData.supplier_cat_item = !!isSupplier;
 
     // If updating an existing product, identifies which images to delete.
     if (productObj) {
@@ -343,7 +341,7 @@ const ProductModal = ({
               productObj && productObj?.manufacturer
                 ? productObj.manufacturer.name
                 : "",
-            supplier: productObj ? productObj.supplier.name : "",
+            supplier: productObj ? productObj.supplier : "",
             productUrl: productObj ? productObj.url : "",
             productImages: null,
           }}
