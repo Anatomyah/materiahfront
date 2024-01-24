@@ -90,7 +90,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
         show={show}
         onHide={handleClose}
         aria-labelledby="product-modal"
-        size="lg"
+        fullscreen={true}
       >
         {/* Modal header with the product name as the title. */}
         <Modal.Header closeButton>
@@ -139,7 +139,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Supplier: </p>
               </Col>
               <Col>
-                <SupplierDetailModal supplierId={product.supplier.id} />
+                <SupplierDetailModal supplierId={product.supplier} />
               </Col>
             </Row>
             <Row md={3}>
@@ -149,7 +149,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               <Col>
                 {product?.manufacturer && (
                   <ManufacturerDetailModal
-                    manufacturerId={product.manufacturer.id}
+                    manufacturerId={product.manufacturer}
                   />
                 )}
               </Col>
@@ -212,6 +212,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                   <th>Batch</th>
                   <th>Expiry</th>
                   <th>In Use?</th>
+                  <th>Opened On</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -239,13 +240,13 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 {/* If there are no items in the items array or if not in the process of adding a new item, render this row */}
                 {items.length === 0 && !addNewItem ? (
                   <tr className="text-center align-middle">
-                    <td colSpan="8">No items related to this product</td>
+                    <td colSpan="9">No items related to this product</td>
                   </tr>
                 ) : null}
 
                 {/* Render the plus button to add a new item row */}
                 <tr className="text-center align-middle">
-                  <td colSpan="8">
+                  <td colSpan="9">
                     <Button variant="outline-light" onClick={addStockItem}>
                       {plusIcon}
                     </Button>

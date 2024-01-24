@@ -30,3 +30,8 @@ Rounds the right-side corners of a button
 .in-use-row {
     background-color: #fafa58; /* Light background color */
 }
+
+.modal-90w {
+    width: 100%; /* Set the width of the modal */
+    max-width: none; /* Override the default max-width */
+}

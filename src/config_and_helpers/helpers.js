@@ -309,3 +309,20 @@ export const isExpiryInSixMonths = (expiryDateString) => {
 
   return result;
 };
+
+/**
+ * Returns the current date in the format 'yyyy-mm-dd'.
+ *
+ * @returns {string} The current date formatted as 'yyyy-mm-dd'.
+ */
+export const getCurrentDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  let month = today.getMonth() + 1;
+  let day = today.getDate();
+
+  month = month < 10 ? `0${month}` : month;
+  day = day < 10 ? `0${day}` : day;
+
+  return `${year}-${month}-${day}`;
+};

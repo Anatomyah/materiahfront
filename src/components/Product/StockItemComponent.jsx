@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Spinner } from "react-bootstrap";
@@ -9,6 +9,7 @@ import {
   updateStockItem,
 } from "../../clients/product_client";
 import {
+  getCurrentDate,
   isExpiryInSixMonths,
   showToast,
 } from "../../config_and_helpers/helpers";
@@ -71,6 +72,13 @@ const StockItemComponent = ({
     batch: itemObj ? itemObj.batch : "",
     expiry: itemObj ? itemObj.expiry : "",
     inUse: itemObj ? itemObj.in_use : false,
+    openedOn: itemObj
+      ? itemObj.opened
+        ? itemObj.opened
+        : itemObj.in_use && !editItem
+        ? getCurrentDate()
+        : ""
+      : "",
   });
 
   // Use state hook to manage the submitting state of the form.
@@ -82,8 +90,8 @@ const StockItemComponent = ({
   const isExpiredObject = isExpiryInSixMonths(itemObj?.expiry);
 
   // Handle the form input changes and update the related state.
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = (input) => {
+    const { name, value } = input.target ? input.target : input;
     setItemData((prevState) => ({
       ...prevState,
       [name]: value,
@@ -104,8 +112,13 @@ const StockItemComponent = ({
       batch: itemObj ? itemObj.batch : "",
       expiry: itemObj ? itemObj.expiry : "",
       inUse: itemObj ? itemObj.in_use : false,
+      openedOn: itemObj ? itemObj.opened : "",
     });
   };
+
+  useEffect(() => {
+    console.log(itemData);
+  }, [itemData]);
 
   // Handle form submission i.e updating or creating new item.
   const handleSubmit = () => {
@@ -198,6 +211,7 @@ const StockItemComponent = ({
               name="batch"
               value={itemData.batch}
               onChange={handleInputChange}
+              style={{ textAlign: "center" }}
             />
           )}
         </td>
@@ -226,6 +240,7 @@ const StockItemComponent = ({
               name="expiry"
               value={itemData.expiry}
               onChange={handleInputChange}
+              style={{ textAlign: "center" }}
             />
           )}
         </td>
@@ -237,10 +252,35 @@ const StockItemComponent = ({
             name="inUse"
             disabled={showEdit}
             checked={itemData.inUse}
-            onChange={(e) =>
-              setItemData({ ...itemData, inUse: e.target.checked })
-            }
+            onChange={(e) => {
+              setItemData({ ...itemData, inUse: e.target.checked });
+              if (e.target.checked) {
+                handleInputChange({
+                  name: "openedOn",
+                  value: getCurrentDate(),
+                });
+              } else {
+                handleInputChange({ name: "openedOn", value: "" });
+              }
+            }}
           />
+        </td>
+        {/* Date indicating when the stock item was opened */}
+        <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>
+          {showEdit ? (
+            <>
+              <div>{itemData.openedOn}</div>
+            </>
+          ) : (
+            <Form.Control
+              disabled={!itemData.inUse}
+              type="date"
+              name="openedOn"
+              value={itemData.openedOn}
+              onChange={handleInputChange}
+              style={{ textAlign: "center" }}
+            />
+          )}
         </td>
         {/* Condition rendering for showing buttons based on various states (submitting/edit mode etc.) */}
         <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>
