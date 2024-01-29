@@ -12,7 +12,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import { Col, Spinner } from "react-bootstrap";
+import { Accordion, Col, Spinner } from "react-bootstrap";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 
 /**
@@ -54,6 +54,8 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
       isLoadingRef.current = false; // Stop loading after the data is fetched
     });
   };
+
+  console.log(order);
 
   // Run fetchOrder on component mount if there is an orderId but no order
   useEffect(() => {
@@ -171,8 +173,6 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                       <th>#</th>
                       <th>Product</th>
                       <th>Quantity</th>
-                      <th>Batch</th>
-                      <th>Expiry</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -185,9 +185,42 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                             <ProductDetailModal productId={item.product.id} />
                           </td>
                           <td>{item.quantity}</td>
-                          <td>{item.batch}</td>
-                          <td>{item.expiry}</td>
                           <td>{item.status}</td>
+                        </tr>
+                        <tr>
+                          {/* Stock Items are displayed in a collapsable accordion */}
+                          <td></td>
+                          <td colSpan={3}>
+                            <Accordion>
+                              <Accordion.Item eventKey={0}>
+                                <Accordion.Header>Stock Items</Accordion.Header>
+                                <Accordion.Body>
+                                  <Table striped bordered hover>
+                                    <thead>
+                                      <tr className="text-center bold-italic-text">
+                                        <td>#</td>
+                                        <td>Batch</td>
+                                        <td>Expiry</td>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {item?.stock_items.map(
+                                        (stock_item, index) => (
+                                          <React.Fragment key={index}>
+                                            <tr className="text-center italic-text">
+                                              <td>{index + 1}</td>
+                                              <td>{stock_item.batch}</td>
+                                              <td>{stock_item.expiry}</td>
+                                            </tr>
+                                          </React.Fragment>
+                                        ),
+                                      )}
+                                    </tbody>
+                                  </Table>
+                                </Accordion.Body>
+                              </Accordion.Item>
+                            </Accordion>
+                          </td>
                         </tr>
                       </React.Fragment>
                     ))}

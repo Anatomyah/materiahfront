@@ -103,7 +103,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
             <tr>
               {/* Order Items are displayed in a collapsable accordion */}
               <td></td>
-              <td>
+              <td colSpan={5}>
                 <Accordion>
                   <Accordion.Item eventKey={0}>
                     <Accordion.Header>Order Items</Accordion.Header>
