@@ -116,10 +116,6 @@ const StockItemComponent = ({
     });
   };
 
-  useEffect(() => {
-    console.log(itemData);
-  }, [itemData]);
-
   // Handle form submission i.e updating or creating new item.
   const handleSubmit = () => {
     setIsSubmitting(true);
@@ -217,7 +213,7 @@ const StockItemComponent = ({
         </td>
         <td
           style={
-            isExpiredObject.expired
+            itemData.expiry && isExpiredObject.expired
               ? { backgroundColor: "#f84f4f", color: "white" } // Red color takes precedence
               : itemData.inUse
               ? { backgroundColor: "#fafa98" } // Yellow color as secondary condition
@@ -228,7 +224,7 @@ const StockItemComponent = ({
           {showEdit ? (
             <>
               <div>{itemData.expiry}</div>
-              {isExpiredObject.expired && (
+              {itemData.expiry && isExpiredObject.expired && (
                 <div style={{ fontSize: "12px", marginTop: "4px" }}>
                   {isExpiredObject.timeTillExpiry}
                 </div>
@@ -265,7 +261,7 @@ const StockItemComponent = ({
             }}
           />
         </td>
-        {/* Date indicating when the stock item was opened */}
+        {/* Date indicating if and when the stock item was opened */}
         <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>
           {showEdit ? (
             <>

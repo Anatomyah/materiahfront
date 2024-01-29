@@ -25,6 +25,9 @@ import {
 import { Spinner } from "react-bootstrap";
 import debounce from "lodash/debounce";
 
+// Create the order context provided to all order related components
+export const OrderContext = React.createContext({});
+
 /**
  * OrdersPage is a React functional component for displaying and managing orders.
  * It includes functionalities such as search, filtering, and pagination through infinite scrolling.
@@ -35,6 +38,9 @@ import debounce from "lodash/debounce";
 const OrdersPage = () => {
   // useContext to access global AppContext for authentication token
   const { token } = useContext(AppContext);
+  // useContext to access the local OrderContext for purposes of re-rendering the product detail modals
+  // when an order updates
+  const [orderUpdated, setOrderUpdated] = useState(false);
 
   // useRef hooks for persistent values that don't trigger re-renders
   const isLoadingRef = useRef(false); // Tracks loading state of data fetching
@@ -197,9 +203,7 @@ const OrdersPage = () => {
         loadMore={() => {
           if (isLoadingRef.current) return;
           fetchOrders({ searchValue: searchInput, nextPage: nextPageUrl });
-          {
-            /* Triggers fetchOrders to load more orders when scrolled to the bottom */
-          }
+          // Triggers fetchOrders to load more orders when scrolled to the bottom
         }}
         hasMore={hasMore}
         loader={
@@ -215,12 +219,14 @@ const OrdersPage = () => {
           // Spinner displayed while data is loading
         }
       >
-        {/* OrderTable displays the list of orders */}
-        <OrderTable
-          orderList={viewOrders.length ? viewOrders : baseOrders}
-          handleEdit={fetchOrders}
-          // Chooses between filtered or unfiltered list of orders
-        />
+        {/* OrderTable displays the list of orders, nexted in the OrderContext provider */}
+        <OrderContext.Provider value={{ orderUpdated, setOrderUpdated }}>
+          <OrderTable
+            orderList={viewOrders.length ? viewOrders : baseOrders}
+            handleEdit={fetchOrders}
+            // Chooses between filtered or unfiltered list of orders
+          />
+        </OrderContext.Provider>
       </InfiniteScroll>
     </div>
   );

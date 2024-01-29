@@ -5,6 +5,7 @@ import "./ProductComponentStyle.css";
 import InventoryModal from "./InventoryModal";
 import ShopModal from "../Shop/ShopModal";
 import { Spinner } from "react-bootstrap";
+import { OrderContext } from "../../pages/Order/OrdersPage";
 
 /**
  * Represents a modal component to display detailed information about a product.
@@ -45,6 +46,7 @@ const ProductDetailModal = ({
 }) => {
   // Access token from context for authenticated API requests.
   const { token } = useContext(AppContext);
+  const { orderUpdated, setOrderUpdated } = useContext(OrderContext);
 
   // Ref to track the loading state of the component.
   const isLoadingRef = useRef(false);
@@ -63,10 +65,12 @@ const ProductDetailModal = ({
     });
   };
 
-  // useEffect to fetch product details on component mount if not provided.
+  // useEffect to fetch product details on component mount if not provided or
+  // in case an order is updated to reflect the change in that product's related stock iitems.
   useEffect(() => {
-    if (!product && productIdToUse) fetchProduct();
-  }, []);
+    if ((!product && productIdToUse) || orderUpdated) fetchProduct();
+    if (orderUpdated === true) setOrderUpdated(false);
+  }, [orderUpdated]);
 
   // Function to handle product edits and fetch updated data.
   const handleEdit = () => {

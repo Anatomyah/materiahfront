@@ -6,7 +6,6 @@ import {
 } from "../../clients/quote_client";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import OrderItemComponent from "./OrderItemComponent";
 import { createOrder, updateOrder } from "../../clients/order_client";
 import * as yup from "yup";
 import { Col, Form, Spinner } from "react-bootstrap";
@@ -15,12 +14,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import EditIcon from "@mui/icons-material/Edit";
 import { showToast } from "../../config_and_helpers/helpers";
+import { OrderContext } from "../../pages/Order/OrdersPage";
+import OrderItemComponent from "./OrderItemComponent";
 
 /**
  * ItemSchema Yup Validation Schema
  *
  * The validation schema for each individual item in the order.
- * Validates the quantity, batch, expiry date, item fulfillment status, selected reason,
+ * Validates the quantity, expiry date, item fulfillment status, selected reason,
  * and other reason details of an item when item's fulfillment status marked as false.
  *
  * @type {Yup.object}
@@ -30,8 +31,6 @@ const itemSchema = yup.object().shape({
     .string()
     .required("Quantity is required")
     .matches(/^\d+$/, "Quantity must be a positive number"),
-  batch: yup.string().required("Batch number is required"),
-  expiryDate: yup.date().required("Expiry date is required"),
   itemFulfilled: yup.boolean(),
   selectedReason: yup.string().when("itemFulfilled", function (itemFulfilled) {
     if (itemFulfilled === false) {
@@ -128,6 +127,8 @@ const OrderModal = ({
 }) => {
   // useContext - Fetches the user token from the overall app context.
   const { token } = useContext(AppContext);
+  // Context to manage the re-rendering of the related product modals related to this order
+  const { setOrderUpdated } = useContext(OrderContext);
 
   // useContext - Fetches the isOrderDeleted boolean in order to reset the openQuotesSelectList.
   const { isOrderDeleted, toggleOrderDeleted } =
@@ -149,8 +150,7 @@ const OrderModal = ({
               quantity: item.quote_item.quantity,
             },
             quantity: item.quantity,
-            batch: item.batch,
-            expiry: item.expiry,
+            stock_items: item.stock_items,
             status: item.status,
             issue_detail: item.issue_detail,
           }));
@@ -182,21 +182,37 @@ const OrderModal = ({
   useEffect(() => {
     if (relatedQuoteObj && !orderObj) {
       setItems(() => {
-        return relatedQuoteObj.items.map((item) => ({
-          quote_item_id: item.id,
-          cat_num: item.product.cat_num,
-          quantity: item.quantity,
-          expiry: new Date().toISOString().split("T")[0],
-          status: "OK",
-        }));
+        return relatedQuoteObj.items.map((item) => {
+          // Create an array of stock_items based on the quantity
+          const stockItems = Array.from({ length: item.quantity }, () => ({
+            expiry: "",
+            batch: "",
+          }));
+
+          return {
+            quote_item_id: item.id,
+            cat_num: item.product.cat_num,
+            quantity: item.quantity,
+            status: "OK",
+            stock_items: stockItems,
+          };
+        });
       });
     }
   }, [relatedQuoteObj]);
 
   // Function updateItem - Updates a specific item in the items state
-  const updateItem = (index, field, value) => {
+  const updateItem = (orderItemIndex, field, value, stockItemIndex) => {
     const newItems = [...items];
-    newItems[index][field] = value;
+
+    // Conditionally update the fields at the order item level or at the stock item level
+    // inside the order item
+    if (stockItemIndex != null) {
+      newItems[orderItemIndex].stock_items[stockItemIndex][field] = value;
+    } else {
+      newItems[orderItemIndex][field] = value;
+    }
+
     setItems(newItems);
   };
 
@@ -238,8 +254,7 @@ const OrderModal = ({
                 quantity: item.quote_item.quantity,
               },
               quantity: item.quantity,
-              batch: item.batch,
-              expiry: item.expiry,
+              stock_items: item.stock_items,
               status: item.status,
               issue_detail: item.issue_detail,
             }));
@@ -258,16 +273,40 @@ const OrderModal = ({
     setIsSubmitting(true);
     let finalItems, imagesToDelete;
 
+    // Map over the items array in order to filter through the nested stock items arrays.
+    // This results in only relevant data sent via the request preventing empty objects and array being sent through
+    finalItems = items.map((item) => {
+      const cleanStockItems = item.stock_items
+        .map((stockItem) => {
+          // First clean the empty fields
+          let cleanStockItem = { ...stockItem };
+          if (cleanStockItem.batch === "") delete cleanStockItem.batch;
+          if (cleanStockItem.expiry === "") delete cleanStockItem.expiry;
+
+          return cleanStockItem;
+        })
+        // Then filter through the stock items, returning only those that are not empty
+        .filter((stockItem) => Object.keys(stockItem).length > 0);
+
+      // Then completely remove the stock_items array if it's empty
+      let finalItem = {
+        ...item,
+        stock_items: cleanStockItems,
+      };
+
+      if (finalItem.stock_items.length === 0) delete finalItem.stock_items;
+
+      return finalItem;
+    });
+
     // If the order object exists, it means we are updating an existing order.
     if (orderObj) {
-      // Each item in the 'items' array is transformed to have the attributes: quote_item_id, quantity, batch, expiry, status, issue_detail.
-      finalItems = items.map((item) => ({
+      // Each item in the 'items' array is transformed to have the attributes: quote_item_id, quantity,
+      // stock item details (batch and expiry), status, issue_detail.
+      finalItems = finalItems.map((item) => ({
+        ...item,
         quote_item_id: item.quote_item.id,
-        quantity: item.quantity,
-        batch: item.batch,
-        expiry: item.expiry,
-        status: item.status,
-        issue_detail: item.issue_detail,
+        quote_item: undefined,
       }));
 
       // Find images that are in the original order object but aren't present in the current image state - these images will be deleted.
@@ -280,7 +319,7 @@ const OrderModal = ({
     const updatedOrderData = {
       quote: orderObj ? orderObj.quote.id : relatedQuoteObj.id,
       arrival_date: values.arrivalDate,
-      items: JSON.stringify(orderObj ? finalItems : items),
+      items: JSON.stringify(finalItems),
       received_by: values.receivedBy,
     };
 
@@ -301,12 +340,15 @@ const OrderModal = ({
       updatedOrderData.images = JSON.stringify(imageInfo);
     }
 
-    //We send the request to the server using a promise - if we have an order object, it mean's we're updating an existing order, otherwise, we're creating a new order.
+    //We send the request to the server using a promise - if we have an order object, it mean's we're updating an
+    // existing order, otherwise, we're creating a new order.
     const orderPromise = orderObj
       ? updateOrder(token, orderObj.id, updatedOrderData, newImages)
       : createOrder(token, updatedOrderData, images);
 
-    //Once the promise resolves (i.e., the request is completed), we look at the response. If it was successful, we perform necessary UI update and call the onSuccessfulSubmit function.
+    //Once the promise resolves (i.e., the request is completed), we look at the response. If it was successful,
+    // we perform necessary UI update and call the onSuccessfulSubmit function and make sure to update
+    // the orderUpdated context.
     orderPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
@@ -314,6 +356,7 @@ const OrderModal = ({
           response.toast();
           setIsSubmitting(false);
           handleClose();
+          if (orderObj) setOrderUpdated(true);
         }, 1000);
       } else {
         // If there was an error, we halt the submission process and display a notification with the error message.
@@ -354,10 +397,11 @@ const OrderModal = ({
           initialTouched={
             orderObj
               ? {
-                  items: orderObj.items.map(() => ({
-                    quantity: true,
-                    batch: true,
-                    expiryDate: true,
+                  items: orderObj.items.map((item) => ({
+                    stock_items: item.stock_items.map(() => ({
+                      expiry: true,
+                      batch: true,
+                    })),
                     itemFulfilled: true,
                     otherReasonDetail: true,
                   })),
@@ -366,23 +410,33 @@ const OrderModal = ({
                   orderImages: true,
                   receivedBy: true,
                 }
-              : {}
+              : {
+                  items: items.map((item) => ({
+                    stock_items: item.stock_items.map(() => ({
+                      expiry: false,
+                      batch: false,
+                    })),
+                  })),
+                }
           }
           initialValues={{
             items: orderObj
               ? orderObj.items.map((item) => ({
                   quantity: item.quantity,
-                  batch: item.batch,
-                  expiryDate: item.expiry,
+                  stock_items: item.stock_items,
                   itemFulfilled: item.status === "OK" || false,
                   selectedReason: item.status,
                   otherReasonDetail: item.issue_detail || "",
                 }))
               : items.map((item) => ({
                   quantity: item.quantity || "",
-                  batch: item.batch || "",
-                  expiryDate:
-                    item.expiry || new Date().toISOString().split("T")[0],
+                  stock_items: Array.from(
+                    { length: item.quantity || 0 },
+                    () => ({
+                      expiry: "",
+                      batch: "",
+                    }),
+                  ),
                   itemFulfilled: item.status ? item.status === "OK" : true,
                   selectedReason: item.status === "Other" || "",
                   otherReasonDetail: item.issue_detail || "",
@@ -526,11 +580,22 @@ const OrderModal = ({
                                 ? orderObj.items[index].product
                                 : relatedQuoteObj.items[index].product
                             }
+                            orderObjItemStockItems={
+                              orderObj
+                                ? orderObj.items[index].stock_items
+                                : null
+                            }
+                            orderObjItemQuantity={
+                              orderObj ? orderObj.items[index].quantity : null
+                            }
                             onItemChange={updateItem}
-                            index={index}
+                            orderItemIndex={index}
                             item={item}
                             quoteItem={
                               orderObj ? null : relatedQuoteObj.items[index]
+                            }
+                            orderItemStatus={
+                              orderObj ? orderObj.items[index].status : null
                             }
                             formik={{
                               handleChange,

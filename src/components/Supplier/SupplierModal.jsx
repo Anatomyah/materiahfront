@@ -318,7 +318,6 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             setFieldTouched,
             dirty,
           }) => {
-            console.log(values);
             return (
               <Form noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">

@@ -18,8 +18,6 @@ const HomePage = () => {
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showUpdateStockModal, setShowUpdateStockModal] = useState(false);
 
-  console.log(notifications);
-
   const handleCreateProduct = () => {
     setShowProductModal(true);
   };

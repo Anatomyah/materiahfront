@@ -24,7 +24,7 @@ import { OrderDeletionContext } from "../../App";
  * @param {function} handleEdit - A function that tell parent component to refresh the order data.
  */
 const OrderTable = ({ orderList, handleEdit }) => {
-  // Fetches the isOrderDeleted context to manage follow up actions
+  // Fetches the isOrderDeleted context to manage follow-up actions
   const { toggleOrderDeleted } = useContext(OrderDeletionContext);
 
   // Callback function on order deletion
@@ -114,8 +114,6 @@ const OrderTable = ({ orderList, handleEdit }) => {
                             <td>#</td>
                             <td>Product</td>
                             <td>Quantity</td>
-                            <td>Batch</td>
-                            <td>Expiry</td>
                             <td>Status</td>
                             <td>Details</td>
                           </tr>
@@ -131,8 +129,6 @@ const OrderTable = ({ orderList, handleEdit }) => {
                                   />
                                 </td>
                                 <td>{item.quantity}</td>
-                                <td>{item.batch}</td>
-                                <td>{item.expiry}</td>
                                 <td>{item.status}</td>
                                 <td>{item.issue_detail}</td>
                               </tr>

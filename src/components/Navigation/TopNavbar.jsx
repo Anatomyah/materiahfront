@@ -9,7 +9,6 @@ import { useContext } from "react";
 import { AppContext, CartAppContext } from "../../App";
 import { Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import "./NavBarStyle.css";
@@ -69,7 +68,7 @@ function TopNavBar() {
           <Col className="d-flex justify-content-end">
             <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="responsive-navbar-nav">
-              {/* Link elements for navigation - these will change depending if user is a supplier or not */}
+              {/* Link elements for navigation - these will change depending upon if user is a supplier or not */}
               <Nav className="me-auto">
                 {isSupplier ? (
                   <>
