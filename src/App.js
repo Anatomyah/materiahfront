@@ -109,7 +109,11 @@ function App() {
   // UseEffect hook for notifications toast
   useEffect(() => {
     //   If notifications exist, show a toast indicating that and set the notificationSeen to true
-    if (Object.keys(notifications).length && !notificationsSeen) {
+    if (
+      notifications &&
+      Object.keys(notifications).length &&
+      !notificationsSeen
+    ) {
       showToast("New notifications waiting... ", "info", "top-center", false);
       setNotificationsSeen(true);
     }
