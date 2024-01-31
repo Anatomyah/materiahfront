@@ -9,6 +9,7 @@ import ProductModal from "../../components/Product/ProductModal";
 import OrderModal from "../../components/Order/OrderModal";
 import QuoteModal from "../../components/Quote/QuoteModal";
 import UpdateAmountModal from "../../components/Product/UpdateAmountModal";
+import HTMLEditor from "../../components/Generic/HTMLEditor";
 
 const HomePage = () => {
   const { isSupplier } = useContext(AppContext);

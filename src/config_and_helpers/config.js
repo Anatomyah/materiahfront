@@ -66,6 +66,7 @@ export const PRODUCT_CATEGORIES = [
   { value: "Glassware", label: "Glassware" },
   { value: "Sanitary", label: "Sanitary" },
   { value: "Lab Equipment", label: "Lab Equipment" },
+  { value: "Antibodies", label: "Antibodies" },
 ];
 
 // Measurement units for products

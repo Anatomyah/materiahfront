@@ -87,13 +87,7 @@ const createFormSchema = ({ hasExistingImages }) =>
           );
         },
       ),
-    receivedBy: yup
-      .string()
-      .required("Received by field is required.")
-      .matches(
-        /^[a-zA-Z\s]+$/,
-        "Received by must contain only English letters.",
-      ),
+    receivedBy: yup.string().required("Received by field is required."),
   });
 
 /**
@@ -201,6 +195,9 @@ const OrderModal = ({
     }
   }, [relatedQuoteObj]);
 
+  useEffect(() => {
+    console.log(relatedQuoteObj);
+  }, [relatedQuoteObj]);
   // Function updateItem - Updates a specific item in the items state
   const updateItem = (orderItemIndex, field, value, stockItemIndex) => {
     const newItems = [...items];
@@ -216,6 +213,9 @@ const OrderModal = ({
     setItems(newItems);
   };
 
+  useEffect(() => {
+    console.log(items);
+  }, [items]);
   // Function to handle file change events and update the images state.
   const handleFileChange = (files) => {
     const newImages = files.map((file) => ({
@@ -395,6 +395,7 @@ const OrderModal = ({
         <Formik
           // The items array is passed in as a key to make sure the form is updated when the items state is updated
           key={items}
+          enableReinitialize={true}
           initialTouched={
             orderObj
               ? {
@@ -417,7 +418,13 @@ const OrderModal = ({
                       expiry: false,
                       batch: false,
                     })),
+                    itemFulfilled: false,
+                    otherReasonDetail: false,
                   })),
+                  quoteList: false,
+                  arrivalDate: false,
+                  orderImages: false,
+                  receivedBy: false,
                 }
           }
           initialValues={{
@@ -467,6 +474,7 @@ const OrderModal = ({
             dirty,
             setFieldValue,
           }) => {
+            console.log(values);
             // Formik provides these props to be utilized in the form fields for handling form state.
             return (
               // The form itself

@@ -54,8 +54,8 @@ const OrderItemComponent = ({
     // the item's quantity should be set to match the related quote item quantity
     if (value !== "Different quantity" && value !== "Did not arrive") {
       const quoteItemQuantity = quoteItem
-          ? quoteItem.quantity
-          : item.quote_item.quantity;
+        ? quoteItem.quantity
+        : item.quote_item.quantity;
 
       handleOrderItemInstantChange("quantity", quoteItemQuantity);
       updatedItems[orderItemIndex] = {
@@ -86,8 +86,8 @@ const OrderItemComponent = ({
     // accordingly
     if (value === "Different quantity") {
       const quoteItemQuantity = quoteItem
-          ? quoteItem.quantity
-          : item.quote_item.quantity;
+        ? quoteItem.quantity
+        : item.quote_item.quantity;
 
       const currentStockItems = updatedItems[orderItemIndex].stock_items || [];
 
@@ -99,15 +99,15 @@ const OrderItemComponent = ({
         newStockItemsArray = orderObjItemStockItems;
       } else {
         const additionalItems = Array.from(
-            {
-              length: orderObjItemStockItems
-                  ? orderObjItemStockItems.length
-                  : quoteItemQuantity - currentStockItems.length,
-            },
-            () => ({
-              expiry: "",
-              batch: "",
-            }),
+          {
+            length: orderObjItemStockItems
+              ? orderObjItemStockItems.length
+              : quoteItemQuantity - currentStockItems.length,
+          },
+          () => ({
+            expiry: "",
+            batch: "",
+          }),
         );
 
         newStockItemsArray = [...currentStockItems, ...additionalItems];
@@ -121,8 +121,8 @@ const OrderItemComponent = ({
       updatedItems[orderItemIndex] = {
         ...updatedItems[orderItemIndex],
         quantity: orderObjItemQuantity
-            ? orderObjItemQuantity
-            : quoteItem.quantity,
+          ? orderObjItemQuantity
+          : quoteItem.quantity,
         stock_items: newStockItemsArray,
       };
     }
@@ -140,8 +140,8 @@ const OrderItemComponent = ({
     const updatedItems = [...formikContext.values.items];
     // Set the quote item quantity
     const quoteItemQuantity = quoteItem
-        ? quoteItem.quantity
-        : item.quote_item.quantity;
+      ? quoteItem.quantity
+      : item.quote_item.quantity;
 
     // When the checkbox is unchecked (i.e., item is unfulfilled), the 'status' and 'selectedReason' are
     // reset to an empty string both for the items separate state and the Formik state
@@ -163,6 +163,13 @@ const OrderItemComponent = ({
           ...updatedItems[orderItemIndex],
           stock_items: orderObjItemStockItems,
         };
+      } else {
+        handleOrderItemInstantChange("stock_items", item.stock_items);
+
+        updatedItems[orderItemIndex] = {
+          ...updatedItems[orderItemIndex],
+          stock_items: item.stock_items,
+        };
       }
     } else {
       // Otherwise, when the checkbox is checked (i.e., item is fulfilled), the 'status' is set to "OK"
@@ -180,8 +187,8 @@ const OrderItemComponent = ({
       };
 
       const currentStockItems = orderObjItemStockItems
-          ? orderObjItemStockItems
-          : updatedItems[orderItemIndex].stock_items || [];
+        ? orderObjItemStockItems
+        : updatedItems[orderItemIndex].stock_items || [];
       const newQuantity = parseInt(quoteItemQuantity, 10);
 
       let newStockItemsArray;
@@ -193,22 +200,22 @@ const OrderItemComponent = ({
         if (newQuantity > stockItemsArrayLength) {
           // Add new stock items if the new quantity is greater than the current length
           const additionalItems = Array.from(
-              {length: newQuantity - stockItemsArrayLength},
-              () => ({
-                expiry: "",
-                batch: "",
-              }),
+            { length: newQuantity - stockItemsArrayLength },
+            () => ({
+              expiry: "",
+              batch: "",
+            }),
           );
           newStockItemsArray = [...orderObjItemStockItems, ...additionalItems];
         } else {
           if (newQuantity > currentStockItems.length) {
             // Add new stock items if the new quantity is greater than the current length
             const additionalItems = Array.from(
-                {length: newQuantity - currentStockItems.length},
-                () => ({
-                  expiry: "",
-                  batch: "",
-                }),
+              { length: newQuantity - currentStockItems.length },
+              () => ({
+                expiry: "",
+                batch: "",
+              }),
             );
 
             newStockItemsArray = [...currentStockItems, ...additionalItems];
@@ -217,13 +224,13 @@ const OrderItemComponent = ({
             newStockItemsArray = currentStockItems.slice(0, newQuantity);
           }
         }
-      }
-      handleOrderItemInstantChange("stock_items", newStockItemsArray);
+        handleOrderItemInstantChange("stock_items", newStockItemsArray);
 
-      updatedItems[orderItemIndex] = {
-        ...updatedItems[orderItemIndex],
-        stock_items: newStockItemsArray,
-      };
+        updatedItems[orderItemIndex] = {
+          ...updatedItems[orderItemIndex],
+          stock_items: newStockItemsArray,
+        };
+      }
 
       // If 'otherReasonDetail' exists, clear it out (in case the selectedReason for the
       // item being unfulfilled is 'Other')
@@ -379,7 +386,7 @@ const OrderItemComponent = ({
 
             {/* Adding an invalid feedback component for quantity input field */}
             <Form.Control.Feedback type="invalid">
-              {formik.errors.items?.[orderItemIndex]?.quantity}
+              {formik?.errors?.items?.[orderItemIndex]?.quantity}
             </Form.Control.Feedback>
           </Form.Group>
 

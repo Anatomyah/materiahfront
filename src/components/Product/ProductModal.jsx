@@ -39,10 +39,7 @@ const createFormSchema = ({ isSupplier }) =>
     productName: yup
       .string()
       .required("Product name is required")
-      .min(2, "Product name must be at least 2 characters long")
-      .test("is-english", "Username must be in English.", (value) => {
-        return /^[a-zA-Z0-9\-_ ]+$/.test(value);
-      }),
+      .min(2, "Product name must be at least 2 characters long"),
     catalogueNumber: yup
       .string()
       .required("Catalogue number is required")
@@ -150,9 +147,12 @@ const ProductModal = ({
 
   // useEffect hook to fetch the filtered manufacturer list related to the selected supplier
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList, supplierId);
-  }, [supplierId]);
+    getManufacturerSelectList(token, setManufacturerList);
+  }, []);
 
+  useEffect(() => {
+    console.log(manufacturerList);
+  }, [manufacturerList]);
   // Object for validating the uniqueness of the catalogue number.
   // It contains an id, error text, and a validation function.
   const catalogueNumberUniqueValidator = {
@@ -338,6 +338,7 @@ const ProductModal = ({
             storageConditions: productObj ? productObj.storage : "",
             stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
+            currency: productObj ? productObj.currency : "",
             manufacturer:
               productObj && productObj?.manufacturer
                 ? productObj.manufacturer.name
@@ -362,6 +363,7 @@ const ProductModal = ({
                   storageConditions: true,
                   stock: true,
                   price: true,
+                  currency: true,
                   manufacturer: true,
                   supplier: true,
                   productUrl: true,
@@ -618,7 +620,31 @@ const ProductModal = ({
                       {errors.price}
                     </Form.Control.Feedback>
                   </Form.Group>
-
+                  <Form.Group
+                    as={Col}
+                    md="8"
+                    controlId="formProductUnit"
+                    className="field-margin"
+                  >
+                    <Form.Label>Currency</Form.Label>
+                    {/* Input for measurement unit with validation feedback. */}
+                    <Form.Select
+                      name="currency"
+                      value={values.currency}
+                      onChange={handleChange}
+                    >
+                      <option value="" disabled>
+                        --Select measurement unit--
+                      </option>
+                      <option value="NIS">NIS</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                    </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="invalid">
+                      {errors.currency}
+                    </Form.Control.Feedback>
+                  </Form.Group>
                   {!isSupplier && supplierList && (
                     <>
                       <Form.Group
@@ -668,7 +694,6 @@ const ProductModal = ({
                         name="manufacturer"
                         value={values.manufacturer}
                         onChange={handleChange}
-                        disabled={!supplierId} // Input disabled until a supplier is selected
                       >
                         <option value="" disabled>
                           --Select Manufacturer--

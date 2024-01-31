@@ -80,6 +80,7 @@ const ProductTable = ({ productList, handleEdit }) => {
                 />
               </a>
             </td>
+            <td>{product.cat_num}</td>
             <td>
               {/* Renders the product detail modal for each product */}
               <ProductDetailModal
@@ -87,7 +88,6 @@ const ProductTable = ({ productList, handleEdit }) => {
                 updateProducts={handleEdit}
               />
             </td>
-            <td>{product.cat_num}</td>
             <td>{product.category}</td>
             <td>{product.unit_quantity}</td>
             <td>{product.unit}</td>

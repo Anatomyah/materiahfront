@@ -115,6 +115,9 @@ function TopNavBar() {
                       <NavDropdown.Item as={Link} to="/quotes">
                         Quotes
                       </NavDropdown.Item>
+                      <NavDropdown.Item as={Link} to="/email_template_editor">
+                        Email Template
+                      </NavDropdown.Item>
                     </NavDropdown>
                     <NavDropdown
                       title={
