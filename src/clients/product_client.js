@@ -176,7 +176,7 @@ export const createProduct = async (token, productData, images) => {
 
     // Display a toast message if the product was created successfully
     result.toast = () =>
-      showToast("Product created successfully!", "success", "top-right");
+      showToast("Product created successfully!", "success", "top-right", 3000);
 
     return result;
 
@@ -256,7 +256,7 @@ export const updateProduct = async (
 
     // Display a toast message if the product update was successful
     result.toast = () =>
-      showToast("Product updated successfully!", "success", "top-right");
+      showToast("Product updated successfully!", "success", "top-right", 3000);
 
     return result;
 
@@ -278,7 +278,12 @@ export const deleteProduct = async (token, productId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Product deleted successfully!", "success", "top-right"),
+        showToast(
+          "Product deleted successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
   } catch (error) {
     console.error(error.response.data);
@@ -526,6 +531,7 @@ export const updateProductStock = async (token, productId, value) => {
           "Product stock updated successfully!",
           "success",
           "top-right",
+          3000,
         ),
     };
 
@@ -572,7 +578,12 @@ export const createStockItem = async (token, productId, itemData) => {
       success: true,
       stockItem: response.data.stock_item,
       toast: () =>
-        showToast("Stock item created successfully!", "success", "top-right"),
+        showToast(
+          "Stock item created successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // Catch any errors during update and return them
@@ -618,7 +629,12 @@ export const updateStockItem = async (token, itemId, itemData) => {
     return {
       success: true,
       toast: () =>
-        showToast("Stock item updated successfully!", "success", "top-right"),
+        showToast(
+          "Stock item updated successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // Catch any errors during update and return them
@@ -654,7 +670,12 @@ export const deleteStockItem = async (token, itemId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Stock item deleted successfully!", "success", "top-right"),
+        showToast(
+          "Stock item deleted successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // Catch any errors during update and return them

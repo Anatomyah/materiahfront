@@ -183,6 +183,7 @@ const ChangePasswordModal = ({ userEmail }) => {
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
       } else {
         // If the request is successful, the modal will be closed and a toast message will be showed to the user

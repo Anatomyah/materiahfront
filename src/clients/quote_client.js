@@ -131,7 +131,8 @@ export const createQuoteFromCart = async (token, cart_items) => {
     // The 'toast' method shows a success toast about the successful shopping when called
     return {
       success: true,
-      toast: () => showToast("Shopping Successful!", "success", "top-right"),
+      toast: () =>
+        showToast("Shopping Successful!", "success", "top-right", 3000),
     };
 
     // If any error occurs during the creation of the quote
@@ -204,7 +205,7 @@ export const createQuoteManually = async (token, quoteData, quoteFile) => {
 
     // Prepare a toast message for successful quote creation
     result.toast = () =>
-      showToast("Quote created successfully!", "success", "top-right");
+      showToast("Quote created successfully!", "success", "top-right", 3000);
 
     // Return the result
     return result;
@@ -290,7 +291,7 @@ export const updateQuote = async (
 
     // Prepare a toast message for successful quote update
     result.toast = () =>
-      showToast("Quote updated successfully!", "success", "top-right");
+      showToast("Quote updated successfully!", "success", "top-right", 3000);
 
     // Return the result
     return result;
@@ -331,7 +332,7 @@ export const deleteQuote = async (token, quoteId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Quote deleted successfully!", "success", "top-right"),
+        showToast("Quote deleted successfully!", "success", "top-right", 3000),
     };
 
     // If any error occurs during the deletion

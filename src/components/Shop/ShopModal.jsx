@@ -98,7 +98,7 @@ const ShopModal = ({ product, show = false, setShow }) => {
       });
     }
     // Show a toast message indicating successful addition.
-    showToast("Product added to cart", "success", "bottom-right");
+    showToast("Product added to cart", "success", "bottom-right", 3000);
   };
 
   // Closes the modal and resets the visibility state.

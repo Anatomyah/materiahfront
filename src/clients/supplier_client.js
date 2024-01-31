@@ -29,7 +29,12 @@ export const createSupplier = async (token, supplierData) => {
     return {
       success: true,
       toast: () =>
-        showToast("Supplier created successfully!", "success", "top-right"),
+        showToast(
+          "Supplier created successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // If any error occurs during the creation of the supplier
@@ -87,7 +92,12 @@ export const updateSupplier = async (
     return {
       success: true,
       toast: () =>
-        showToast("Supplier updated successfully!", "success", "top-right"),
+        showToast(
+          "Supplier updated successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // If any error occurs during the update of the supplier
@@ -126,7 +136,12 @@ export const deleteSupplier = async (token, supplierId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Supplier deleted successfully!", "success", "top-right"),
+        showToast(
+          "Supplier deleted successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
 
     // If any error occurs during the deletion of the supplier

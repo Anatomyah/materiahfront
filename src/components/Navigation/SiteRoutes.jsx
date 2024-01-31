@@ -11,6 +11,7 @@ import OrdersPage from "../../pages/Order/OrdersPage";
 import QuotesPage from "../../pages/Quote/QuotesPage";
 import NotAuthorizedPage from "./NotAuthorizedPage";
 import { AppContext } from "../../App";
+import NotificationsPage from "../../pages/Notifications/NotificationsPage";
 
 /**
  * SiteRoutes Component
@@ -43,7 +44,6 @@ const SiteRoutes = () => {
             isSupplier ? <ProductList /> : <Navigate to="/not-authorized" />
           }
         />
-
         {/* If isSupplier, allow access to supplier-catalogue, else redirect */}
         <Route
           path="/inventory"
@@ -51,7 +51,6 @@ const SiteRoutes = () => {
             !isSupplier ? <ProductList /> : <Navigate to="/not-authorized" />
           }
         />
-
         {/* Decisions about what to render for other routes also depend on isSupplier value */}
         <Route
           path="/shop"
@@ -87,7 +86,17 @@ const SiteRoutes = () => {
             !isSupplier ? <QuotesPage /> : <Navigate to="/not-authorized" />
           }
         />
-
+        />
+        <Route
+          path="/notifications"
+          element={
+            !isSupplier ? (
+              <NotificationsPage />
+            ) : (
+              <Navigate to="/not-authorized" />
+            )
+          }
+        />
         {/* This route will always render NotAuthorizedPage component */}
         <Route path="/not-authorized" element={<NotAuthorizedPage />} />
       </Routes>

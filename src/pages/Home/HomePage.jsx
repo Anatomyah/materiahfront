@@ -9,10 +9,9 @@ import ProductModal from "../../components/Product/ProductModal";
 import OrderModal from "../../components/Order/OrderModal";
 import QuoteModal from "../../components/Quote/QuoteModal";
 import UpdateAmountModal from "../../components/Product/UpdateAmountModal";
-import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 const HomePage = () => {
-  const { notifications, isSupplier } = useContext(AppContext);
+  const { isSupplier } = useContext(AppContext);
   const [showProductModal, setShowProductModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showQuoteModal, setShowQuoteModal] = useState(false);
@@ -39,32 +38,27 @@ const HomePage = () => {
       <div className="overlay"></div>
       <Container className="py-5 content">
         <Row>
-          <Col sm={8} className="text-center">
+          <Col className="text-center">
             <h1>
               <Badge pill bg="secondary">
                 Quick Actions
               </Badge>
             </h1>
           </Col>
-          <Col sm={4} className="text-center">
-            {!isSupplier && (
-              <h1>
-                <Badge pill bg="secondary">
-                  Notifications
-                </Badge>
-              </h1>
-            )}
-          </Col>
         </Row>
         <Row>
-          <Col sm={8} className="d-flex flex-row flex-wrap">
+          <Col className="d-flex flex-row flex-wrap">
             {!isSupplier && (
               <>
                 <div className="col-md-5 mx-auto home-box-style">
                   <Button
                     variant="secondary"
-                    className="w-100 h-100"
-                    style={{ fontSize: "30px", fontWeight: "bold" }}
+                    className="w-100"
+                    style={{
+                      fontSize: "30px",
+                      fontWeight: "bold",
+                      height: "150px",
+                    }}
                     onClick={handleCreateOrder}
                   >
                     Receive Order
@@ -73,8 +67,12 @@ const HomePage = () => {
                 <div className="col-md-5 mx-auto home-box-style">
                   <Button
                     variant="secondary"
-                    className="w-100 h-100"
-                    style={{ fontSize: "30px", fontWeight: "bold" }}
+                    className="w-100"
+                    style={{
+                      fontSize: "30px",
+                      fontWeight: "bold",
+                      height: "150px",
+                    }}
                     onClick={handleUpdateStock}
                   >
                     Update Stock
@@ -83,8 +81,12 @@ const HomePage = () => {
                 <div className="col-md-5 mx-auto home-box-style">
                   <Button
                     variant="secondary"
-                    className="w-100 h-100"
-                    style={{ fontSize: "30px", fontWeight: "bold" }}
+                    className="w-100"
+                    style={{
+                      fontSize: "30px",
+                      fontWeight: "bold",
+                      height: "150px",
+                    }}
                     onClick={handleCreateQuote}
                   >
                     Create Quote
@@ -95,53 +97,17 @@ const HomePage = () => {
             <div className="col-md-5 mx-auto home-box-style">
               <Button
                 variant="secondary"
-                className="w-100 h-100"
-                style={{ fontSize: "30px", fontWeight: "bold" }}
+                className="w-100"
+                style={{
+                  fontSize: "30px",
+                  fontWeight: "bold",
+                  height: "150px",
+                }}
                 onClick={handleCreateProduct}
               >
                 Create Product
               </Button>
             </div>
-          </Col>
-          <Col sm={4}>
-            {!isSupplier && notifications && (
-              <div className="scrollable-area">
-                {notifications.order_notifications && (
-                  <div className="col-md-10 mx-auto notification-box-style">
-                    <Button
-                      variant="secondary"
-                      className="w-100 h-100"
-                      style={{ fontSize: "30px", fontWeight: "bold" }}
-                      onClick={handleCreateOrder}
-                    >
-                      <NotificationsActiveIcon
-                        fontSize="large"
-                        style={{ marginRight: "10px" }}
-                      />
-                      Re-stocking
-                    </Button>
-                  </div>
-                )}
-                {notifications.expiry_notifications && (
-                  <div className="col-md-10 mx-auto notification-box-style">
-                    <Button
-                      variant="secondary"
-                      className="w-100 h-100"
-                      style={{ fontSize: "30px", fontWeight: "bold" }}
-                      onClick={handleCreateOrder}
-                    >
-                      {
-                        <NotificationsActiveIcon
-                          fontSize="large"
-                          style={{ marginRight: "10px" }}
-                        />
-                      }
-                      Stock Expiry
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
           </Col>
         </Row>
       </Container>

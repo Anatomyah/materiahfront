@@ -18,6 +18,7 @@ import { differenceInMonths, differenceInDays } from "date-fns";
  * @param {function} setIsSupplier - State setter function for the 'isSupplier' boolean state.
  * @param {function} setIsLoading - State setter function for the 'isLoading' boolean state.
  * @param {function} setCart - State setter function for the 'cart' array state.
+ * @param {function} setNotificationsSeen - State setter for the notificationsSeen boolean
  * @returns {Promise<void>}
  * @throws Will throw an error if there's an issue with the validateToken() async function call.
  */
@@ -29,6 +30,7 @@ export const initializeApp = async (
   setIsSupplier,
   setIsLoading,
   setCart,
+  setNotificationsSeen,
 ) => {
   // Select appropriate storage type based on whether 'rememberMe' was set
   let storage;
@@ -50,6 +52,8 @@ export const initializeApp = async (
     storage.getItem("notifications") === "undefined"
       ? null
       : JSON.parse(storage.getItem("notifications"));
+  const savedNotificationsSeen =
+    storage.getItem("notificationsSeen") === "true";
   const savedIsSupplier = storage.getItem("isSupplier") === "true";
   const savedCart =
     JSON.parse(storage.getItem("cart")) === "null"
@@ -74,6 +78,7 @@ export const initializeApp = async (
       if (savedCart) {
         setCart(savedCart);
       }
+      setNotificationsSeen(savedNotificationsSeen);
     }
   }
 
@@ -95,6 +100,7 @@ export const initializeApp = async (
  * @param {boolean} isSupplier - A flag indicating if the current authenticated user is a supplier.
  * @param {boolean} rememberMe - A flag indicating if the 'Remember Me' option was selected during login.
  * @param {Array} cart - The current state of the shopping cart.
+ * @param {boolean} notificationsSeen - A flag indicating if the notifications toast was seen
  * @returns {function} - The created handler function for the `beforeunload` window event.
  */
 export const createBeforeUnloadHandler = (
@@ -105,6 +111,7 @@ export const createBeforeUnloadHandler = (
   isSupplier,
   rememberMe,
   cart,
+  notificationsSeen,
 ) => {
   // Return a function to handle beforeunload event
   return () => {
@@ -117,6 +124,7 @@ export const createBeforeUnloadHandler = (
     storage.setItem("userDetails", JSON.stringify(userDetails));
     storage.setItem("notifications", JSON.stringify(notifications));
     storage.setItem("isSupplier", String(isSupplier));
+    storage.setItem("notificationsSeen", String(notificationsSeen));
     storage.setItem("rememberMe", String(rememberMe));
     storage.setItem("cart", JSON.stringify(cart));
   };
@@ -262,12 +270,13 @@ export const filterObjectsByEntity = (
  * @param {string} message - The message to display in the toast.
  * @param {string} type - The type of toast. This sets the icon and styling for the toast. Can be one of the following: "info", "success", "warning", "error".
  * @param {string} position - The position of the toast on the screen. Can be one of the following: "top-right", "top-center", "top-left", "bottom-right", "bottom-center", "bottom-left".
+ * @param {number or boolean} autoClose - Timing in milliseconds to close or false if manual close is required
  */
-export const showToast = (message, type, position) => {
+export const showToast = (message, type, position, autoClose) => {
   // Call the toast function with the message, type and position. Set some default options.
   toast[type](message, {
     position: position,
-    autoClose: 3000, // Toast will disappear after 3 seconds
+    autoClose: autoClose, // Toast will disappear after 3 seconds
     hideProgressBar: false, // Show the progress bar
     closeOnClick: true, // Close the toast when clicked
     pauseOnHover: true, // Pause the timer when mouse hovers over the toast
@@ -308,6 +317,33 @@ export const isExpiryInSixMonths = (expiryDateString) => {
   }
 
   return result;
+};
+
+/**
+ * Formats the time until expiry for a given expiry date.
+ *
+ * @param {string} expiryDateString - The expiry date string in a format supported by the Date constructor.
+ * @returns {string} - The formatted time until expiry as a string.
+ */
+export const formatTimeTillExpiry = (expiryDateString) => {
+  const expiryDate = new Date(expiryDateString);
+  const currentDate = new Date();
+
+  // Calculate the difference in months between the current date and the expiry date
+  const monthDifference = differenceInMonths(expiryDate, currentDate);
+
+  // Adjust current date to the start of the monthDifference month
+  const adjustedCurrentDate = new Date(
+    currentDate.setMonth(currentDate.getMonth() + monthDifference),
+  );
+
+  // Calculate days after adjusting the months
+  const daysAfterMonths = differenceInDays(expiryDate, adjustedCurrentDate);
+  const weeks = Math.floor(daysAfterMonths / 7);
+  const days = daysAfterMonths % 7;
+
+  // Return the time till expiry as a formatted string
+  return `(${monthDifference} M, ${weeks} W, ${days} D)`;
 };
 
 /**

@@ -55,8 +55,6 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
     });
   };
 
-  console.log(order);
-
   // Run fetchOrder on component mount if there is an orderId but no order
   useEffect(() => {
     if (!order && orderIdToUse) {

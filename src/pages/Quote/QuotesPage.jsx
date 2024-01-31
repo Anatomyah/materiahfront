@@ -89,6 +89,7 @@ const QuotesPage = () => {
           "An unexpected error occurred. Please try again",
           "error",
           "top-center",
+          3000,
         );
       }
       isLoadingRef.current = false; // Reset loading state

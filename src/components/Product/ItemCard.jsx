@@ -72,7 +72,7 @@ const ItemCard = ({ product, handleEdit }) => {
       setCart((prevCart) => [...prevCart, newItem]);
     }
     // Show a toast notification for adding to the cart.
-    showToast("Product added to cart", "success", "bottom-right");
+    showToast("Product added to cart", "success", "bottom-right", 1500);
   };
 
   return (

@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import {
   createBeforeUnloadHandler,
   initializeApp,
+  showToast,
 } from "./config_and_helpers/helpers";
 import CartModal from "./components/Shop/CartModal";
 import BottomNavBar from "./components/Navigation/BottomNavBar";
@@ -36,7 +37,8 @@ function App() {
   const [userDetails, setUserDetails] = useState({}); // Details about the currently authenticated user
   const [isSupplier, setIsSupplier] = useState(false); // Flag indicating whether the current user is a supplier
   const [rememberMe, setRememberMe] = useState(false); // Flag for remembering the user's session
-  const [notifications, setNotifications] = useState([]); // List of current notifications
+  const [notifications, setNotifications] = useState({}); // Object containing boolean values whether new notifications exist
+  const [notificationsSeen, setNotificationsSeen] = useState(false); // Flag indicating if notifications toast was seen
   const [showCart, setShowCart] = useState(false); // Flag for showing the cart modal
   const [cart, setCart] = useState([]); // List of items in the cart
   const [cartCount, setCartCount] = useState(0); // Number of items in the cart
@@ -59,6 +61,7 @@ function App() {
         setIsSupplier,
         setIsLoading,
         setCart,
+        setNotificationsSeen,
       );
     })();
   }, []);
@@ -75,6 +78,7 @@ function App() {
       isSupplier,
       rememberMe,
       cart,
+      notificationsSeen,
     );
 
     // Add the event listener for 'beforeunload'
@@ -84,7 +88,15 @@ function App() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [token, userDetails, notifications, isSupplier, rememberMe, cart]);
+  }, [
+    token,
+    userDetails,
+    notifications,
+    isSupplier,
+    rememberMe,
+    cart,
+    notificationsSeen,
+  ]);
 
   // useEffect hook for cart
   useEffect(() => {
@@ -93,6 +105,15 @@ function App() {
     // Store the cart in localStorage (this storage won't be cleared even if the browser is closed)
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
+
+  // UseEffect hook for notifications toast
+  useEffect(() => {
+    //   If notifications exist, show a toast indicating that and set the notificationSeen to true
+    if (Object.keys(notifications).length && !notificationsSeen) {
+      showToast("New notifications waiting... ", "info", "top-center", false);
+      setNotificationsSeen(true);
+    }
+  }, [notifications]);
 
   // Render a loading screen while the app is initializing
   if (isLoading) {
@@ -116,8 +137,8 @@ function App() {
           setUserDetails,
           isSupplier,
           setIsSupplier,
-          notifications,
           setNotifications,
+          setNotificationsSeen,
         }}
       >
         {/* CartAppContext is a context for the shopping cart-related state. */}

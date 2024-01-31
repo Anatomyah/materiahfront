@@ -29,7 +29,12 @@ export const createManufacturer = async (token, manufacturerData) => {
     return {
       success: true,
       toast: () =>
-        showToast("Manufacturer created successfully!", "success", "top-right"),
+        showToast(
+          "Manufacturer created successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
   } catch (error) {
     // If the request fails, the error responses are logged and returned
@@ -80,7 +85,12 @@ export const updateManufacturer = async (
     return {
       success: true,
       toast: () =>
-        showToast("Manufacturer updated successfully!", "success", "top-right"),
+        showToast(
+          "Manufacturer updated successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
   } catch (error) {
     // If the request fails, the error responses are logged and returned
@@ -116,7 +126,12 @@ export const deleteManufacturer = async (token, manufacturerId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Manufacturer deleted successfully!", "success", "top-right"),
+        showToast(
+          "Manufacturer deleted successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
     };
   } catch (error) {
     // If the request fails, the error responses are logged and returned

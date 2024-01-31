@@ -140,6 +140,7 @@ const StockItemComponent = ({
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
         setIsSubmitting(false); // Resets the submitting state.
       }
@@ -165,6 +166,7 @@ const StockItemComponent = ({
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
         setIsSubmitting(false); // Resets the submitting state.
       }

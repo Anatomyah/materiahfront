@@ -96,7 +96,7 @@ export const createOrder = async (token, orderData, images) => {
 
     // Function to be called to display a toast notification
     result.toast = () =>
-      showToast("Order created successfully!", "success", "top-right");
+      showToast("Order created successfully!", "success", "top-right", 3000);
 
     // Return the result
     return result;
@@ -170,7 +170,7 @@ export const updateOrder = async (
 
     // Function to be called to display a toast notification
     result.toast = () =>
-      showToast("Order updated successfully!", "success", "top-right");
+      showToast("Order updated successfully!", "success", "top-right", 3000);
 
     // Return the result
     return result;
@@ -205,7 +205,7 @@ export const deleteOrder = async (token, orderId) => {
     return {
       success: true,
       toast: () =>
-        showToast("Order deleted successfully!", "success", "top-right"),
+        showToast("Order deleted successfully!", "success", "top-right", 3000),
     };
   } catch (error) {
     // If the request fails, log the error messages and return them

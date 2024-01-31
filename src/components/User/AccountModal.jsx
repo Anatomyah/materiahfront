@@ -413,6 +413,7 @@ const AccountModal = ({ isSignUp = false }) => {
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
       }
       // Set isSubmitting to false to indicate that the submission process is complete

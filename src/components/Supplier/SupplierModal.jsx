@@ -254,6 +254,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
         setIsSubmitting(false); // Set submitting status to false
       }

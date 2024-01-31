@@ -122,6 +122,7 @@ const DeleteButton = ({
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
         setIsDeleting(false);
       }

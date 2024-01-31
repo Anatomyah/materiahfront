@@ -97,6 +97,7 @@ const ManufacturersPage = () => {
           "An unexpected error occurred. Please try again",
           "error",
           "top-center",
+          3000,
         ); // Displays an error message if fetching fails
       }
       isLoadingRef.current = false; // Indicates the end of a data loading process

@@ -99,6 +99,7 @@ const UpdateAmountModal = ({
           "An unexpected error occurred. Please try again in a little while.",
           "error",
           "top-right",
+          3000,
         );
       }
       setIsSubmitting(false);

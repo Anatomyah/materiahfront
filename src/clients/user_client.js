@@ -318,6 +318,7 @@ export const updateUserProfile = async (
           "Account details edited successfully!",
           "success",
           "top-right",
+          3000,
         ),
     };
 
