@@ -9,7 +9,6 @@ import ProductDetailModal from "./ProductDetailModal";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
 import { CartAppContext } from "../../App";
-import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
 /**
@@ -37,6 +36,7 @@ const ItemCard = ({ product, handleEdit }) => {
   // Context for managing cart items.
   const { cart, setCart } = useContext(CartAppContext);
 
+  console.log(product);
   // State for controlling the visibility of the product detail modal.
   const [show, setShow] = useState(false);
 
@@ -78,11 +78,11 @@ const ItemCard = ({ product, handleEdit }) => {
   return (
     <>
       {/* Material UI Card component containing product details. */}
-      <Card sx={{ maxWidth: 345 }}>
+      <Card sx={{ maxWidth: 400, maxHeight: 500 }}>
         {/* Area for user interaction, opens the detail modal on click. */}
         <CardActionArea onClick={() => setShow(true)}>
           {/* Product image. */}
-          <CardMedia component="img" height="200" image={imageUrl} />
+          <CardMedia component="img" height="250" image={imageUrl} />
           {/* Content section with product details. */}
           <CardContent>
             {/* Display product name, catalogue number, and other attributes. */}
@@ -103,27 +103,13 @@ const ItemCard = ({ product, handleEdit }) => {
                 <span style={{ fontWeight: "bold" }}>Supplier:</span>
                 <SupplierDetailModal supplierId={product.supplier} />
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "start",
-                  alignItems: "center",
-                }}
-              >
-                <span style={{ fontWeight: "bold" }}>Manufacturer:</span>
-                {product?.manufacturer && (
-                  <ManufacturerDetailModal
-                    manufacturerId={product.manufacturer}
-                  />
-                )}
-              </div>
               <div>
-                <span style={{ fontWeight: "bold" }}>Category:</span>
+                <span style={{ fontWeight: "bold" }}>Category:</span>{" "}
                 {product.category}
               </div>
-              <div>
+              <div style={{ marginTop: "6px" }}>
                 <span style={{ fontWeight: "bold" }}>Unit Quantity:</span>{" "}
-                {product.unit_quantity}
+                {product.unit_quantity} ({product.unit})
               </div>
             </Typography>
           </CardContent>

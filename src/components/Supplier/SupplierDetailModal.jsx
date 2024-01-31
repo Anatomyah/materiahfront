@@ -82,7 +82,6 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
         <>
           {/* Button to open the modal */}
           <Button variant="link" onClick={handleShow}>
-            {" "}
             {supplier.name}
           </Button>
           <Modal
