@@ -101,7 +101,7 @@ const ItemCard = ({ product, handleEdit }) => {
                 }}
               >
                 <span style={{ fontWeight: "bold" }}>Supplier:</span>
-                <SupplierDetailModal supplierId={product.supplier.id} />
+                <SupplierDetailModal supplierId={product.supplier} />
               </div>
               <div>
                 <span style={{ fontWeight: "bold" }}>Category:</span>{" "}

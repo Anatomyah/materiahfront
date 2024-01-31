@@ -247,6 +247,7 @@ const ProductModal = ({
       storage: values.storageConditions,
       stock: values.stock,
       price: values.price,
+      currency: values.currency,
       url: values.productUrl,
       manufacturer: values.manufacturer,
     };
@@ -388,6 +389,7 @@ const ProductModal = ({
             dirty,
             setFieldValue,
           }) => {
+            console.log(values);
             return (
               <Form id="productForm" noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
@@ -634,7 +636,7 @@ const ProductModal = ({
                       onChange={handleChange}
                     >
                       <option value="" disabled>
-                        --Select measurement unit--
+                        --Select currency--
                       </option>
                       <option value="NIS">NIS</option>
                       <option value="USD">USD</option>
