@@ -283,21 +283,8 @@ const OrderItemComponent = ({
     }
 
     // Update the items state
-    handleOrderItemDelayedChange("quantity", value);
+    handleOrderItemInstantChange("quantity", value);
     handleOrderItemInstantChange("stock_items", newStockItemsArray);
-
-    // Update the Formik state
-    updatedItems[orderItemIndex] = {
-      ...updatedItems[orderItemIndex],
-      quantity: value,
-      stock_items: newStockItemsArray,
-    };
-
-    // Set the Formik values
-    formikContext.setValues({
-      ...formikContext.values,
-      items: updatedItems,
-    });
   };
 
   // Handler for order item inputs that has delay in updating their changes.

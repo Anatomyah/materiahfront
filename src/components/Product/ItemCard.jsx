@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
@@ -8,8 +8,12 @@ import { defaultImageUrl } from "../../config_and_helpers/config";
 import ProductDetailModal from "./ProductDetailModal";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
-import { CartAppContext } from "../../App";
+import { AppContext, CartAppContext } from "../../App";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import {
+  getSupplierDetails,
+  getSupplierSelectList,
+} from "../../clients/supplier_client";
 
 /**
  * Represents an item card component, displaying key details of a product and providing quick actions.
@@ -34,11 +38,19 @@ import SupplierDetailModal from "../Supplier/SupplierDetailModal";
  */
 const ItemCard = ({ product, handleEdit }) => {
   // Context for managing cart items.
+  const { token } = useContext(AppContext);
   const { cart, setCart } = useContext(CartAppContext);
 
-  console.log(product);
   // State for controlling the visibility of the product detail modal.
   const [show, setShow] = useState(false);
+
+  const [supplier, setSupplier] = useState();
+
+  useEffect(() => {
+    if (product) {
+      getSupplierDetails(token, product.supplier, setSupplier);
+    }
+  }, [product]);
 
   // URL for the product's image, falling back to a default if none is available.
   const imageUrl = product?.images[0]?.image_url || defaultImageUrl;
@@ -66,7 +78,7 @@ const ItemCard = ({ product, handleEdit }) => {
         name: product.name,
         image_url:
           product.images.length > 0 ? product.images[0].image_url : null,
-        supplier: product.supplier,
+        supplier: { id: supplier.id, name: supplier.name },
         quantity: Number(1),
       };
       setCart((prevCart) => [...prevCart, newItem]);
@@ -100,10 +112,12 @@ const ItemCard = ({ product, handleEdit }) => {
                   alignItems: "center",
                 }}
               >
-                <span style={{ fontWeight: "bold" }}>Supplier:</span>
-                <SupplierDetailModal supplierId={product.supplier} />
+                <div>
+                  <span style={{ fontWeight: "bold" }}>Supplier:</span>{" "}
+                  {supplier && supplier.name}
+                </div>
               </div>
-              <div>
+              <div style={{ marginTop: "6px" }}>
                 <span style={{ fontWeight: "bold" }}>Category:</span>{" "}
                 {product.category}
               </div>

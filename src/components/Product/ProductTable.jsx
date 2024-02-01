@@ -4,10 +4,14 @@ import LinkIcon from "@mui/icons-material/Link";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteProduct } from "../../clients/product_client";
 import ProductModal from "./ProductModal";
-import { defaultImageUrl } from "../../config_and_helpers/config";
+import {
+  CURRENCY_SYMBOLS,
+  defaultImageUrl,
+} from "../../config_and_helpers/config";
 import ProductDetailModal from "./ProductDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
+import { getCurrencySymbol } from "../../config_and_helpers/helpers";
 
 /**
  * Renders a list of products within a table layout.
@@ -41,10 +45,11 @@ const ProductTable = ({ productList, handleEdit }) => {
           <th>CAT #</th>
           <th>Name</th>
           <th>Category</th>
-          <th>Unit Quantity</th>
+          <th style={{ minWidth: "130px" }}>Unit Quantity</th>
           <th>Unit</th>
           <th>Stock</th>
           <th>Storage</th>
+          <th>Price</th>
           <th>URL</th>
           <th>Manufacturer</th>
           <th>Supplier</th>
@@ -93,6 +98,11 @@ const ProductTable = ({ productList, handleEdit }) => {
             <td>{product.unit}</td>
             <td>{product.stock}</td>
             <td>{product.storage}</td>
+            <td style={{ minWidth: "130px" }}>{`${product.price} ${
+              CURRENCY_SYMBOLS[product.currency]
+                ? `${getCurrencySymbol(product.currency)}`
+                : ""
+            }`}</td>
             <td>
               <a href={product.url} target="_blank" rel="noopener noreferrer">
                 <LinkIcon />

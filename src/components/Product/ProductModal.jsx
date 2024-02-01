@@ -44,9 +44,13 @@ const createFormSchema = ({ isSupplier }) =>
       .string()
       .required("Catalogue number is required")
       .min(2, "Catalogue number must be at least 2 characters long")
-      .test("is-english", "Username must be in English.", (value) => {
-        return /^[a-zA-Z0-9\-_ ]+$/.test(value);
-      }),
+      .test(
+        "is-english",
+        "CAT# must be made of English letters and numbers.",
+        (value) => {
+          return /^[a-zA-Z0-9\-_ ]+$/.test(value);
+        },
+      ),
     category: yup.string().required("Product category is required"),
     unit: yup.string().required("Measurement unit is required"),
     unit_quantity: yup
@@ -150,9 +154,6 @@ const ProductModal = ({
     getManufacturerSelectList(token, setManufacturerList);
   }, []);
 
-  useEffect(() => {
-    console.log(manufacturerList);
-  }, [manufacturerList]);
   // Object for validating the uniqueness of the catalogue number.
   // It contains an id, error text, and a validation function.
   const catalogueNumberUniqueValidator = {
@@ -389,7 +390,6 @@ const ProductModal = ({
             dirty,
             setFieldValue,
           }) => {
-            console.log(values);
             return (
               <Form id="productForm" noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">

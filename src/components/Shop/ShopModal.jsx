@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
@@ -8,11 +8,13 @@ import Grid from "@mui/material/Grid";
 import LinkIcon from "@mui/icons-material/Link";
 import Divider from "@mui/material/Divider";
 import CarouselComponent from "../Generic/CarouselComponent";
-import { CartAppContext } from "../../App";
+import { AppContext, CartAppContext } from "../../App";
 import { ButtonGroup } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { showToast } from "../../config_and_helpers/helpers";
+import { getSupplierDetails } from "../../clients/supplier_client";
+import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
 /**
  * Represents the modal component for a shop product.
@@ -30,9 +32,17 @@ import { showToast } from "../../config_and_helpers/helpers";
 const ShopModal = ({ product, show = false, setShow }) => {
   // Context for global cart state and function to update it.
   const { cart, setCart } = useContext(CartAppContext);
-
+  const { token } = useContext(AppContext);
   // State for tracking the selected product amount.
   const [productAmount, setProductAmount] = useState("");
+
+  const [supplier, setSupplier] = useState();
+
+  useEffect(() => {
+    if (product) {
+      getSupplierDetails(token, product.supplier, setSupplier);
+    }
+  }, [product]);
 
   // Decreases the product amount, ensuring it doesn't go below 1.
   const handleMinusClick = () => {
@@ -89,7 +99,7 @@ const ShopModal = ({ product, show = false, setShow }) => {
         image_url:
           // Use the first image URL or null if no images are available.
           product.images.length > 0 ? product.images[0].image_url : null,
-        supplier: product.supplier,
+        supplier: { id: supplier.id, name: supplier.name },
         quantity: Number(productAmount),
       };
       // Add the new item to the cart.
@@ -167,7 +177,7 @@ const ShopModal = ({ product, show = false, setShow }) => {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="subtitle1">
-                  {product.supplier.name}
+                  {supplier && <SupplierDetailModal supplierObj={supplier} />}
                 </Typography>
               </Grid>
               <Grid item xs={6}>

@@ -195,9 +195,6 @@ const OrderModal = ({
     }
   }, [relatedQuoteObj]);
 
-  useEffect(() => {
-    console.log(relatedQuoteObj);
-  }, [relatedQuoteObj]);
   // Function updateItem - Updates a specific item in the items state
   const updateItem = (orderItemIndex, field, value, stockItemIndex) => {
     const newItems = [...items];
@@ -213,9 +210,6 @@ const OrderModal = ({
     setItems(newItems);
   };
 
-  useEffect(() => {
-    console.log(items);
-  }, [items]);
   // Function to handle file change events and update the images state.
   const handleFileChange = (files) => {
     const newImages = files.map((file) => ({
@@ -394,7 +388,7 @@ const OrderModal = ({
         for the modal's create or edit forms. */}
         <Formik
           // The items array is passed in as a key to make sure the form is updated when the items state is updated
-          key={items}
+          key={[items, relatedQuoteObj]}
           enableReinitialize={true}
           initialTouched={
             orderObj
@@ -428,27 +422,13 @@ const OrderModal = ({
                 }
           }
           initialValues={{
-            items: orderObj
-              ? orderObj.items.map((item) => ({
-                  quantity: item.quantity,
-                  stock_items: item.stock_items,
-                  itemFulfilled: item.status === "OK" || false,
-                  selectedReason: item.status,
-                  otherReasonDetail: item.issue_detail || "",
-                }))
-              : items.map((item) => ({
-                  quantity: item.quantity || "",
-                  stock_items: Array.from(
-                    { length: item.quantity || 0 },
-                    () => ({
-                      expiry: "",
-                      batch: "",
-                    }),
-                  ),
-                  itemFulfilled: item.status ? item.status === "OK" : true,
-                  selectedReason: item.status === "Other" || "",
-                  otherReasonDetail: item.issue_detail || "",
-                })),
+            items: items.map((item) => ({
+              quantity: item.quantity,
+              stock_items: item.stock_items,
+              itemFulfilled: item.status === "OK",
+              selectedReason: item.status || "",
+              otherReasonDetail: item.issue_detail || "",
+            })),
             quoteList: relatedQuoteObj ? relatedQuoteObj.id : "",
             arrivalDate: orderObj
               ? orderObj.arrival_date
@@ -474,7 +454,6 @@ const OrderModal = ({
             dirty,
             setFieldValue,
           }) => {
-            console.log(values);
             // Formik provides these props to be utilized in the form fields for handling form state.
             return (
               // The form itself
@@ -497,8 +476,8 @@ const OrderModal = ({
                           name="quoteList"
                           value={values.quoteList}
                           onChange={(event) => {
-                            handleChange(event);
                             const { value } = event.target;
+                            handleChange(event);
                             fetchQuote(value);
                           }}
                         >

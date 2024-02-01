@@ -1,6 +1,7 @@
 import { validateToken } from "../clients/user_client";
 import { toast } from "react-toastify";
 import { differenceInMonths, differenceInDays } from "date-fns";
+import { CURRENCY_SYMBOLS } from "./config";
 
 /**
  * Initializes the application by loading saved user information from storage.
@@ -362,3 +363,8 @@ export const getCurrentDate = () => {
 
   return `${year}-${month}-${day}`;
 };
+
+export function getCurrencySymbol(currencyCode) {
+  // Return the symbol if it exists in the CURRENCY_SYMBOLS object, otherwise return the code itself
+  return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+}

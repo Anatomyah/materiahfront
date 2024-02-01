@@ -92,3 +92,5 @@ export const PRODUCT_STORAGE_OPTIONS = [
 
 // Regular expression for validating email addresses
 export const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+export const CURRENCY_SYMBOLS = { NIS: "₪", USD: "$", EUR: "€" };
