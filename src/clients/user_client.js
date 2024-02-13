@@ -189,7 +189,7 @@ export const logout = async (token) => {
   // Try to send a POST request to log out the user
   try {
     await axios.post(
-      `${BACKEND_URL}logout`,
+      `${BACKEND_URL}logout/`,
       {},
       {
         headers: {

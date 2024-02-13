@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-function HTMLEditor() {
-  const [value, setValue] = useState("");
-  var toolbarOptions = [
+/**
+ * HTMLEditor component implementing the react-quill package
+ * @param {Object} props - Props object
+ * @param {string} props.template - The initial HTML template
+ * @param {function} props.setTemplate - Function to update the HTML template
+ * @returns {React.Element} - React element representing the HTMLEditor component
+ */
+const HTMLEditor = ({ template, setTemplate }) => {
+  const toolbarOptions = [
     ["bold", "italic", "underline", "strike"], // toggled buttons
     ["blockquote", "code-block"],
 
@@ -32,10 +38,10 @@ function HTMLEditor() {
     <ReactQuill
       modules={modules}
       theme="snow"
-      value={value}
-      onChange={setValue}
+      value={template}
+      onChange={setTemplate}
     />
   );
-}
+};
 
 export default HTMLEditor;
