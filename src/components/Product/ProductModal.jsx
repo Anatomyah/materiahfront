@@ -22,7 +22,7 @@ import "font-awesome/css/font-awesome.min.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import debounce from "lodash/debounce";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import EditIcon from "@mui/icons-material/Edit";
+import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
 
 /**
@@ -58,6 +58,7 @@ const createFormSchema = ({ isSupplier }) =>
       .required("Unit volume/quantity is required")
       .matches(/^\d+$/, "Unit volume/quantity must be a positive number"),
     storageConditions: yup.string().required("Storage condition is required"),
+    location: yup.string(),
     stock: yup
       .string()
       .matches(/^\d+$/, "Current stock must be a positive number")
@@ -246,6 +247,7 @@ const ProductModal = ({
       unit: values.unit,
       unit_quantity: values.unit_quantity,
       storage: values.storageConditions,
+      location: values.location,
       stock: values.stock,
       price: values.price,
       currency: values.currency,
@@ -318,7 +320,7 @@ const ProductModal = ({
           variant={productObj ? "outline-success" : "success"}
           onClick={handleShow}
         >
-          {productObj ? <EditIcon /> : "Create Product"}
+          {productObj ? <PencilFill /> : "Create Product"}
         </Button>
       )}
 
@@ -338,6 +340,7 @@ const ProductModal = ({
             unit: productObj ? productObj.unit : "",
             unit_quantity: productObj ? productObj.unit_quantity : "",
             storageConditions: productObj ? productObj.storage : "",
+            location: productObj ? productObj.location : "",
             stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
             currency: productObj ? productObj.currency : "",
@@ -363,6 +366,7 @@ const ProductModal = ({
                   unit: true,
                   unit_quantity: true,
                   storageConditions: true,
+                  location: true,
                   stock: true,
                   price: true,
                   currency: true,
@@ -568,6 +572,34 @@ const ProductModal = ({
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="invalid">
                       {errors.storageConditions}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group
+                    controlId="formProductLocation"
+                    className="field-margin"
+                  >
+                    <Form.Label>Location</Form.Label>
+                    {/* Input for existing stock with validation feedback. */}
+                    <Form.Control
+                      type="text"
+                      name="location"
+                      value={values.location}
+                      onChange={handleChange}
+                      onFocus={() => setFieldTouched("location", true)}
+                      onBlur={handleBlur}
+                      isInvalid={
+                        touched.location && values.stock && !!errors.location
+                      }
+                      isValid={
+                        touched.location && values.stock && !errors.location
+                      }
+                    />
+                    {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.location}
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Form.Group

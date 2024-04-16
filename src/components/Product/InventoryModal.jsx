@@ -179,6 +179,14 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               </Col>
             </Row>
             <Row md={3}>
+              <Col>
+                <p className="fs-6 fw-bold">Location: </p>
+              </Col>
+              <Col>
+                <p className="fs-6">{product.location}</p>
+              </Col>
+            </Row>
+            <Row md={3}>
               <Col className="mt-1">
                 <p className="fs-6 fw-bold">Website Profile: </p>
               </Col>

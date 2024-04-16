@@ -1,6 +1,6 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
-import LinkIcon from "@mui/icons-material/Link";
+import { Link } from "react-bootstrap-icons";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteProduct } from "../../clients/product_client";
 import ProductModal from "./ProductModal";
@@ -49,6 +49,7 @@ const ProductTable = ({ productList, handleEdit }) => {
           <th>Unit</th>
           <th>Stock</th>
           <th>Storage</th>
+          <th>Location</th>
           <th>Price</th>
           <th>URL</th>
           <th>Manufacturer</th>
@@ -98,6 +99,7 @@ const ProductTable = ({ productList, handleEdit }) => {
             <td>{product.unit}</td>
             <td>{product.stock}</td>
             <td>{product.storage}</td>
+            <td>{product.location}</td>
             <td style={{ minWidth: "130px" }}>{`${product.price} ${
               CURRENCY_SYMBOLS[product.currency]
                 ? `${getCurrencySymbol(product.currency)}`
@@ -105,7 +107,7 @@ const ProductTable = ({ productList, handleEdit }) => {
             }`}</td>
             <td>
               <a href={product.url} target="_blank" rel="noopener noreferrer">
-                <LinkIcon />
+                <Link size={"2rem"} />
               </a>
             </td>
             <td>
