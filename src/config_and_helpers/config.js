@@ -54,14 +54,19 @@ export const PHONE_PREFIX_CHOICES = [
 
 // Available categories for products
 export const PRODUCT_CATEGORIES = [
+  { value: "Matrix", label: "Matrix" },
   { value: "Medium", label: "Medium" },
-  { value: "Powders", label: "Powders" },
-  { value: "Enzymes", label: "Enzymes" },
+  { value: "Powder", label: "Powder" },
+  { value: "Enzyme", label: "Enzyme" },
+  { value: "Antibody", label: "Antibody" },
+  { value: "Dye", label: "Dye" },
+  { value: "Hormone", label: "Hormone" },
+  { value: "Medication", label: "Medication" },
+  { value: "Antibiotic", label: "Antibiotic" },
   { value: "Plastics", label: "Plastics" },
   { value: "Glassware", label: "Glassware" },
   { value: "Sanitary", label: "Sanitary" },
   { value: "Lab Equipment", label: "Lab Equipment" },
-  { value: "Antibodies", label: "Antibodies" },
 ];
 
 // Measurement units for products
