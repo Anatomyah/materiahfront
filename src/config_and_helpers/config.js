@@ -73,6 +73,7 @@ export const PRODUCT_CATEGORIES = [
 export const PRODUCT_MEASUREMENT_UNITS = [
   { value: "L", label: "Litres, l" },
   { value: "ML", label: "Milliliters, ml" },
+  { value: "UL", label: "Milliliters, µl" },
   { value: "KG", label: "Kilograms,kg" },
   { value: "G", label: "Grams, g" },
   { value: "MG", label: "Milligrams, mg" },
