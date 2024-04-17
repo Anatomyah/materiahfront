@@ -564,7 +564,7 @@ export const createStockItem = async (token, productId, itemData) => {
         batch: itemData.batch,
         in_use: itemData.inUse,
         expiry: itemData.expiry,
-        opened: itemData.openedOn,
+        opened_on: itemData.openedOn,
       },
       {
         headers: {

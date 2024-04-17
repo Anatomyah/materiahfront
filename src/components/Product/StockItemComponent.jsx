@@ -73,8 +73,8 @@ const StockItemComponent = ({
     expiry: itemObj ? itemObj.expiry : "",
     inUse: itemObj ? itemObj.in_use : false,
     openedOn: itemObj
-      ? itemObj.opened
-        ? itemObj.opened
+      ? itemObj.opened_on
+        ? itemObj.opened_on
         : itemObj.in_use && !editItem
         ? getCurrentDate()
         : ""
@@ -112,7 +112,7 @@ const StockItemComponent = ({
       batch: itemObj ? itemObj.batch : "",
       expiry: itemObj ? itemObj.expiry : "",
       inUse: itemObj ? itemObj.in_use : false,
-      openedOn: itemObj ? itemObj.opened : "",
+      openedOn: itemObj ? itemObj.opened_on : "",
     });
   };
 
@@ -120,6 +120,7 @@ const StockItemComponent = ({
   const handleSubmit = () => {
     setIsSubmitting(true);
 
+    console.log(itemData);
     // Set the promise const depending on if creating or editing a stock item
     const stockItemPromise = itemObj
       ? updateStockItem(token, itemObj.id, itemData)
@@ -252,14 +253,6 @@ const StockItemComponent = ({
             checked={itemData.inUse}
             onChange={(e) => {
               setItemData({ ...itemData, inUse: e.target.checked });
-              if (e.target.checked) {
-                handleInputChange({
-                  name: "openedOn",
-                  value: getCurrentDate(),
-                });
-              } else {
-                handleInputChange({ name: "openedOn", value: "" });
-              }
             }}
           />
         </td>
