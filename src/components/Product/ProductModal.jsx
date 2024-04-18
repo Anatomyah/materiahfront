@@ -56,7 +56,10 @@ const createFormSchema = ({ isSupplier }) =>
     unit_quantity: yup
       .string()
       .required("Unit volume/quantity is required")
-      .matches(/^\d+$/, "Unit volume/quantity must be a positive number"),
+      .matches(
+        /^\d+(\.\d*)?$/,
+        "Unit volume/quantity must be a positive number",
+      ),
     storageConditions: yup.string().required("Storage condition is required"),
     location: yup.string(),
     stock: yup
