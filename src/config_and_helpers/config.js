@@ -56,6 +56,7 @@ export const PHONE_PREFIX_CHOICES = [
 export const PRODUCT_CATEGORIES = [
   { value: "Matrix", label: "Matrix" },
   { value: "Medium", label: "Medium" },
+  { value: "Supplement", label: "Supplement" },
   { value: "Powder", label: "Powder" },
   { value: "Enzyme", label: "Enzyme" },
   { value: "Antibody", label: "Antibody" },
