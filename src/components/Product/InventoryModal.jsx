@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import { Col } from "react-bootstrap";
-import LinkIcon from "@mui/icons-material/Link";
+import { Link } from "react-bootstrap-icons";
 import CarouselComponent from "../Generic/CarouselComponent";
 import ProductModal from "./ProductModal";
 import DeleteButton from "../Generic/DeleteButton";
@@ -191,8 +191,8 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Website Profile: </p>
               </Col>
               <Col>
-                <a href={product.url}>
-                  <LinkIcon sx={{ fontSize: "36px", alignSelf: "middle" }} />
+                <a href={product.url} target="_blank" rel="noopener noreferrer">
+                  <Link size={"2.2rem"} />
                 </a>
               </Col>
             </Row>
