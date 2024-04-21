@@ -153,10 +153,6 @@ const ProductModal = ({
     getSupplierSelectList(token, setSupplierList); // Fetches the supplier list.
   }, []);
 
-  useEffect(() => {
-    console.log(manufacturerList);
-  }, [manufacturerList]);
-
   // useEffect hook to fetch the filtered manufacturer list related to the selected supplier
   useEffect(() => {
     getManufacturerSelectList(token, setManufacturerList);
@@ -348,6 +344,7 @@ const ProductModal = ({
             unit_quantity: productObj ? productObj.unit_quantity : "",
             storageConditions: productObj ? productObj.storage : "",
             location: productObj ? productObj.location : "",
+            stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
             currency: productObj ? productObj.currency : "",
             manufacturer: productObj ? productObj.manufacturer : "",
@@ -397,7 +394,6 @@ const ProductModal = ({
             dirty,
             setFieldValue,
           }) => {
-            console.log(values.manufacturer);
             return (
               <Form id="productForm" noValidate onSubmit={handleSubmit}>
                 <Modal.Body className="d-flex flex-column p-4">
