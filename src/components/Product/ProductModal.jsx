@@ -70,7 +70,7 @@ const createFormSchema = ({ isSupplier }) =>
       !isSupplier
         ? yup
             .string()
-            .matches(/^\d+(\.\d+)?$/, "Current price must be a valid number")
+            .matches(/^\d+(\.\d*)?$/, "Current price must be a valid number")
         : yup.mixed().notRequired(),
     ),
     supplier: yup.lazy((value) =>
@@ -344,12 +344,11 @@ const ProductModal = ({
             unit_quantity: productObj ? productObj.unit_quantity : "",
             storageConditions: productObj ? productObj.storage : "",
             location: productObj ? productObj.location : "",
-            stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
             currency: productObj ? productObj.currency : "",
             manufacturer:
               productObj && productObj?.manufacturer
-                ? productObj.manufacturer.name
+                ? productObj.manufacturer
                 : "",
             supplier: productObj ? productObj.supplier : "",
             productUrl: productObj ? productObj.url : "",
