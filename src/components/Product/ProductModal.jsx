@@ -346,10 +346,9 @@ const ProductModal = ({
             location: productObj ? productObj.location : "",
             price: productObj ? productObj.price : "",
             currency: productObj ? productObj.currency : "",
-            manufacturer:
-              productObj && productObj?.manufacturer
-                ? productObj.manufacturer
-                : "",
+            manufacturer: productObj?.manufacturer
+              ? productObj.manufacturer
+              : "",
             supplier: productObj ? productObj.supplier : "",
             productUrl: productObj ? productObj.url : "",
             productImages: null,
