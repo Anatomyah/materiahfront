@@ -39,6 +39,12 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
    *  - Calls getQuoteDetails with token, quoteIdToUse, and setQuote as arguments.
    *  - Sets isLoadingRef to false after fetching.
    */
+
+  // UseEffect to update the state on re-renders
+  useEffect(() => {
+    setQuote(quoteObj);
+  }, [quoteObj]);
+
   const fetchQuote = () => {
     isLoadingRef.current = true;
     getQuoteDetails(token, quoteIdToUse, setQuote).then(() => {
@@ -84,9 +90,9 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
       {quote && (
         <>
           {/* Button to trigger the modal display */}
-          <Button variant="link" onClick={handleShow}>
+          <a href="#" onClick={handleShow}>
             {quote.id}
-          </Button>
+          </a>
 
           {/* Modal component to display quote details */}
           <Modal

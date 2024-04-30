@@ -20,8 +20,9 @@ import {
 } from "../../config_and_helpers/config";
 import debounce from "lodash/debounce";
 import "./SupplierComponentStyle.css";
-import EditIcon from "@mui/icons-material/Edit";
+import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
+import SecondaryEmailComponent from "./SecondaryEmailComponent";
 
 // Yup schema for the supplier Formik form
 const formSchema = yup.object().shape({
@@ -30,6 +31,7 @@ const formSchema = yup.object().shape({
   email: yup.string().matches(emailRegex, "Enter a valid email"),
   phonePrefix: yup.string(),
   phoneSuffix: yup.string().matches(/^\d*$/, "Phone number must be numeric"),
+  secondaryEmails: yup.array().of(yup.string().email("Enter a valid email")),
 });
 
 /**
@@ -38,7 +40,7 @@ const formSchema = yup.object().shape({
  * It provides an interactive form with live validation, accepting input for the supplier's:
  * - Name
  * - Website Link
- * - Office Email
+ * - Main Email
  * - Phone
  *
  * It also links the supplier to one or more manufacturers via a multi-select dropdown.
@@ -99,6 +101,11 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
   const [isSupplierPhoneUnique, setIsSupplierPhoneUnique] = useState(true);
   const [isCheckingSupplierPhone, setIsCheckingSupplierPhone] = useState(false);
   const [supplierEmail, setSupplierEmail] = useState(supplierObj?.email || "");
+  const [secondaryEmails, setSecondaryEmails] = useState(
+    supplierObj?.secondary_emails.map(
+      (secondaryEmail) => secondaryEmail.email,
+    ) || [],
+  );
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -212,6 +219,28 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
 
   const handleShow = () => setShowModal(true); // Function to open the modal
 
+  // Function to handle the addition of a new item into the secondaryEmails Array
+  const addSecondaryEmail = (e) => {
+    e.preventDefault();
+    setSecondaryEmails([...secondaryEmails, ""]);
+  };
+
+  // Function to handle the change of a given secondary email value
+  const updateSecondaryEmail = (e, index, value) => {
+    e.preventDefault();
+    const newSecondaryEmails = [...secondaryEmails];
+    newSecondaryEmails[index] = value;
+    setSecondaryEmails(newSecondaryEmails);
+  };
+
+  // Function to handle the deletion of a secondary email
+  const removeSecondaryEmail = (e, index) => {
+    e.preventDefault();
+    const newSecondaryEmails = [...secondaryEmails];
+    newSecondaryEmails.splice(index, 1);
+    setSecondaryEmails(newSecondaryEmails);
+  };
+
   // Function to handle submitting the supplier form
   function handleSubmit(values) {
     setIsSubmitting(true); // Set the submitting status to true
@@ -227,6 +256,50 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
         .map((manufacturer) => manufacturer.value)
         .join(","),
     };
+
+    // check if the 'supplierObj' not exist
+    if (!supplierObj) {
+      // check if there are secondary email addresses
+      if (secondaryEmails.length > 0) {
+        // assign the secondary email addresses to the 'supplierData'
+        supplierData.secondary_emails = secondaryEmails;
+      }
+    } else {
+      // 'supplierObj' does exist
+      // check if the 'supplierObj' has no secondary email addresses and there's ones provided
+      if (
+        supplierObj.secondary_emails.length === 0 &&
+        secondaryEmails.length > 0
+      ) {
+        // assign the new secondary emails to the 'supplierData'
+        supplierData.secondary_emails = secondaryEmails;
+      }
+      // check if the 'supplierObj' has secondary email addresses
+      if (supplierObj.secondary_emails.length > 0) {
+        // filter out the email objects that are not included in the provided secondary emails and get their IDs
+        const idsOfEmailsNotIncluded = supplierObj.secondary_emails
+          .filter((emailObj) => !secondaryEmails.includes(emailObj.email))
+          .map((emailObj) => emailObj.id);
+        // filter out the secondary emails that are not already in the 'supplierObj'
+        const secondaryEmailsToAdd = secondaryEmails.filter(
+          (email) =>
+            !supplierObj.secondary_emails.some(
+              (emailObj) => emailObj.email === email,
+            ),
+        );
+
+        // check if there are any email ids that were not included
+        if (idsOfEmailsNotIncluded.length > 0) {
+          // add these ids to a new array in the 'supplierData' to mark them for deletion
+          supplierData.secondary_emails_to_delete = idsOfEmailsNotIncluded;
+        }
+        // check if there are new secondary emails to be added
+        if (secondaryEmailsToAdd.length > 0) {
+          // add these new emails to the 'supplierData'
+          supplierData.secondary_emails = secondaryEmailsToAdd;
+        }
+      }
+    }
 
     // Depending on whether a supplierObj was passed in (indicating an edit), either call updateSupplier or createSupplier
     const supplierPromise = supplierObj
@@ -269,7 +342,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
         onClick={handleShow}
       >
         {/* Change button content depending on whether it's in edit mode or create mode */}
-        {supplierObj ? <EditIcon /> : "Create Supplier"}
+        {supplierObj ? <PencilFill /> : "Create Supplier"}
       </Button>
 
       {/* Modal component */}
@@ -290,17 +363,21 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                   phonePrefix: true,
                   phoneSuffix: true,
                   relatedManufacturers: true,
+                  secondaryEmails: secondaryEmails.map(() => true),
                 }
-              : {}
+              : {
+                  secondaryEmails: secondaryEmails.map(() => false),
+                }
           }
           initialValues={{
-            name: supplierObj ? supplierObj?.name : "",
+            name: supplierObj ? supplierObj?.name : name,
             websiteUrl: supplierObj?.website || "",
             email: supplierObj?.email || "",
             phonePrefix: supplierObj?.phone_prefix || "",
             phoneSuffix: supplierObj?.phone_suffix || "",
+            secondaryEmails: secondaryEmails,
           }}
-          validateOnMount={!!supplierObj}
+          validateOnMount={true}
           enableReinitialize={true}
           validationSchema={formSchema}
           onSubmit={(values) => {
@@ -317,6 +394,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             errors,
             isValid,
             setFieldTouched,
+            setFieldValue,
             dirty,
           }) => {
             return (
@@ -391,7 +469,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                     controlId="supplierEmail"
                     className="field-margin"
                   >
-                    <Form.Label>Office Email</Form.Label>
+                    <Form.Label>Main Email</Form.Label>
                     <Form.Control
                       type="text"
                       name="email"
@@ -434,6 +512,34 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                       <Form.Text>Checking...</Form.Text>
                     )}
                   </Form.Group>
+                  {/* If there are any secondary emails, render them via the SecondaryEmailComponent */}
+                  {secondaryEmails.length > 0
+                    ? secondaryEmails.map((email, index) => (
+                        <SecondaryEmailComponent
+                          key={index}
+                          index={index}
+                          secondaryEmail={email}
+                          handleDeleteEmail={removeSecondaryEmail}
+                          onEmailChange={updateSecondaryEmail}
+                          formik={{
+                            handleChange,
+                            values,
+                            handleBlur,
+                            touched,
+                            errors,
+                            setFieldTouched,
+                            setFieldValue,
+                          }}
+                        />
+                      ))
+                    : null}
+                  <Button
+                    className="mb-2"
+                    variant={"success"}
+                    onClick={(e) => addSecondaryEmail(e)}
+                  >
+                    Add Email
+                  </Button>
                   <Row className="mb-4">
                     <Form.Label>Supplier Phone</Form.Label>
                     <Form.Group as={Col} md="5" controlId="supplierPhonePrefix">

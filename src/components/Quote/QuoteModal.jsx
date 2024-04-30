@@ -10,7 +10,8 @@ import * as yup from "yup";
 import { Formik } from "formik";
 import { Col, Form, Spinner } from "react-bootstrap";
 import AddBoxIcon from "@mui/icons-material/AddBox";
-import EditIcon from "@mui/icons-material/Edit";
+import { PencilFill } from "react-bootstrap-icons";
+
 import { showToast } from "../../config_and_helpers/helpers";
 
 // Validation schema for each quote item
@@ -245,7 +246,7 @@ const QuoteModal = ({
           variant={quoteObj ? "outline-success" : "success"}
           onClick={handleShow}
         >
-          {quoteObj ? <EditIcon /> : "Create Quote"}
+          {quoteObj ? <PencilFill /> : "Create Quote"}
         </Button>
       )}
 

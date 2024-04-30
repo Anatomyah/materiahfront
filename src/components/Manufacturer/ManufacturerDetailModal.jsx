@@ -68,6 +68,11 @@ const ManufacturerDetailModal = ({
     ? manufacturerObj.id
     : manufacturerId;
 
+  // UseEffect to update the state on re-renders
+  useEffect(() => {
+    setManufacturer(manufacturerObj);
+  }, [manufacturerObj]);
+
   // Function to fetch manufacturer details
   const fetchManufacturer = () => {
     isLoadingRef.current = true;

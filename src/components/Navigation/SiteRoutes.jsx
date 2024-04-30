@@ -13,6 +13,7 @@ import NotAuthorizedPage from "./NotAuthorizedPage";
 import { AppContext } from "../../App";
 import NotificationsPage from "../../pages/Notifications/NotificationsPage";
 import HtmlEditorPage from "../../pages/HTML Editor/HTMLEditorPage";
+import MessagesPage from "../../pages/Messages/MessagesPage";
 
 /**
  * SiteRoutes Component
@@ -112,6 +113,14 @@ const SiteRoutes = () => {
           path="/email_template_editor"
           element={
             !isSupplier ? <HtmlEditorPage /> : <Navigate to="/not-authorized" />
+          }
+        />
+        {/* This route will always render NotAuthorizedPage component */}
+        <Route path="/not-authorized" element={<NotAuthorizedPage />} />
+        <Route
+          path="/messages"
+          element={
+            !isSupplier ? <MessagesPage /> : <Navigate to="/not-authorized" />
           }
         />
         {/* This route will always render NotAuthorizedPage component */}

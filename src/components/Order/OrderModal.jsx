@@ -12,7 +12,7 @@ import { Col, Form, Spinner } from "react-bootstrap";
 import { Formik } from "formik";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import EditIcon from "@mui/icons-material/Edit";
+import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
 import { OrderContext } from "../../pages/Order/OrdersPage";
 import OrderItemComponent from "./OrderItemComponent";
@@ -374,7 +374,7 @@ const OrderModal = ({
           variant={orderObj ? "outline-success" : "success"}
           onClick={handleShow}
         >
-          {orderObj ? <EditIcon /> : "Create Order"}
+          {orderObj ? <PencilFill /> : "Create Order"}
         </Button>
       )}
 

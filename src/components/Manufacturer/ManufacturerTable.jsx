@@ -1,6 +1,6 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
-import LinkIcon from "@mui/icons-material/Link";
+import { Link } from "react-bootstrap-icons";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteManufacturer } from "../../clients/manufacturer_client";
 import ManufacturerModal from "./ManufacturerModal";
@@ -71,7 +71,7 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <LinkIcon />
+                <Link size={"2rem"} />
               </a>
             </td>
             {/*Display actions: Edit and Delete*/}

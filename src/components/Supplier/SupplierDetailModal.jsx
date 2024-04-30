@@ -36,6 +36,11 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
   const [supplier, setSupplier] = useState(supplierObj); // State-variable for holding supplier data
   const supplierIdToUse = supplierObj ? supplierObj.id : supplierId; // deciding the supplierId to be used
 
+  // UseEffect to update the state on re-renders
+  useEffect(() => {
+    setSupplier(supplierObj);
+  }, [supplierObj]);
+
   // Function to fetch supplier details
   const fetchSupplier = () => {
     isLoadingRef.current = true; // Setting loading state to true before API call
@@ -121,12 +126,31 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                 </Row>
                 <Row>
                   <Col>
-                    <p className="fs-6 fw-bold">Office Email:</p>
+                    <p className="fs-6 fw-bold">Main Email:</p>
                   </Col>
                   <Col>
                     <p> {supplier.email}</p>
                   </Col>
                 </Row>
+                {supplier?.secondary_emails && (
+                  <Row>
+                    <Col>
+                      <p className="fs-6 fw-bold">Secondary Emails:</p>
+                    </Col>
+                    <Col>
+                      {supplier.secondary_emails.map(
+                        (secondaryEmail, index) => (
+                          <span key={index}>
+                            {secondaryEmail.email}
+                            {index < supplier.secondary_emails.length - 1
+                              ? ", "
+                              : ""}
+                          </span>
+                        ),
+                      )}
+                    </Col>
+                  </Row>
+                )}
                 <Row>
                   <Col>
                     <p className="fs-6 fw-bold">Office Phone:</p>

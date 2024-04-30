@@ -3,7 +3,7 @@ import Table from "react-bootstrap/Table";
 import QuoteModal from "./QuoteModal";
 import DeleteButton from "../Generic/DeleteButton";
 import { deleteQuote } from "../../clients/quote_client";
-import LinkIcon from "@mui/icons-material/Link";
+import { Link } from "react-bootstrap-icons";
 import "./QuoteComponentStyle.css";
 import QuoteDetailModal from "./QuoteDetailModal";
 import OrderDetailModal from "../Order/OrderDetailModal";
@@ -61,7 +61,7 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <LinkIcon />
+                  <Link size={"2rem"} />
                 </a>
               </td>
               <td>

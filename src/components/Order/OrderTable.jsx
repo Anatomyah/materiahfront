@@ -3,8 +3,7 @@ import Table from "react-bootstrap/Table";
 import DeleteButton from "../Generic/DeleteButton";
 import OrderModal from "./OrderModal";
 import { deleteOrder } from "../../clients/order_client";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { FileEarmarkPdfFill, FileEarmarkTextFill } from "react-bootstrap-icons";
 import QuoteDetailModal from "../Quote/QuoteDetailModal";
 import OrderDetailModal from "./OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
@@ -40,7 +39,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
         <tr className="text-center">
           <th>#</th>
           <th>ID</th>
-          <th>Quote</th>
+          <th>Quote / Quote File</th>
           <th>Arrival</th>
           <th>Received By</th>
           <th>Receipts</th>
@@ -61,24 +60,27 @@ const OrderTable = ({ orderList, handleEdit }) => {
               <td>
                 <OrderDetailModal orderObj={order} updateOrders={handleEdit} />
               </td>
-              <td className="justify-content-around">
-                <QuoteDetailModal quoteId={order.quote.id} />
-                <span> | </span>
-                <a href={order.quote.quote_url} className="link-">
-                  <PictureAsPdfIcon />
-                </a>
+              <td style={{ width: "200px" }}>
+                <div className="d-flex flex-row justify-content-around">
+                  <QuoteDetailModal quoteId={order.quote.id} />
+                  <a href={order.quote.quote_url} className="link-">
+                    <FileEarmarkPdfFill size={"1.5rem"} />
+                  </a>
+                </div>
               </td>
               <td>{order.arrival_date}</td>
               <td>{order.received_by}</td>
-              <td className="justify-content-center d-flex flex-row">
-                {order.images.map((image, index) => (
-                  <div key={index}>
-                    <a key={index} href={image.image_url}>
-                      <AttachFileIcon />
-                    </a>
-                    {index !== order.images.length - 1 && <span>| </span>}
-                  </div>
-                ))}
+              <td>
+                <div className="justify-content-center d-flex flex-row">
+                  {order.images.map((image, index) => (
+                    <div key={index}>
+                      <a key={index} href={image.image_url}>
+                        <FileEarmarkTextFill size={"2rem"} />
+                      </a>
+                      {index !== order.images.length - 1 && <span>|</span>}
+                    </div>
+                  ))}
+                </div>
               </td>
               <td>
                 <SupplierDetailModal supplierId={order.supplier.id} />

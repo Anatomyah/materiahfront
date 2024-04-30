@@ -14,7 +14,7 @@ import { Formik } from "formik";
 import { Form, Spinner } from "react-bootstrap";
 import debounce from "lodash/debounce";
 import "./ManufacturerComponentStyle.css";
-import EditIcon from "@mui/icons-material/Edit";
+import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
 
 /**
@@ -201,7 +201,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
         variant={manufacturerObj ? "outline-success" : "success"}
         onClick={handleShow}
       >
-        {manufacturerObj ? <EditIcon /> : "Create Manufacturer"}
+        {manufacturerObj ? <PencilFill /> : "Create Manufacturer"}
       </Button>
       {/* Modal for the create/edit form */}
       <Modal show={showModal} onHide={handleClose} backdrop="static">

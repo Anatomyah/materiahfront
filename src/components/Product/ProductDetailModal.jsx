@@ -57,6 +57,11 @@ const ProductDetailModal = ({
   // Determine the product ID to use based on the provided props.
   const productIdToUse = productObj ? productObj.id : productId;
 
+  // UseEffect to update the state on re-renders
+  useEffect(() => {
+    setProduct(productObj);
+  }, [productObj]);
+
   // Function to fetch product details from the server.
   const fetchProduct = () => {
     isLoadingRef.current = true;

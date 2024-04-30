@@ -192,7 +192,6 @@ export const getSuppliers = async (token, setSuppliers, options = {}) => {
 
     // Extract the next page URL from the response
     const nextCursor = response.data.next;
-
     // If there is no next page
     if (!nextCursor) {
       if (nextPage) {

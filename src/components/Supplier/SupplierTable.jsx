@@ -1,7 +1,7 @@
 import React from "react";
 import Table from "react-bootstrap/Table";
-import LinkIcon from "@mui/icons-material/Link";
 import DeleteButton from "../Generic/DeleteButton";
+import { Link } from "react-bootstrap-icons";
 import { deleteSupplier } from "../../clients/supplier_client";
 import SupplierModal from "./SupplierModal";
 import SupplierDetailModal from "./SupplierDetailModal";
@@ -24,7 +24,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
           <th>#</th> {/* Index column */}
           <th>Name</th> {/* Name column */}
           <th>Website</th> {/* Website column */}
-          <th>Office Email</th> {/* Office Email column */}
+          <th>Main Email</th> {/* Office Email column */}
           <th>Office Phone</th> {/* Office Phone column */}
           <th>Actions</th> {/* Actions column */}
         </tr>
@@ -46,7 +46,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <LinkIcon /> {/* Link icon */}
+                <Link size={"2rem"} /> {/* Link icon */}
               </a>
             </td>
             <td>{supplier.email}</td> {/* Display supplier's office email */}
@@ -59,12 +59,10 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
               {/* Display supplier's office phone number */}
             </td>
             <td className="d-flex flex-row align-items-center justify-content-evenly">
-              <div className="mb-2">
-                <SupplierModal
-                  supplierObj={supplier} // Pass the current supplier to the Modal component
-                  onSuccessfulSubmit={handleEdit} //* Pass the handleEdit function to the Modal component
-                />
-              </div>
+              <SupplierModal
+                supplierObj={supplier} // Pass the current supplier to the Modal component
+                onSuccessfulSubmit={handleEdit} //* Pass the handleEdit function to the Modal component
+              />
               <DeleteButton
                 objectType="supplier" // Object type is supplier
                 objectName={supplier.name} // Pass supplier name

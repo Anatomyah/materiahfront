@@ -47,6 +47,11 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
   // Constant stores the relevant order ID to us, passed in prop or from existing order object
   const orderIdToUse = orderObj ? orderObj.id : orderId;
 
+  // UseEffect to update the state on re-renders
+  useEffect(() => {
+    setOrder(orderObj);
+  }, [orderObj]);
+
   // Fetches specific order data
   const fetchOrder = () => {
     isLoadingRef.current = true;
