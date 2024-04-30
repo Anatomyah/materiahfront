@@ -120,11 +120,15 @@ const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
                 </td>
                 {/* Clicking on the name opens the order detail modal*/}
                 <td>
-                  <OrderDetailModal
-                    orderId={notification.product_item.order.id}
-                  />
+                  {notification?.order ? (
+                    <OrderDetailModal
+                      orderId={notification.product_item.order.id}
+                    />
+                  ) : (
+                    "N/A"
+                  )}
                 </td>
-                <td>{notification.product_item.order.received}</td>
+                <td>{notification.product_item?.order.received || "N/A"}</td>
 
                 {/*Display actions: Delete*/}
                 <td className="d-flex flex-row align-items-center justify-content-evenly">
