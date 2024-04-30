@@ -19,6 +19,7 @@ import {
  * @returns {JSX.Element} - The table component.
  */
 const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
+  console.log(notificationsList);
   return (
     <>
       {activeTab === "order" ? (
@@ -128,7 +129,7 @@ const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
                     "N/A"
                   )}
                 </td>
-                <td>{notification.product_item?.order.received || "N/A"}</td>
+                <td>{notification.product_item?.order?.received || "N/A"}</td>
 
                 {/*Display actions: Delete*/}
                 <td className="d-flex flex-row align-items-center justify-content-evenly">
