@@ -78,10 +78,7 @@ const createFormSchema = ({ isSupplier }) =>
         ? yup.string().required("Supplier is required")
         : yup.mixed().notRequired(),
     ),
-    productUrl: yup
-      .string()
-      .url("Enter a valid URL")
-      .required("Product link is required"),
+    productUrl: yup.string().url("Enter a valid URL"),
   });
 
 /**
