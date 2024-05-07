@@ -8,7 +8,7 @@ import { createQuoteManually, updateQuote } from "../../clients/quote_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Col, Form, Spinner } from "react-bootstrap";
+import { Col, Form, FormControl, Spinner } from "react-bootstrap";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { PencilFill } from "react-bootstrap-icons";
 
@@ -46,6 +46,15 @@ const createFormSchema = ({ hasQuoteFile }) =>
           return value.every((file) => ["application/pdf"].includes(file.type));
         },
       ),
+    demandRef: yup
+      .string()
+      .matches(/^\d+$/, "Demand reference must be a number")
+      .required("Demand reference is required"),
+
+    budget: yup
+      .string()
+      .matches(/^\d+$/, "Budget number must be a number")
+      .required("Budget number is required"),
   });
 
 /**
@@ -198,6 +207,8 @@ const QuoteModal = ({
     const quoteData = {
       supplier: values.supplier,
       items: JSON.stringify(items),
+      corporate_demand_ref: values.demandRef,
+      budget: values.budget,
     };
 
     if (quoteFile && fileChanged) {
@@ -269,6 +280,8 @@ const QuoteModal = ({
                   })),
                   supplier: true,
                   quoteFile: true,
+                  demandRef: true,
+                  budget: true,
                 }
               : {}
           }
@@ -284,6 +297,8 @@ const QuoteModal = ({
                 })),
             supplier: supplier ? supplier : "",
             quoteFile: "",
+            demandRef: quoteObj ? quoteObj.corporate_demand_ref : "",
+            budget: quoteObj ? quoteObj.budget : "",
           }}
           validateOnMount={!!quoteObj}
           enableReinitialize={true}
@@ -355,6 +370,7 @@ const QuoteModal = ({
                           <QuoteItemComponent
                             // Passing necessary props to QuoteItemComponent
                             key={index}
+                            editMode={!!quoteObj}
                             productList={productSelectList}
                             onItemChange={updateItem}
                             index={index}
@@ -430,6 +446,47 @@ const QuoteModal = ({
                           </a>
                         </div>
                       )}
+                      <Form.Group
+                        controlId="demandRef"
+                        className="field-margin"
+                      >
+                        <Form.Label>Demand Reference</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="demandRef"
+                          value={values.demandRef}
+                          onChange={handleChange}
+                          onFocus={() => setFieldTouched("demandRef", true)}
+                          onBlur={handleBlur}
+                          isInvalid={touched.demandRef && !!errors.demandRef}
+                          isValid={touched.demandRef && !errors.demandRef}
+                        />
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.demandRef}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                      <Form.Group controlId="budget" className="field-margin">
+                        <Form.Label>Budget</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="budget"
+                          value={values.budget}
+                          onChange={handleChange}
+                          onFocus={() => setFieldTouched("budget", true)}
+                          onBlur={handleBlur}
+                          isInvalid={touched.budget && !!errors.budget}
+                          isValid={touched.budget && !errors.budget}
+                        />
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.budget}
+                        </Form.Control.Feedback>
+                      </Form.Group>
                     </div>
                   ) : supplier ? (
                     <h6>This supplier has no products related to it</h6>

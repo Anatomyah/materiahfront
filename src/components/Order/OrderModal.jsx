@@ -88,6 +88,9 @@ const createFormSchema = ({ hasExistingImages }) =>
         },
       ),
     receivedBy: yup.string().required("Received by field is required."),
+    corporateOrderRef: yup
+      .string()
+      .required("Order reference field is required."),
   });
 
 /**
@@ -315,6 +318,7 @@ const OrderModal = ({
       arrival_date: values.arrivalDate,
       items: JSON.stringify(finalItems),
       received_by: values.receivedBy,
+      corporate_order_ref: values.corporateOrderRef,
     };
 
     // If there are any images to delete, this data must be sent to the server as well.
@@ -405,6 +409,7 @@ const OrderModal = ({
                   arrivalDate: true,
                   orderImages: true,
                   receivedBy: true,
+                  corporateOrderRef: true,
                 }
               : {
                   items: items.map((item) => ({
@@ -419,6 +424,7 @@ const OrderModal = ({
                   arrivalDate: false,
                   orderImages: false,
                   receivedBy: false,
+                  corporateOrderRef: false,
                 }
           }
           initialValues={{
@@ -435,6 +441,7 @@ const OrderModal = ({
               : new Date().toISOString().split("T")[0],
             orderImages: orderObj ? "" : null,
             receivedBy: orderObj ? orderObj.received_by : "",
+            corporateOrderRef: orderObj ? orderObj.corporate_order_ref : "",
           }}
           validateOnMount={!!orderObj}
           validationSchema={formSchema}
@@ -744,6 +751,36 @@ const OrderModal = ({
                         </Form.Control.Feedback>
                         <Form.Control.Feedback type="invalid">
                           {errors.receivedBy}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                      <Form.Group
+                        controlId="corporateOrderRef"
+                        className="field-margin"
+                      >
+                        <Form.Label>Order Reference</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="corporateOrderRef"
+                          value={values.corporateOrderRef}
+                          onChange={handleChange}
+                          onFocus={() =>
+                            setFieldTouched("corporateOrderRef", true)
+                          }
+                          onBlur={handleBlur}
+                          isInvalid={
+                            touched.corporateOrderRef &&
+                            !!errors.corporateOrderRef
+                          }
+                          isValid={
+                            touched.corporateOrderRef &&
+                            !errors.corporateOrderRef
+                          }
+                        />
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.corporateOrderRef}
                         </Form.Control.Feedback>
                       </Form.Group>
                     </>

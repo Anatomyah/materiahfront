@@ -25,7 +25,7 @@ import { OrderDeletionContext } from "../../App";
 const OrderTable = ({ orderList, handleEdit }) => {
   // Fetches the isOrderDeleted context to manage follow-up actions
   const { toggleOrderDeleted } = useContext(OrderDeletionContext);
-
+  console.log(orderList);
   // Callback function on order deletion
   const onOrderDelete = () => {
     toggleOrderDeleted();
@@ -45,6 +45,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
           <th>Receipts</th>
           <th>Supplier</th>
           <th>Status</th>
+          <th>Order Reference</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -86,6 +87,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                 <SupplierDetailModal supplierId={order.supplier.id} />
               </td>
               <td>{order.quote.status}</td>
+              <td>{order.corporate_order_ref}</td>
               <td className="d-flex flex-row justify-content-center">
                 <div className="me-2">
                   <OrderModal

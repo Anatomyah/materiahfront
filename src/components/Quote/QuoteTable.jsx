@@ -24,6 +24,7 @@ import { Accordion } from "react-bootstrap";
  *
  */
 const QuoteTable = ({ quoteList, handleEdit }) => {
+  console.log(quoteList);
   return (
     <Table striped bordered hover>
       {/* Table header defining the columns */}
@@ -39,6 +40,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
           <th>Order</th>
           <th>Supplier</th>
           <th>Status</th>
+          <th>Demand Reference</th>
+          <th>Budget</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -71,6 +74,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 <SupplierDetailModal supplierId={quote.supplier.id} />
               </td>
               <td>{quote.status}</td>
+              <td>{quote.corporate_demand_ref}</td>
+              <td>{quote.budget}</td>
               <td className="d-flex flex-row justify-content-center">
                 <div className="me-2">
                   <QuoteModal
