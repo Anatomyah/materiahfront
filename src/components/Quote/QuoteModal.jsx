@@ -260,7 +260,6 @@ const QuoteModal = ({
         {/* Formik Component for form handling */}
         <Formik
           // Formik configurations like initial values, validation schema, etc.
-          key={items.length}
           initialTouched={
             quoteObj
               ? {
