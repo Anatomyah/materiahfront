@@ -301,7 +301,7 @@ const QuoteModal = ({
             budget: quoteObj ? quoteObj.budget : "",
           }}
           validateOnMount={!!quoteObj}
-          enableReinitialize={true}
+          // enableReinitialize={true}
           validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);
@@ -333,6 +333,7 @@ const QuoteModal = ({
                     <Form.Label>Select Supplier</Form.Label>
                     {/* Dropdown for selecting supplier */}
                     <Form.Select
+                      disabled={!!quoteObj}
                       name="supplier"
                       value={values.supplier}
                       onChange={(event) => {
@@ -431,7 +432,7 @@ const QuoteModal = ({
                         </Form.Control.Feedback>
                       </Form.Group>
                       {quoteFile && (
-                        <div style={{ marginTop: "1.95rem" }}>
+                        <div style={{ marginTop: "1 rem" }}>
                           <a
                             href={
                               quoteFile instanceof Blob
@@ -450,7 +451,9 @@ const QuoteModal = ({
                         controlId="demandRef"
                         className="field-margin"
                       >
-                        <Form.Label>Demand Reference</Form.Label>
+                        <Form.Label className="mt-3">
+                          Demand Reference
+                        </Form.Label>
                         <Form.Control
                           type="text"
                           name="demandRef"
@@ -494,31 +497,24 @@ const QuoteModal = ({
                 </Modal.Body>
                 <Modal.Footer>
                   {/* Submit and close buttons with conditional rendering and event handlers */}
-                  {quoteObj?.status !== "Arrived, unfulfilled" &&
-                  quoteObj?.status !== "Fulfilled" ? (
-                    isSubmitting ? (
-                      <Button variant="primary" disabled>
-                        <Spinner
-                          size="sm"
-                          as="span"
-                          animation="border"
-                          role="status"
-                          aria-hidden="true"
-                        />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        disabled={!isValid || (!quoteObj && !dirty)}
-                        onClick={handleSubmit}
-                      >
-                        {quoteObj ? "Save" : "Create"}
-                      </Button>
-                    )
+                  {isSubmitting ? (
+                    <Button variant="primary" disabled>
+                      <Spinner
+                        size="sm"
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    </Button>
                   ) : (
-                    <h6 className="justify-content-lg-start">
-                      Can't edit a quote associated with an order
-                    </h6>
+                    <Button
+                      variant="primary"
+                      disabled={!isValid || (!quoteObj && !dirty)}
+                      onClick={handleSubmit}
+                    >
+                      {quoteObj ? "Save" : "Create"}
+                    </Button>
                   )}
                   <Button variant="secondary" onClick={handleClose}>
                     Close

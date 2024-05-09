@@ -393,7 +393,7 @@ const OrderModal = ({
         <Formik
           // The items array is passed in as a key to make sure the form is updated when the items state is updated
           key={[items, relatedQuoteObj]}
-          enableReinitialize={true}
+          // enableReinitialize={true}
           initialTouched={
             orderObj
               ? {

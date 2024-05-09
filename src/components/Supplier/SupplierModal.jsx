@@ -378,7 +378,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             secondaryEmails: secondaryEmails,
           }}
           validateOnMount={true}
-          enableReinitialize={true}
+          // enableReinitialize={true}
           validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);

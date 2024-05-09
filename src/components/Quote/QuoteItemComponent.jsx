@@ -91,17 +91,22 @@ const QuoteItemComponent = ({
   return (
     <div className="mt-3 mb-3 border border-secondary-subtle rounded p-3">
       {/* Product selection dropdown */}
-      <DropdownSelect
-        optionsList={productList}
-        label="Select a product"
-        selectedValue={product}
-        setSelectedValue={handleProductChange}
-        disabledOptions={disabledOptions}
-      />
+      {editMode ? (
+        <h5>{product.label}</h5>
+      ) : (
+        <DropdownSelect
+          optionsList={productList}
+          label="Select a product"
+          selectedValue={product}
+          setSelectedValue={handleProductChange}
+          disabledOptions={disabledOptions}
+        />
+      )}
       {/* Form group for item quantity */}
       <Form.Group controlId={`itemQuantity${index}`} className="field-margin">
         <Form.Label>Item Quantity</Form.Label>
         <FormControl
+          disabled={editMode}
           name={quantityFieldName}
           type="text"
           value={formik.values?.items[index]?.quantity || ""}
@@ -129,6 +134,7 @@ const QuoteItemComponent = ({
       <Form.Group controlId={`itemPrice${index}`} className="field-margin">
         <Form.Label>Item Price</Form.Label>
         <FormControl
+          disabled={editMode}
           name={priceFieldName}
           type="text"
           value={formik.values?.items[index]?.price || ""}
