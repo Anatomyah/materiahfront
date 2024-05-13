@@ -20,6 +20,7 @@ import { CURRENCY_SYMBOLS } from "./config";
  * @param {function} setIsLoading - State setter function for the 'isLoading' boolean state.
  * @param {function} setCart - State setter function for the 'cart' array state.
  * @param {function} setNotificationsSeen - State setter for the notificationsSeen boolean
+ * @param {function} setMessages - State setter for the baseMessageThreads array
  * @returns {Promise<void>}
  * @throws Will throw an error if there's an issue with the validateToken() async function call.
  */
@@ -32,6 +33,7 @@ export const initializeApp = async (
   setIsLoading,
   setCart,
   setNotificationsSeen,
+  setMessages,
 ) => {
   // Select appropriate storage type based on whether 'rememberMe' was set
   let storage;
@@ -60,6 +62,10 @@ export const initializeApp = async (
     JSON.parse(storage.getItem("cart")) === "null"
       ? null
       : JSON.parse(storage.getItem("cart"));
+  const savedMessages =
+    JSON.parse(storage.getItem("messages")) === "null"
+      ? null
+      : JSON.parse(storage.getItem("messages"));
 
   // If we have a saved token, validate it
   if (savedToken) {
@@ -76,9 +82,8 @@ export const initializeApp = async (
       setUserDetails(savedUserDetails);
       setNotifications(savedNotifications);
       setIsSupplier(savedIsSupplier);
-      if (savedCart) {
-        setCart(savedCart);
-      }
+      if (savedCart) setCart(savedCart);
+      if (savedMessages) setMessages(savedMessages);
       setNotificationsSeen(savedNotificationsSeen);
     }
   }
@@ -113,6 +118,7 @@ export const createBeforeUnloadHandler = (
   rememberMe,
   cart,
   notificationsSeen,
+  baseMessageThreads,
 ) => {
   // Return a function to handle beforeunload event
   return () => {
@@ -128,6 +134,7 @@ export const createBeforeUnloadHandler = (
     storage.setItem("notificationsSeen", String(notificationsSeen));
     storage.setItem("rememberMe", String(rememberMe));
     storage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("messages", JSON.stringify(baseMessageThreads));
   };
 };
 
@@ -368,3 +375,59 @@ export function getCurrencySymbol(currencyCode) {
   // Return the symbol if it exists in the CURRENCY_SYMBOLS object, otherwise return the code itself
   return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
 }
+
+export const messageFormatDateAndTime = (datetimeStr) => {
+  const now = new Date();
+  const receivedDate = new Date(datetimeStr);
+  const diffTime = Math.abs(now - receivedDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  const time = receivedDate.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const date = receivedDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  const year = receivedDate.getFullYear();
+
+  if (diffDays < 7) {
+    return {
+      receptionDate: `${date}, ${year}, ${time}`,
+      timeDifference: `${diffDays} day${diffDays > 1 ? "s" : ""} ago`,
+    };
+  } else if (diffDays < 30) {
+    const diffWeeks = Math.floor(diffDays / 7);
+    return {
+      receptionDate: `${date}, ${year}, ${time}`,
+      timeDifference: `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`,
+    };
+  } else if (diffDays < 365) {
+    const diffMonths = Math.floor(diffDays / 30);
+    return {
+      receptionDate: `${date}, ${year}, ${time}`,
+      timeDifference: `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`,
+    };
+  } else {
+    const diffYears = Math.floor(diffDays / 365);
+    return {
+      receptionDate: `${date}, ${year}, ${time}`,
+      timeDifference: `${diffYears} year${diffYears > 1 ? "s" : ""} ago`,
+    };
+  }
+};
+
+/**
+ * Calculates the percentage of a variable relative to a constant.
+ *
+ * @param {number} constant - The constant value.
+ * @param {number} variable - The variable value.
+ * @returns {number} The percentage value.
+ */
+export const calculatePercentage = (constant, variable) => {
+  return (variable / constant) * 100;
+};

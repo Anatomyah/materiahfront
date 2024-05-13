@@ -688,3 +688,46 @@ export const deleteStockItem = async (token, itemId) => {
     return Object.values(error.response.data);
   }
 };
+
+/**
+ * Update product item stock by making a PATCH request to the backend.
+ * @async
+ * @param {string} token - The authorization token.
+ * @param {number} itemId - The item ID to update.
+ * @param {number} updatedStock - The updated stock quantity.
+ * @returns {Promise<Object>} - A promise that resolves to an object with the success status and a function to show success toast, or an array of error messages if there are any errors during update.
+ */
+export const updateProductItemStock = async (token, itemId, updatedStock) => {
+  try {
+    // Make a PATCH request to the backend to update the stock of the product item
+    await axios.patch(
+      `${BACKEND_URL}products/update_product_item_stock/`,
+      {
+        item_id: itemId,
+        updated_stock: updatedStock,
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    // Return the success status and a function to show success toast
+    return {
+      success: true,
+      toast: () =>
+        showToast(
+          "Product item stock updated successfully!",
+          "success",
+          "top-right",
+          3000,
+        ),
+    };
+
+    // Catch any errors during update and return them
+  } catch (error) {
+    console.error(error.response.data);
+    return Object.values(error.response.data);
+  }
+};

@@ -6,7 +6,6 @@
 // their environment setting
 // For example, they can set the environment variable REACT_APP_BACKEND_URL to
 // the URL of the backend server before starting the React app.
-// export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 // ---------------------------------------------------------------------
 
 // export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

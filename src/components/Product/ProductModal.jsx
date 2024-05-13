@@ -53,9 +53,15 @@ const createFormSchema = ({ isSupplier }) =>
       ),
     category: yup.string().required("Product category is required"),
     unit: yup.string().required("Measurement unit is required"),
-    unit_quantity: yup
+    unitQuantity: yup
       .string()
       .required("Unit volume/quantity is required")
+      .matches(
+        /^\d+(\.\d*)?$/,
+        "Unit volume/quantity must be a positive number",
+      ),
+    unitsPerMainUnit: yup
+      .string()
       .matches(
         /^\d+(\.\d*)?$/,
         "Unit volume/quantity must be a positive number",
@@ -245,7 +251,8 @@ const ProductModal = ({
       cat_num: values.catalogueNumber,
       category: values.category,
       unit: values.unit,
-      unit_quantity: values.unit_quantity,
+      unit_quantity: values.unitQuantity,
+      units_per_main_unit: values.unitsPerMainUnit,
       storage: values.storageConditions,
       location: values.location,
       stock: values.stock,
@@ -338,11 +345,16 @@ const ProductModal = ({
             catalogueNumber: productObj ? productObj.cat_num : "",
             category: productObj ? productObj.category : "",
             unit: productObj ? productObj.unit : "",
-            unit_quantity: productObj ? productObj.unit_quantity : "",
+            unitQuantity: productObj ? productObj.unit_quantity : "",
+            unitsPerMainUnit:
+              productObj && productObj?.units_per_main_unit !== null
+                ? productObj?.units_per_main_unit
+                : "",
             storageConditions: productObj ? productObj.storage : "",
             location: productObj ? productObj.location : "",
             stock: productObj ? productObj.stock : "",
-            price: productObj ? productObj.price : "",
+            price:
+              productObj && productObj?.price !== null ? productObj.price : "",
             currency:
               productObj && productObj?.currency !== null
                 ? productObj.currency
@@ -367,7 +379,7 @@ const ProductModal = ({
                   catalogueNumber: true,
                   category: true,
                   unit: true,
-                  unit_quantity: true,
+                  unitQuantity: true,
                   storageConditions: true,
                   location: true,
                   stock: true,
@@ -532,24 +544,54 @@ const ProductModal = ({
                     {/* Input for unit quantity with validation feedback. */}
                     <Form.Control
                       type="text"
-                      name="unit_quantity"
-                      value={values.unit_quantity}
+                      name="unitQuantity"
+                      value={values.unitQuantity}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("unit_quantity", true)}
+                      onFocus={() => setFieldTouched("unitQuantity", true)}
                       onBlur={handleBlur}
-                      isInvalid={
-                        touched.unit_quantity && !!errors.unit_quantity
-                      }
-                      isValid={touched.unit_quantity && !errors.unit_quantity}
+                      isInvalid={touched.unitQuantity && !!errors.unitQuantity}
+                      isValid={touched.unitQuantity && !errors.unitQuantity}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
-                      {errors.unit_quantity}
+                      {errors.unitQuantity}
                     </Form.Control.Feedback>
                   </Form.Group>
+                  {values.unit === "Box" || values.unit === "Package" ? (
+                    <Form.Group
+                      controlId="formProductUnitsPerMainUnit"
+                      className="field-margin"
+                    >
+                      <Form.Label>Units Per Main Unit</Form.Label>
+                      {/* Input for unit quantity with validation feedback. */}
+                      <Form.Control
+                        type="text"
+                        name="unitsPerMainUnit"
+                        value={values.unitsPerMainUnit}
+                        onChange={handleChange}
+                        onFocus={() =>
+                          setFieldTouched("unitsPerMainUnit", true)
+                        }
+                        onBlur={handleBlur}
+                        isInvalid={
+                          touched.unitsPerMainUnit && !!errors.unitsPerMainUnit
+                        }
+                        isValid={
+                          touched.unitsPerMainUnit && !errors.unitsPerMainUnit
+                        }
+                      />
+                      {/* Feedback for valid or invalid input. */}
+                      <Form.Control.Feedback type="valid">
+                        Looks good!
+                      </Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.unitsPerMainUnit}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  ) : null}
                   <Form.Group
                     as={Col}
                     md="8"

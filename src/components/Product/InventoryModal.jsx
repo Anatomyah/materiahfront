@@ -113,7 +113,9 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Stock: </p>
               </Col>
               <Col>
-                <p className="fs-6">{product.stock}</p>
+                <p className="fs-6">{`${product.stock} (${
+                  product.stock * product.units_per_main_unit
+                })`}</p>
               </Col>
               <Col md={4}>
                 <UpdateAmountModal
@@ -168,6 +170,14 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               </Col>
               <Col>
                 <p className="fs-6">{product.unit_quantity}</p>
+              </Col>
+            </Row>
+            <Row md={3}>
+              <Col>
+                <p className="fs-6 fw-bold">Units Per Main Unit: </p>
+              </Col>
+              <Col>
+                <p className="fs-6">{product.units_per_main_unit}</p>
               </Col>
             </Row>
             <Row md={3}>
@@ -242,6 +252,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                     index={index}
                     editItem={true}
                     onSuccessfulSubmit={updateStockItems}
+                    mainUnit={product.unit_quantity}
                   />
                 ))}
 

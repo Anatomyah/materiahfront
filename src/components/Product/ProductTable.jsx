@@ -97,10 +97,14 @@ const ProductTable = ({ productList, handleEdit }) => {
             <td>{product.category}</td>
             <td>{product.unit_quantity}</td>
             <td>{product.unit}</td>
-            <td>{product.stock}</td>
+            <td>{`${product.stock} (${
+              product.stock * product.units_per_main_unit
+            })`}</td>
             <td>{product.storage}</td>
             <td>{product.location}</td>
-            <td style={{ minWidth: "130px" }}>{`${product.price} ${
+            <td style={{ minWidth: "130px" }}>{`${
+              product.price !== null ? product.price : ""
+            } ${
               CURRENCY_SYMBOLS[product.currency]
                 ? `${getCurrencySymbol(product.currency)}`
                 : ""

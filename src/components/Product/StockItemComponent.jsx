@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Spinner } from "react-bootstrap";
@@ -6,15 +6,19 @@ import { AppContext } from "../../App";
 import {
   createStockItem,
   deleteStockItem,
+  updateProductItemStock,
   updateStockItem,
 } from "../../clients/product_client";
 import {
+  calculatePercentage,
   getCurrentDate,
   isExpiryInSixMonths,
   showToast,
 } from "../../config_and_helpers/helpers";
 import OrderDetailModal from "../Order/OrderDetailModal";
 import "./ProductComponentStyle.css";
+import InventoryProgressBar from "../Generic/InventoryProgressBar";
+import { PlusCircle, DashCircle } from "react-bootstrap-icons";
 
 // checkmarkIcon: The icon for item save
 const checkmarkIcon = (
@@ -62,6 +66,7 @@ const StockItemComponent = ({
   editItem = false,
   showAddNewItem,
   onSuccessfulSubmit,
+  mainUnit,
 }) => {
   // Use the context hook to access the token.
   const { token } = useContext(AppContext);
@@ -79,12 +84,24 @@ const StockItemComponent = ({
         ? getCurrentDate()
         : ""
       : "",
+    itemStock: itemObj ? itemObj?.item_stock : "",
   });
+
+  // Calculate the percentage value to appear on the stock progress bar
+  const [currentStockPercentage, setCurrentStockPercentage] = useState(
+    calculatePercentage(Number(mainUnit), itemObj?.item_stock),
+  );
 
   // Use state hook to manage the submitting state of the form.
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Use state hook to manage the editing state of the item.
   const [showEdit, setShowEdit] = useState(editItem);
+
+  useEffect(() => {
+    setCurrentStockPercentage(
+      calculatePercentage(Number(mainUnit), itemData.itemStock),
+    );
+  }, [itemData]);
 
   // Const containing the object returned by the isExpiryInSixMonths function
   const isExpiredObject = isExpiryInSixMonths(itemObj?.expiry);
@@ -157,6 +174,40 @@ const StockItemComponent = ({
         setTimeout(() => {
           // Callback function on successful submission.
           onSuccessfulSubmit(itemObj, true);
+          response.toast(); // Triggers a success toast message.
+          setIsSubmitting(false); // Resets the submitting state.
+        }, 1000);
+      } else {
+        // Displays an error toast if the submission fails.
+        showToast(
+          "An unexpected error occurred. Please try again in a little while.",
+          "error",
+          "top-right",
+          3000,
+        );
+        setIsSubmitting(false); // Resets the submitting state.
+      }
+    });
+  };
+
+  // Handle the updating of stock
+  const handleUpdateStock = (updatedValue) => {
+    setItemData((prevState) => ({
+      ...prevState,
+      itemStock: updatedValue,
+    }));
+  };
+
+  const handleSubmitUpdateStock = (action) => {
+    setIsSubmitting(true);
+    const updatedStock =
+      action === "add" ? itemData.itemStock + 1 : itemData.itemStock - 1;
+
+    // Call the deletion axios function
+    updateProductItemStock(token, itemObj.id, updatedStock).then((response) => {
+      if (response && response.success) {
+        setTimeout(() => {
+          handleUpdateStock(updatedStock);
           response.toast(); // Triggers a success toast message.
           setIsSubmitting(false); // Resets the submitting state.
         }, 1000);
@@ -337,6 +388,32 @@ const StockItemComponent = ({
           )}
         </td>
       </tr>
+      {/* If the item unit is Box or Package, a bar and buttons will appear to display and control the stock inside
+       that box or package */}
+      {itemObj && itemData.inUse ? (
+        <tr className={`text-center align-middle`}>
+          <td colSpan={8}>
+            <InventoryProgressBar currentPercentage={currentStockPercentage} />
+          </td>
+          <td>
+            <Button
+              variant=""
+              size="lg"
+              onClick={handleSubmitUpdateStock}
+              className="me-1"
+            >
+              <DashCircle />
+            </Button>
+            <Button
+              variant=""
+              size="lg"
+              onClick={() => handleSubmitUpdateStock("add")}
+            >
+              <PlusCircle />
+            </Button>
+          </td>
+        </tr>
+      ) : null}
     </>
   );
 };
