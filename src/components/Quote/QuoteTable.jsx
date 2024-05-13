@@ -24,7 +24,6 @@ import { Accordion } from "react-bootstrap";
  *
  */
 const QuoteTable = ({ quoteList, handleEdit }) => {
-  console.log(quoteList);
   return (
     <Table striped bordered hover>
       {/* Table header defining the columns */}

@@ -362,7 +362,11 @@ export const deleteQuote = async (token, quoteId) => {
  */
 export const getQuotes = async (token, setQuotes, options = {}) => {
   // Extract searchInput and nextPage from options
-  const { searchInput = "", nextPage = null } = options;
+  const {
+    searchInput = "",
+    nextPage = null,
+    fulfilledFilter = false,
+  } = options;
 
   // If nextPage is provided, use it as the URL; otherwise, start on the first page
   let url = nextPage ? nextPage : `${BACKEND_URL}quotes/?page_num=1`;
@@ -371,6 +375,8 @@ export const getQuotes = async (token, setQuotes, options = {}) => {
   if (searchInput) {
     url += `&search=${searchInput}`;
   }
+
+  if (fulfilledFilter) url += `&fulfilled_filter=True`;
 
   // Attempt to send a GET request to the url
   try {

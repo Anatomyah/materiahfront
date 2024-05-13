@@ -343,8 +343,14 @@ const ProductModal = ({
             location: productObj ? productObj.location : "",
             stock: productObj ? productObj.stock : "",
             price: productObj ? productObj.price : "",
-            currency: productObj ? productObj.currency : "",
-            manufacturer: productObj ? productObj?.manufacturer : "",
+            currency:
+              productObj && productObj?.currency !== null
+                ? productObj.currency
+                : "",
+            manufacturer:
+              productObj && productObj?.manufacturer !== null
+                ? productObj?.manufacturer
+                : "",
             supplier: productObj ? productObj.supplier : "",
             productUrl: productObj ? productObj.url : "",
             productImages: null,

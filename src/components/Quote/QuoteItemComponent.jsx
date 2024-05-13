@@ -30,7 +30,6 @@ const QuoteItemComponent = ({
 }) => {
   // State to manage the typing timeout for debounced input handling
   const [typingTimeout, setTypingTimeout] = useState(null);
-  console.log(editMode);
   // Find the product in the productList based on the item value
   const foundProduct = item ? productList.find((p) => p.value === item) : null;
   // State to manage the selected product

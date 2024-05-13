@@ -19,7 +19,6 @@ import {
  * @returns {JSX.Element} - The table component.
  */
 const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
-  console.log(notificationsList);
   return (
     <>
       {activeTab === "order" ? (

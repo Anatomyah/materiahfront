@@ -178,6 +178,22 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                 </Row>
                 <Row>
                   <Col>
+                    <p className="fs-6 fw-bold">Demand Reference: </p>
+                  </Col>
+                  <Col>
+                    <p className="fs-6">{quote.corporate_demand_ref}</p>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <p className="fs-6 fw-bold">Budget: </p>
+                  </Col>
+                  <Col>
+                    <p className="fs-6">{quote.budget}</p>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
                     <p className="fs-6 fw-bold">Quote Items: </p>
                   </Col>
                 </Row>

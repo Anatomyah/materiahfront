@@ -167,6 +167,14 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                 </Row>
                 <Row>
                   <Col>
+                    <p className="fs-6 fw-bold">Order Reference: </p>
+                  </Col>
+                  <Col>
+                    <p className="fs-6">{order.corporate_order_ref}</p>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
                     <p className="fs-6 fw-bold">Quote Items: </p>
                   </Col>
                 </Row>
