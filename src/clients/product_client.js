@@ -616,7 +616,7 @@ export const updateStockItem = async (token, itemId, itemData) => {
         batch: itemData.batch,
         in_use: itemData.inUse,
         expiry: itemData.expiry,
-        opened: itemData.openedOn,
+        opened_on: itemData.openedOn,
       },
       {
         headers: {
