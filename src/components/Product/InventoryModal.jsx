@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
@@ -52,11 +52,9 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   const [items, setItems] = useState(product ? product.items : []);
   // State for managing the showing of a new empty item table row
   const [addNewItem, setAddNewItem] = useState(false);
-
   //Calculate teh current stock of subunits of the given product
-  const totalItemStock = product.items.reduce(
-    (total, item) => total + item.item_stock,
-    0,
+  const [totalItemStock, setTotalItemStock] = useState(
+    items.reduce((total, item) => total + item.item_stock, 0),
   );
 
   // Function to close the modal.
@@ -67,6 +65,14 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   // Function to show a new stock item row in the Stock items table.
   const addStockItem = () => {
     setAddNewItem(!addNewItem);
+  };
+
+  const updateProductStock = (action) => {
+    if (action === "add") {
+      setTotalItemStock((prevStockNumber) => prevStockNumber + 1);
+    } else {
+      setTotalItemStock((prevStockNumber) => prevStockNumber - 1);
+    }
   };
 
   // Function to update the stock items array
@@ -257,6 +263,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                     editItem={true}
                     onSuccessfulSubmit={updateStockItems}
                     unitQuantity={product.unit_quantity}
+                    onStockUpdate={updateProductStock}
                   />
                 ))}
 

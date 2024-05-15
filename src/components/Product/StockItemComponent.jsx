@@ -67,6 +67,7 @@ const StockItemComponent = ({
   showAddNewItem,
   onSuccessfulSubmit,
   unitQuantity,
+  onStockUpdate,
 }) => {
   // Use the context hook to access the token.
   const { token } = useContext(AppContext);
@@ -130,6 +131,7 @@ const StockItemComponent = ({
       expiry: itemObj ? itemObj.expiry : "",
       inUse: itemObj ? itemObj.in_use : false,
       openedOn: itemObj ? itemObj.opened_on : "",
+      itemStock: itemObj ? itemObj.item_stock : "",
     });
   };
 
@@ -208,6 +210,7 @@ const StockItemComponent = ({
       if (response && response.success) {
         setTimeout(() => {
           handleUpdateStock(updatedStock);
+          onStockUpdate(action);
           response.toast(); // Triggers a success toast message.
           setIsSubmitting(false); // Resets the submitting state.
         }, 1000);
