@@ -330,8 +330,6 @@ export const getProducts = async (token, setProducts, options = {}) => {
     url += `&supplier_catalogue=${supplierCatalogue}`;
   }
 
-  console.log(url);
-
   try {
     // Make a GET request to the backend to fetch the products details
     const response = await axios.get(url, {
@@ -342,8 +340,6 @@ export const getProducts = async (token, setProducts, options = {}) => {
 
     // Check if there is a next page in the pagination
     const nextCursor = response.data.next;
-
-    console.log("response data", response.data);
 
     // If there is no next page
     if (!nextCursor) {

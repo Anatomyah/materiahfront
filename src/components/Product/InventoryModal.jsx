@@ -53,6 +53,12 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   // State for managing the showing of a new empty item table row
   const [addNewItem, setAddNewItem] = useState(false);
 
+  //Calculate teh current stock of subunits of the given product
+  const totalItemStock = product.items.reduce(
+    (total, item) => total + item.item_stock,
+    0,
+  );
+
   // Function to close the modal.
   const handleClose = () => setShow(false);
   // Function to show the modal.
@@ -114,7 +120,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               </Col>
               <Col>
                 <p className="fs-6">{`${product.stock} (${
-                  product.stock * product.units_per_main_unit
+                  product.stock * product.units_per_sub_unit
                 })`}</p>
               </Col>
               <Col md={4}>
@@ -177,7 +183,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Units Per Main Unit: </p>
               </Col>
               <Col>
-                <p className="fs-6">{product.units_per_main_unit}</p>
+                <p className="fs-6">{product.units_per_sub_unit}</p>
               </Col>
             </Row>
             <Row md={3}>
@@ -252,7 +258,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                     index={index}
                     editItem={true}
                     onSuccessfulSubmit={updateStockItems}
-                    mainUnit={product.unit_quantity}
+                    unitQuantity={product.unit_quantity}
                   />
                 ))}
 

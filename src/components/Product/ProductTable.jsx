@@ -34,6 +34,7 @@ import { getCurrencySymbol } from "../../config_and_helpers/helpers";
  * @returns {React.Element} The rendered ProductTable component.
  */
 const ProductTable = ({ productList, handleEdit }) => {
+  console.log(productList);
   return (
     <Table striped bordered hover>
       <thead>
@@ -59,91 +60,97 @@ const ProductTable = ({ productList, handleEdit }) => {
       </thead>
       <tbody>
         {/* Mapping over the productList to create a table row for each product */}
-        {productList.map((product, index) => (
-          <tr key={product.id} className="text-center align-middle">
-            {/* Displays the serial number of the item */}
-            <td>{index + 1}</td>
-            {/* Displays the product image, if it exists, or a default image */}
-            <td>
-              <a
-                href={
-                  product?.images[0]?.image_url
-                    ? product?.images[0]?.image_url
-                    : defaultImageUrl
-                }
-                className="link-"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  style={{ width: "150px", height: "150px" }}
-                  src={
+        {productList.map((product, index) => {
+          // Calculate total item stock for the current product
+          const totalItemStock = product.items.reduce(
+            (total, item) => total + item.item_stock,
+            0,
+          );
+
+          return (
+            <tr key={product.id} className="text-center align-middle">
+              {/* Displays the serial number of the item */}
+              <td>{index + 1}</td>
+              {/* Displays the product image, if it exists, or a default image */}
+              <td>
+                <a
+                  href={
                     product?.images[0]?.image_url
                       ? product?.images[0]?.image_url
                       : defaultImageUrl
                   }
-                  alt="Product Image"
-                />
-              </a>
-            </td>
-            <td>{product.cat_num}</td>
-            <td>
-              {/* Renders the product detail modal for each product */}
-              <ProductDetailModal
-                productObj={product}
-                updateProducts={handleEdit}
-              />
-            </td>
-            <td>{product.category}</td>
-            <td>{product.unit_quantity}</td>
-            <td>{product.unit}</td>
-            <td>{`${product.stock} (${
-              product.stock * product.units_per_main_unit
-            })`}</td>
-            <td>{product.storage}</td>
-            <td>{product.location}</td>
-            <td style={{ minWidth: "130px" }}>{`${
-              product.price !== null ? product.price : ""
-            } ${
-              CURRENCY_SYMBOLS[product.currency]
-                ? `${getCurrencySymbol(product.currency)}`
-                : ""
-            }`}</td>
-            <td>
-              <a href={product.url} target="_blank" rel="noopener noreferrer">
-                <Link size={"2rem"} />
-              </a>
-            </td>
-            <td>
-              {/* Renders the manufacturer detail modal for each product */}
-              {product?.manufacturer && (
-                <ManufacturerDetailModal
-                  manufacturerId={product.manufacturer}
-                />
-              )}
-            </td>
-            <td>
-              {/* Renders the supplier detail modal for each product */}
-              <SupplierDetailModal supplierId={product.supplier} />
-            </td>
-            {/* Renders an edit button and a delete button for each product */}
-            <td className="align-items-center">
-              <div className="mb-2">
-                <ProductModal
+                  className="link-"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img
+                    style={{ width: "150px", height: "150px" }}
+                    src={
+                      product?.images[0]?.image_url
+                        ? product?.images[0]?.image_url
+                        : defaultImageUrl
+                    }
+                    alt="Product Image"
+                  />
+                </a>
+              </td>
+              <td>{product.cat_num}</td>
+              <td>
+                {/* Renders the product detail modal for each product */}
+                <ProductDetailModal
                   productObj={product}
-                  onSuccessfulSubmit={handleEdit}
+                  updateProducts={handleEdit}
                 />
-              </div>
-              <DeleteButton
-                objectType="product"
-                objectName={product.name}
-                objectId={product.id}
-                deleteFetchFunc={deleteProduct}
-                onSuccessfulDelete={handleEdit}
-              />
-            </td>
-          </tr>
-        ))}
+              </td>
+              <td>{product.category}</td>
+              <td>{product.unit_quantity}</td>
+              <td>{product.unit}</td>
+              <td>{`${product.stock} (${totalItemStock})`}</td>
+              <td>{product.storage}</td>
+              <td>{product.location}</td>
+              <td style={{ minWidth: "130px" }}>{`${
+                product.price !== null ? product.price : ""
+              } ${
+                CURRENCY_SYMBOLS[product.currency]
+                  ? `${getCurrencySymbol(product.currency)}`
+                  : ""
+              }`}</td>
+              <td>
+                <a href={product.url} target="_blank" rel="noopener noreferrer">
+                  <Link size={"2rem"} />
+                </a>
+              </td>
+              <td>
+                {/* Renders the manufacturer detail modal for each product */}
+                {product?.manufacturer && (
+                  <ManufacturerDetailModal
+                    manufacturerId={product.manufacturer}
+                  />
+                )}
+              </td>
+              <td>
+                {/* Renders the supplier detail modal for each product */}
+                <SupplierDetailModal supplierId={product.supplier} />
+              </td>
+              {/* Renders an edit button and a delete button for each product */}
+              <td className="align-items-center">
+                <div className="mb-2">
+                  <ProductModal
+                    productObj={product}
+                    onSuccessfulSubmit={handleEdit}
+                  />
+                </div>
+                <DeleteButton
+                  objectType="product"
+                  objectName={product.name}
+                  objectId={product.id}
+                  deleteFetchFunc={deleteProduct}
+                  onSuccessfulDelete={handleEdit}
+                />
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );

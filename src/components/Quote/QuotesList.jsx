@@ -54,8 +54,6 @@ const QuotesList = ({ activeTab }) => {
   const [hasMore, setHasMore] = useState(true); // State to determine if more quotes can be fetched
   const [searchInput, setSearchInput] = useState(""); // State to store the current search input
 
-  console.log(baseQuotes);
-
   // Effect to extract and set the supplier select list from the fetched quotes
   useEffect(() => {
     if (!baseQuotes.length) return; // Exit if no quotes are fetched yet

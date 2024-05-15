@@ -60,7 +60,7 @@ const createFormSchema = ({ isSupplier }) =>
         /^\d+(\.\d*)?$/,
         "Unit volume/quantity must be a positive number",
       ),
-    unitsPerMainUnit: yup
+    unitsPerSubUnit: yup
       .string()
       .matches(
         /^\d+(\.\d*)?$/,
@@ -252,7 +252,7 @@ const ProductModal = ({
       category: values.category,
       unit: values.unit,
       unit_quantity: values.unitQuantity,
-      units_per_main_unit: values.unitsPerMainUnit,
+      units_per_sub_unit: values.unitsPerSubUnit,
       storage: values.storageConditions,
       location: values.location,
       stock: values.stock,
@@ -346,9 +346,9 @@ const ProductModal = ({
             category: productObj ? productObj.category : "",
             unit: productObj ? productObj.unit : "",
             unitQuantity: productObj ? productObj.unit_quantity : "",
-            unitsPerMainUnit:
-              productObj && productObj?.units_per_main_unit !== null
-                ? productObj?.units_per_main_unit
+            unitsPerSubUnit:
+              productObj && productObj?.units_per_sub_unit !== null
+                ? productObj?.units_per_sub_unit
                 : "",
             storageConditions: productObj ? productObj.storage : "",
             location: productObj ? productObj.location : "",
@@ -562,25 +562,23 @@ const ProductModal = ({
                   </Form.Group>
                   {values.unit === "Box" || values.unit === "Package" ? (
                     <Form.Group
-                      controlId="formProductUnitsPerMainUnit"
+                      controlId="formProductUnitsPerSubUnit"
                       className="field-margin"
                     >
-                      <Form.Label>Units Per Main Unit</Form.Label>
+                      <Form.Label>Units Per Sub Unit</Form.Label>
                       {/* Input for unit quantity with validation feedback. */}
                       <Form.Control
                         type="text"
-                        name="unitsPerMainUnit"
-                        value={values.unitsPerMainUnit}
+                        name="unitsPerSubUnit"
+                        value={values.unitsPerSubUnit}
                         onChange={handleChange}
-                        onFocus={() =>
-                          setFieldTouched("unitsPerMainUnit", true)
-                        }
+                        onFocus={() => setFieldTouched("unitsPerSubUnit", true)}
                         onBlur={handleBlur}
                         isInvalid={
-                          touched.unitsPerMainUnit && !!errors.unitsPerMainUnit
+                          touched.unitsPerSubUnit && !!errors.unitsPerSubUnit
                         }
                         isValid={
-                          touched.unitsPerMainUnit && !errors.unitsPerMainUnit
+                          touched.unitsPerSubUnit && !errors.unitsPerSubUnit
                         }
                       />
                       {/* Feedback for valid or invalid input. */}
@@ -588,7 +586,7 @@ const ProductModal = ({
                         Looks good!
                       </Form.Control.Feedback>
                       <Form.Control.Feedback type="invalid">
-                        {errors.unitsPerMainUnit}
+                        {errors.unitsPerSubUnit}
                       </Form.Control.Feedback>
                     </Form.Group>
                   ) : null}

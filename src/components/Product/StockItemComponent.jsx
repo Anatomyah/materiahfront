@@ -66,7 +66,7 @@ const StockItemComponent = ({
   editItem = false,
   showAddNewItem,
   onSuccessfulSubmit,
-  mainUnit,
+  unitQuantity,
 }) => {
   // Use the context hook to access the token.
   const { token } = useContext(AppContext);
@@ -89,7 +89,7 @@ const StockItemComponent = ({
 
   // Calculate the percentage value to appear on the stock progress bar
   const [currentStockPercentage, setCurrentStockPercentage] = useState(
-    calculatePercentage(Number(mainUnit), itemObj?.item_stock),
+    calculatePercentage(Number(unitQuantity), itemObj?.item_stock),
   );
 
   // Use state hook to manage the submitting state of the form.
@@ -99,7 +99,7 @@ const StockItemComponent = ({
 
   useEffect(() => {
     setCurrentStockPercentage(
-      calculatePercentage(Number(mainUnit), itemData.itemStock),
+      calculatePercentage(Number(unitQuantity), itemData.itemStock),
     );
   }, [itemData]);
 
