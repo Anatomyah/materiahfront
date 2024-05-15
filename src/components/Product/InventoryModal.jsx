@@ -119,9 +119,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Stock: </p>
               </Col>
               <Col>
-                <p className="fs-6">{`${product.stock} (${
-                  product.stock * product.units_per_sub_unit
-                })`}</p>
+                <p className="fs-6">{`${product.stock} (${totalItemStock})`}</p>
               </Col>
               <Col md={4}>
                 <UpdateAmountModal
