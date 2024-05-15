@@ -48,7 +48,7 @@ const createFormSchema = ({ isSupplier }) =>
         "is-english",
         "CAT# must be made of English letters and numbers.",
         (value) => {
-          return /^[a-zA-Z0-9\-_. ]+$/.test(value);
+          return /^[a-zA-Z0-9\-_. /]+$/.test(value);
         },
       ),
     category: yup.string().required("Product category is required"),
