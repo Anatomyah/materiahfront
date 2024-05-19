@@ -63,6 +63,7 @@ export const PRODUCT_CATEGORIES = [
   { value: "Hormone", label: "Hormone" },
   { value: "Medication", label: "Medication" },
   { value: "Antibiotic", label: "Antibiotic" },
+  { value: "Kit", label: "Kit" },
   { value: "Plastics", label: "Plastics" },
   { value: "Glassware", label: "Glassware" },
   { value: "Sanitary", label: "Sanitary" },
@@ -78,6 +79,7 @@ export const PRODUCT_MEASUREMENT_UNITS = [
   { value: "G", label: "Grams, g" },
   { value: "MG", label: "Milligrams, mg" },
   { value: "UG", label: "Micrograms, µg" },
+  { value: "Reactions", label: "Reactions" },
   { value: "Package", label: "Package" },
   { value: "Box", label: "Box" },
 ];
@@ -88,6 +90,7 @@ export const PRODUCT_STORAGE_OPTIONS = [
   { value: "-20", label: "-20" },
   { value: "-40", label: "-40" },
   { value: "-80", label: "-80" },
+  { value: "Room Temperature", label: "Room Temperature" },
   { value: "Other", label: "Other" },
 ];
 
