@@ -8,33 +8,17 @@ import { Spinner } from "react-bootstrap";
 import { OrderContext } from "../../pages/Order/OrdersPage";
 
 /**
- * Represents a modal component to display detailed information about a product.
+ * Represents a modal component for displaying product details and allowing user interactions.
  *
- * This component can be configured to display product details in different contexts,
- * such as a shopping view or an inventory management view. It fetches product details
- * if not provided and handles updating of product information.
- *
- * @component
- * @param {Object} props
- * @param {Object} [props.productObj=null] - The product object to display.
- * @param {string} [props.productId=null] - The ID of the product to fetch details for.
- * @param {boolean} [props.shopView=false] - Flag to determine if the modal is used in a shop view.
- * @param {Function} [props.updateProducts] - Callback function to update products list.
- * @param {boolean} [props.showShopModal] - Flag to control the visibility of the shop modal.
- * @param {Function} [props.setShowShopModal] - Function to set the visibility state of the shop modal.
- * @returns The ProductDetailModal component.
- *
- * Usage:
- * ```jsx
- * <ProductDetailModal
- *    productObj={product}
- *    productId="12345"
- *    shopView={true}
- *    updateProducts={updateHandler}
- *    showShopModal={showModal}
- *    setShowShopModal={setShowModal}
- * />
- * ```
+ * @param {Object} props - The properties object.
+ * @param {Object} props.productObj - The product object containing details of the product.
+ * @param {string} props.productId - The ID of the product.
+ * @param {boolean} [props.shopView=false] - Flag indicating whether the modal is for shopping context.
+ * @param {function} [props.updateProducts] - Function to update the list of products.
+ * @param {boolean} [props.showShopModal] - Flag indicating whether the shop modal should be shown.
+ * @param {function} [props.setShowShopModal] - Function to set the visibility of the shop modal.
+ * @param {function} [props.clearSearchValue] - Function to clear the search value.
+ * @returns {JSX.Element} The rendered modal component.
  */
 const ProductDetailModal = ({
   productObj,
@@ -43,6 +27,7 @@ const ProductDetailModal = ({
   updateProducts,
   showShopModal,
   setShowShopModal,
+  clearSearchValue,
 }) => {
   // Access token from context for authenticated API requests.
   const { token } = useContext(AppContext);
@@ -113,6 +98,7 @@ const ProductDetailModal = ({
             product={product}
             handleEdit={handleEdit}
             updateProducts={updateProducts}
+            clearSearchValue={clearSearchValue}
           />
         ))}
     </div>

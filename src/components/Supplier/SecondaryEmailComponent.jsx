@@ -1,34 +1,44 @@
-import React, { useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Form, FormControl } from "react-bootstrap";
 import { TrashFill } from "react-bootstrap-icons";
 import Button from "react-bootstrap/Button";
+import { checkSupplierSecondaryEmail } from "../../clients/supplier_client";
+import debounce from "lodash/debounce";
+import { AppContext } from "../../App";
 
 /**
- * Component Name: SecondaryEmailComponent
+ * Component for managing secondary email address in a form.
  *
- * Description: This is a React component that renders a form item to accept secondary email addresses.
- * The component allows user to input secondary email and provides an option to delete the email.
- * The component employs a debouncing function to limit the rate at which the callback function,
- * `handleDelayedChange`, is invoked as user enters input. It validates the entered email,
- * shows error feedback if the email is invalid, and becomes valid accordingly.
- *
- * Props:
- * index: The index denotes the number assigned to a secondary email
- * handleDeleteEmail: A handler function for deleting secondary email
- * onEmailChange: A handler function for updating entered secondary email
- * formik: Formik props or Formik bag for form handling (provides handleChange, handleBlur, etc.)
- *
- * Returns: A JSX element for the form item in the UI
+ * @component
+ * @param {Object} props - The component props.
+ * @param {number} props.index - The index of the secondary email address.
+ * @param {function} props.handleDeleteEmail - The function to handle deleting an email address.
+ * @param {function} props.onEmailChange - The function to handle changing an email address.
+ * @param {function} props.onSecondaryEmailValidation - The function to handle secondary email validation.
+ * @param {string} props.supplierObjSecondaryEmail - The secondary email address to pre-fill the field.
+ * @param {Object} props.formik - The Formik object containing the form values and methods.
  */
 
 const SecondaryEmailComponent = ({
   index,
   handleDeleteEmail,
   onEmailChange,
+  onSecondaryEmailValidation,
+  supplierObjSecondaryEmail,
   formik,
 }) => {
+  const { token } = useContext(AppContext); // Fetching the token from the AppContext
   // State to manage the typing timeout
   const [typingTimeout, setTypingTimeout] = useState(null);
+  const [secondaryEmail, setSecondaryEmail] = useState(
+    supplierObjSecondaryEmail || "",
+  ); // State to manage the secondary email value
+  const [
+    isCheckingSupplierSecondaryEmail,
+    setIsCheckingSupplierSecondaryEmail,
+  ] = useState(false); // State to manage when the secondary email address is being checked
+  const [isSupplierSecondaryEmailUnique, setIsSupplierSecondaryEmailUnique] =
+    useState(true); // State to manage the uniqueness boolean of the secondary email
 
   // Function for applying a debounce effect on typing
   const handleDelayedChange = (e, value) => {
@@ -43,6 +53,57 @@ const SecondaryEmailComponent = ({
     setTypingTimeout(newTimeout);
   };
 
+  // Constant that updates to reflect if the secondary email address is unique or not
+  const supplierSecondaryEmailUniqueValidator = {
+    id: "unique",
+    text: "Email address already taken.",
+    validate: () =>
+      isCheckingSupplierSecondaryEmail ? true : isSupplierSecondaryEmailUnique,
+  };
+
+  // The validation function that makes the request to the server and stores it's response
+  const validateSupplierSecondaryEmail = useCallback(
+    async (value) => {
+      const response = await checkSupplierSecondaryEmail(token, value);
+      setIsCheckingSupplierSecondaryEmail(false);
+      setIsSupplierSecondaryEmailUnique(response);
+    },
+    [token],
+  );
+
+  // The validation function, applied debounce in order to only check when the user is done typing
+  const debouncedCheckSupplierSecondaryEmail = useCallback(
+    debounce(validateSupplierSecondaryEmail, 1500),
+    [validateSupplierSecondaryEmail],
+  );
+
+  // useEffect to set the formik value to an empty string conditioned on the existence of an existing address
+  useEffect(() => {
+    if (!supplierObjSecondaryEmail) {
+      formik.setFieldValue(`secondaryEmails[${index}]`, "");
+    }
+  }, [token]);
+
+  // useEffect to call on the debounced function, if conditions are met
+  useEffect(() => {
+    if (secondaryEmail && secondaryEmail !== supplierObjSecondaryEmail) {
+      debouncedCheckSupplierSecondaryEmail(secondaryEmail);
+    } else {
+      setIsCheckingSupplierSecondaryEmail(null);
+      setIsCheckingSupplierSecondaryEmail(false);
+    }
+  }, [secondaryEmail, debouncedCheckSupplierSecondaryEmail]);
+
+  //useEffect to call on the onSecondaryEmailValidation prop that is a setting function for a state in the parent component
+  useEffect(() => {
+    onSecondaryEmailValidation(isSupplierSecondaryEmailUnique);
+  }, [isSupplierSecondaryEmailUnique, onSecondaryEmailValidation]);
+
+  // if the value for the formik state was not yet set (empty string or an existing address) do not render the component
+  if (formik.values?.secondaryEmails?.[index] == null) {
+    return null;
+  }
+
   // The returned JSX rendered
   return (
     // HTML Markup for secondary email form component
@@ -52,33 +113,52 @@ const SecondaryEmailComponent = ({
         <FormControl
           name={`secondaryEmails[${index}]`}
           type="text"
-          value={formik.values?.secondaryEmails[index] || ""}
+          value={formik.values?.secondaryEmails?.[index] || ""}
           onChange={(event) => {
             // Handle change of value in the input box
-            formik.handleChange(event);
             const { value } = event.target;
+            setSecondaryEmail(value);
+            formik.handleChange(event);
+            setIsCheckingSupplierSecondaryEmail(true);
             // Call the delay handler
             handleDelayedChange(event, value);
           }}
           onBlur={formik.handleBlur}
-          onFocus={() =>
-            // Customizing Formik's setFieldTouched function
-            formik.setFieldTouched(`secondaryEmails[${index}]`, true)
-          }
           isValid={
             // Formik logic for determining if the input field is valid
-            formik.touched.secondaryEmails[index] &&
-            !formik.errors?.secondaryEmails?.[index]
+            !formik.errors?.secondaryEmails?.[index] &&
+            supplierSecondaryEmailUniqueValidator.validate() &&
+            secondaryEmail &&
+            !isCheckingSupplierSecondaryEmail &&
+            isSupplierSecondaryEmailUnique
           }
           isInvalid={
             // Formik logic for determining if the input field is invalid
-            !!formik.errors?.secondaryEmails?.[index] &&
-            formik.touched.secondaryEmails[index]
+            (!!formik.errors?.secondaryEmails?.[index] &&
+              secondaryEmail &&
+              formik?.touched?.secondaryEmails?.[index]) ||
+            (!supplierSecondaryEmailUniqueValidator.validate() &&
+              secondaryEmail)
           }
         />
+        {supplierSecondaryEmailUniqueValidator.validate() &&
+          secondaryEmail &&
+          !isCheckingSupplierSecondaryEmail && (
+            <Form.Control.Feedback type="valid">
+              Looks good!
+            </Form.Control.Feedback>
+          )}
         <Form.Control.Feedback type="invalid">
           {formik.errors?.secondaryEmails?.[index]}
+          {!supplierSecondaryEmailUniqueValidator.validate() &&
+            !isCheckingSupplierSecondaryEmail &&
+            secondaryEmail &&
+            supplierSecondaryEmailUniqueValidator.text}
         </Form.Control.Feedback>
+        {isCheckingSupplierSecondaryEmail &&
+          !formik.errors?.secondaryEmails?.[index] && (
+            <Form.Text>Checking...</Form.Text>
+          )}
       </Form.Group>
       <Button
         variant="outline-danger"

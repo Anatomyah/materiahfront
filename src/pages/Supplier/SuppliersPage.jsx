@@ -124,6 +124,11 @@ const SuppliersPage = () => {
     [],
   );
 
+  // Function to reset the search input value
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
+
   // Function to handle key down event in the search input.
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
@@ -153,7 +158,10 @@ const SuppliersPage = () => {
           {/* Column for the supplier modal trigger */}
           <Col md="auto" className="m">
             {/* Supplier modal for adding or editing suppliers */}
-            <SupplierModal onSuccessfulSubmit={fetchSuppliers} />
+            <SupplierModal
+              onSuccessfulSubmit={fetchSuppliers}
+              clearSearchValue={resetSearchValue}
+            />
           </Col>
 
           {/* Column for the search input group */}
@@ -240,6 +248,7 @@ const SuppliersPage = () => {
         <SupplierTable
           supplierList={viewSuppliers.length ? viewSuppliers : baseSuppliers}
           handleEdit={fetchSuppliers}
+          clearSearchValue={resetSearchValue}
         />
       </InfiniteScroll>
     </div>

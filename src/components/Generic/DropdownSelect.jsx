@@ -4,43 +4,19 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { ListItemText, MenuItem } from "@mui/material";
 
 /**
- * The `DropdownSelect` component represents a reusable dropdown select box using Material-UI's `Autocomplete` and `TextField` components.
+ * Renders a dropdown select component with autocomplete functionality.
  *
- * The component receives an optionsList, label for the select box, selectedValue for controlled component, a setSelectedValue callback function to update the selected value and list of disabledOptions as props.
- * It is designed to have controlled inputs, and the selectedValue should be managed in the parent component state and should be passed down to this dropdown select component as a prop.
- * The optionsList should be an array of objects where each object should be in the format { value: VALUE, label: LABEL }.
- * The selectedValue should be of the same type as individual items of the optionsList array.
- *
- * @component
- *
- * @prop {Array<Object>} optionsList - Array of objects where each object should contain the `value` and `label` properties for the dropdown options.
- * - `value`: number | string
- * - `label`: string
- * @prop {string} label - Label to be displayed for the Dropdown select box.
- * @prop {string | number | null} selectedValue - Selected value.
- * @prop {Function} setSelectedValue - A callback function that updates the `selectedValue`.
- * @prop {Array<string | number>} disabledOptions - Array of option values that should be disabled in the dropdown.
- *
- * @example
- *
- * const options = [{value: 'value1', label: 'Option 1'}, {value: 'value2', label: 'Option 2'}];
- * let selectedValue = options[0];
- * function setSelectedValue(value) {
- *   selectedValue = value;
- * }
- * const disabledOptions = ['value2']
- *
- * return (
- *   <DropdownSelect
- *     optionsList={options}
- *     label="Dropdown Label"
- *     selectedValue={selectedValue}
- *     setSelectedValue={setSelectedValue}
- *     disabledOptions={disabledOptions}
- *   />
- * );
- *
- * @returns {React.Node} - The DropdownSelect component
+ * @param {Object} props - The required props for the DropdownSelect component.
+ * @param {Array} props.optionsList - An array of options to populate the dropdown list.
+ * @param {string} props.label - The label for the dropdown select component.
+ * @param {any} props.selectedValue - The currently selected value in the dropdown.
+ * @param {function} props.setSelectedValue - Callback function to update the selected value.
+ * @param {Array} props.disabledOptions - An array of values that should be disabled in the dropdown select.
+ * @param {boolean} props.touched - Indicates whether the dropdown select has been interacted with.
+ * @param {string} props.error - Error message to display for validation errors.
+ * @param {boolean} props.isInvalid - Indicates whether the dropdown select has a validation error.
+ * @param {function} props.onBlur - Callback function to handle onBlur event.
+ * @returns {HTMLElement} - The rendered DropdownSelect component.
  */
 const DropdownSelect = ({
   optionsList,
@@ -48,6 +24,10 @@ const DropdownSelect = ({
   selectedValue,
   setSelectedValue,
   disabledOptions,
+  touched,
+  error,
+  isInvalid,
+  onBlur,
 }) => {
   return (
     <Autocomplete
@@ -63,7 +43,15 @@ const DropdownSelect = ({
       onChange={(event, newValue) => {
         setSelectedValue(newValue ? newValue : null);
       }} // Event handler to update the selected value in the parent component when an option is selected in the dropdown
-      renderInput={(params) => <TextField {...params} label={label} />} // Callback used to display TextField component
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          error={touched && Boolean(isInvalid)}
+          helperText={isInvalid && error}
+          onBlur={onBlur}
+        />
+      )} // Callback used to display TextField component
       renderOption={(props, option) => (
         <MenuItem {...props} disabled={disabledOptions.includes(option.value)}>
           <ListItemText primary={option.label} />

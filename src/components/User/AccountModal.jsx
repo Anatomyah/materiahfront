@@ -25,6 +25,7 @@ import "./UserComponentStyle.css";
 import ShowPassword from "../Generic/ShowPassword";
 import debounce from "lodash/debounce";
 import { showToast } from "../../config_and_helpers/helpers";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
 
 // Yup schema for the user Formik form
 const createFormSchema = ({ isSignUp }) =>
@@ -487,7 +488,9 @@ const AccountModal = ({ isSignUp = false }) => {
                     controlId="signupUsername"
                     className="field-margin"
                   >
-                    <Form.Label>Username</Form.Label>
+                    <Form.Label>
+                      Username <RequiredAsteriskComponent />
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="username"
@@ -500,20 +503,22 @@ const AccountModal = ({ isSignUp = false }) => {
                         setIsCheckingUsername(true);
                         setFieldValue("username", value);
                       }}
-                      onFocus={() => setFieldTouched("username", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.username && !!errors.username) ||
-                        !usernameUniqueValidator.validate()
+                        (!usernameUniqueValidator.validate() &&
+                          userDetails?.username)
                       }
                       isValid={
-                        touched.username &&
                         !errors.username &&
                         usernameUniqueValidator.validate() &&
-                        !isCheckingUsername
+                        username &&
+                        !isCheckingUsername &&
+                        isUsernameUnique
                       }
                     />
                     {usernameUniqueValidator.validate() &&
+                      username &&
                       !isCheckingUsername && (
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -523,6 +528,7 @@ const AccountModal = ({ isSignUp = false }) => {
                       {errors.username}
                       {/* Conditional rendering of feedback messages based on validation state */}
                       {!usernameUniqueValidator.validate() &&
+                        username &&
                         !isCheckingUsername &&
                         usernameUniqueValidator.text}
                     </Form.Control.Feedback>
@@ -535,7 +541,9 @@ const AccountModal = ({ isSignUp = false }) => {
 
                   {/* Rest of the form groups for email, first name, last name, and phone number follow a similar pattern */}
                   <Form.Group controlId="signupEmail" className="field-margin">
-                    <Form.Label>Email</Form.Label>
+                    <Form.Label>
+                      Email <RequiredAsteriskComponent />
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="email"
@@ -546,29 +554,32 @@ const AccountModal = ({ isSignUp = false }) => {
                         setEmailAddress(value);
                         setFieldValue("email", value);
                       }}
-                      onFocus={() => setFieldTouched("email", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.email && !!errors.email) ||
-                        !emailUniqueValidator.validate()
+                        (!emailUniqueValidator.validate() && emailAddress)
                       }
                       isValid={
-                        touched.email &&
                         !errors.email &&
                         emailUniqueValidator.validate() &&
-                        !isCheckingEmail
+                        emailAddress &&
+                        !isCheckingEmail &&
+                        isEmailUnique
                       }
                     />
-                    {emailUniqueValidator.validate() && !isCheckingEmail && (
-                      <Form.Control.Feedback type="valid">
-                        Looks good!
-                      </Form.Control.Feedback>
-                    )}
+                    {emailUniqueValidator.validate() &&
+                      emailAddress &&
+                      !isCheckingEmail && (
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
+                      )}
                     <Form.Control.Feedback type="invalid">
                       {errors.email}
                       {!errors.email &&
                         !emailUniqueValidator.validate() &&
                         !isCheckingEmail &&
+                        emailAddress &&
                         emailUniqueValidator.text}
                     </Form.Control.Feedback>
                     {isCheckingEmail && !errors.email && (
@@ -579,16 +590,22 @@ const AccountModal = ({ isSignUp = false }) => {
                     controlId="signupFirstName"
                     className="field-margin"
                   >
-                    <Form.Label>First Name</Form.Label>
+                    <Form.Label>
+                      First Name <RequiredAsteriskComponent />
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="firstName"
                       value={values.firstName}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("firstName", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.firstName && !!errors.firstName}
-                      isValid={touched.firstName && !errors.firstName}
+                      isValid={!errors.firstName && values.firstName}
+                      isInvalid={
+                        (touched?.firstName && !values?.firstName) ||
+                        (errors?.firstName &&
+                          errors?.firstName !== "First name is required" &&
+                          values?.firstName)
+                      }
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
@@ -601,16 +618,22 @@ const AccountModal = ({ isSignUp = false }) => {
                     controlId="signupLastName"
                     className="field-margin"
                   >
-                    <Form.Label>Last name</Form.Label>
+                    <Form.Label>
+                      Last name <RequiredAsteriskComponent />
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="lastName"
                       value={values.lastName}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("lastName", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.lastName && !!errors.lastName}
-                      isValid={touched.lastName && !errors.lastName}
+                      isValid={!errors.lastName && values.lastName}
+                      isInvalid={
+                        (touched?.lastName && !values?.lastName) ||
+                        (errors?.lastName &&
+                          errors?.lastName !== "Last name is required" &&
+                          values?.lastName)
+                      }
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
@@ -620,7 +643,9 @@ const AccountModal = ({ isSignUp = false }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <Row className="field-margin">
-                    <Form.Label>Phone Number</Form.Label>
+                    <Form.Label>
+                      Phone Number <RequiredAsteriskComponent />
+                    </Form.Label>
                     <Form.Group as={Col} md="3" controlId="signupPhonePrefix">
                       <Form.Select
                         name="phonePrefix"
@@ -653,26 +678,31 @@ const AccountModal = ({ isSignUp = false }) => {
                           setPhoneSuffix(value);
                           setFieldValue("phoneSuffix", value);
                         }}
-                        onFocus={() => setFieldTouched("phoneSuffix", true)}
                         onBlur={handleBlur}
                         isInvalid={
                           (touched.phoneSuffix && !!errors.phoneSuffix) ||
-                          !phoneUniqueValidator.validate()
+                          (!phoneUniqueValidator.validate() && phoneSuffix)
                         }
                         isValid={
-                          touched.phoneSuffix &&
                           !errors.phoneSuffix &&
                           phoneUniqueValidator.validate() &&
-                          !isCheckingPhone
+                          phoneSuffix &&
+                          !isCheckingPhone &&
+                          isPhoneUnique
                         }
                       />
-                      <Form.Control.Feedback type="valid">
-                        Looks good!
-                      </Form.Control.Feedback>
+                      {phoneUniqueValidator.validate() &&
+                        phoneSuffix &&
+                        !isCheckingPhone && (
+                          <Form.Control.Feedback type="valid">
+                            Looks good!
+                          </Form.Control.Feedback>
+                        )}
                       <Form.Control.Feedback type="invalid">
                         {errors.phoneSuffix}
                         {!phoneUniqueValidator.validate() &&
                           !isCheckingPhone &&
+                          phoneSuffix &&
                           phoneUniqueValidator.text}
                       </Form.Control.Feedback>
                       {isCheckingPhone && <Form.Text>Checking...</Form.Text>}
@@ -701,7 +731,11 @@ const AccountModal = ({ isSignUp = false }) => {
                           onFocus={() => setFieldTouched("password", true)}
                           onBlur={handleBlur}
                           isInvalid={touched.password && !!errors.password}
-                          isValid={touched.password && !errors.password}
+                          isValid={
+                            touched.password &&
+                            !errors.password &&
+                            values.password
+                          }
                           className="field-margin"
                         />
                         <Form.Control.Feedback type="valid">
@@ -742,7 +776,10 @@ const AccountModal = ({ isSignUp = false }) => {
                             touched.confirmPassword && !!errors.confirmPassword
                           }
                           isValid={
-                            touched.confirmPassword && !errors.confirmPassword
+                            touched.confirmPassword &&
+                            !errors.confirmPassword &&
+                            values.confirmPassword &&
+                            values.confirmPassword === values.password
                           }
                         />
                         <Form.Control.Feedback type="valid">

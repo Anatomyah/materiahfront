@@ -23,6 +23,7 @@ import "./SupplierComponentStyle.css";
 import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
 import SecondaryEmailComponent from "./SecondaryEmailComponent";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
 
 // Yup schema for the supplier Formik form
 const formSchema = yup.object().shape({
@@ -31,48 +32,26 @@ const formSchema = yup.object().shape({
   email: yup.string().matches(emailRegex, "Enter a valid email"),
   phonePrefix: yup.string(),
   phoneSuffix: yup.string().matches(/^\d*$/, "Phone number must be numeric"),
-  secondaryEmails: yup.array().of(yup.string().email("Enter a valid email")),
+  secondaryEmails: yup
+    .array()
+    .of(yup.string().matches(emailRegex, "Enter a valid email")),
 });
 
 /**
- * `SupplierModal` is a reactive Bootstrap Modal component used for creating and editing suppliers in the system.
+ * Represents a SupplierModal component.
  *
- * It provides an interactive form with live validation, accepting input for the supplier's:
- * - Name
- * - Website Link
- * - Main Email
- * - Phone
+ * @param {Object} props - The properties of the SupplierModal component.
+ * @param {function} props.onSuccessfulSubmit - The function to be called on successful submit of the form.
+ * @param {Object} props.supplierObj - The supplier object to be edited. If provided, the form will be pre-filled with the supplier's information.
+ * @param {function} props.clearSearchValue - The function to clear the search value in the parent component.
  *
- * It also links the supplier to one or more manufacturers via a multi-select dropdown.
- *
- * `SupplierModal` fetches the available list of manufacturers on mount.
- * This list is used for both displaying the current associations of an existing supplier, and selecting associations for a new supplier.
- *
- * In the case of editing an existing supplier, it accepts a `supplierObj` prop that contains the supplier's existing details.
- * Calling the submitted form's `onSubmit` method creates or updates the supplier as intended.
- *
- * A spinner is shown during the API calls for creation/update.
- *
- * @component
- * @param {Object} props The props.
- * @param {Function} props.onSuccessfulSubmit The function to run after successfully submitting the form.
- * @param {(Object|null)} [props.supplierObj=null] The supplier object being edited, or null for creating a supplier.
- *
- * @example
- *
- * // An existing supplier object
- * const supplier = { id: '1', name: 'Supplier1', email: 'test@example.com', website: 'www.example.com' };
- *
- * // Refetch function
- * const refetchSuppliers = () => // Execute fetch to update suppliers data
- *
- * // To create a new supplier
- * <SupplierModal onSuccessfulSubmit={refetchSuppliers} />
- *
- * // To edit an existing supplier
- * <SupplierModal onSuccessfulSubmit={refetchSuppliers} supplierObj={supplier} />
+ * @returns {element} - The SupplierModal component.
  */
-const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
+const SupplierModal = ({
+  onSuccessfulSubmit,
+  supplierObj,
+  clearSearchValue,
+}) => {
   const { token } = useContext(AppContext); // Fetching the token from the AppContext
   const [relatedManufacturers, setRelatedManufacturers] = useState(
     supplierObj
@@ -106,6 +85,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
       (secondaryEmail) => secondaryEmail.email,
     ) || [],
   );
+  const [secondaryEmailsValid, setSecondaryEmailsValid] = useState(true);
   const [isSupplierEmailUnique, setIsSupplierEmailUnique] = useState(true);
   const [isCheckingSupplierEmail, setIsCheckingSupplierEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -211,6 +191,11 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
 
   const handleClose = () => {
     setShowModal(false); // Function to close the modal
+    setSupplierEmail("");
+    setName("");
+    setPhoneSuffix("");
+    setPhoneSuffix("");
+    setSecondaryEmails([]);
   };
 
   const resetModal = () => {
@@ -312,6 +297,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
         setTimeout(() => {
           // Timeout for UX purposes
           onSuccessfulSubmit(); // Call the success handler
+          if (clearSearchValue) clearSearchValue(); // If this function was passed, call it
           response.toast(); // Show a success toast
           setIsSubmitting(false); // Set submitting status to false
           handleClose(); // Close the modal
@@ -378,7 +364,6 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
             secondaryEmails: secondaryEmails,
           }}
           validateOnMount={true}
-          // enableReinitialize={true}
           validationSchema={formSchema}
           onSubmit={(values) => {
             handleSubmit(values);
@@ -404,7 +389,9 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                     controlId="formSupplierName"
                     className="field-margin"
                   >
-                    <Form.Label>Supplier Name</Form.Label>
+                    <Form.Label>
+                      Supplier Name {<RequiredAsteriskComponent />}
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -415,19 +402,21 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         setIsCheckingSupplierName(true);
                         setName(value);
                       }}
-                      onFocus={() => setFieldTouched("name", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.name && !!errors.name) ||
-                        !supplierNameUniqueValidator.validate()
+                        (!supplierNameUniqueValidator.validate() && name)
                       }
                       isValid={
-                        touched.name &&
                         !errors.name &&
-                        supplierNameUniqueValidator.validate()
+                        supplierNameUniqueValidator.validate() &&
+                        name &&
+                        !isCheckingSupplierName &&
+                        isSupplierNameUnique
                       }
                     />
                     {supplierNameUniqueValidator.validate() &&
+                      name &&
                       !isCheckingSupplierName && (
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -436,6 +425,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                     <Form.Control.Feedback type="invalid">
                       {errors.name}
                       {!supplierNameUniqueValidator.validate() &&
+                        name &&
                         !isCheckingSupplierName &&
                         supplierNameUniqueValidator.text}
                     </Form.Control.Feedback>
@@ -447,16 +437,15 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                     controlId="formWebsiteUrl"
                     className="field-margin"
                   >
-                    <Form.Label>Website Link</Form.Label>
+                    <Form.Label>Website URL</Form.Label>
                     <Form.Control
                       type="text"
                       name="websiteUrl"
                       value={values.websiteUrl}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("websiteUrl", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.websiteUrl && !!errors.websiteUrl}
-                      isValid={touched.websiteUrl && !errors.websiteUrl}
+                      isValid={!errors?.websiteUrl && values?.websiteUrl}
+                      isInvalid={errors?.websiteUrl && values?.websiteUrl}
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!
@@ -480,22 +469,21 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         setIsCheckingSupplierEmail(true);
                         setSupplierEmail(value);
                       }}
-                      onFocus={() => setFieldTouched("email", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.email && !!errors.email) ||
                         (!supplierEmailUniqueValidator.validate() &&
-                          values.email !== supplierEmail)
+                          supplierEmail)
                       }
                       isValid={
-                        touched.email &&
                         !errors.email &&
                         supplierEmailUniqueValidator.validate() &&
-                        values.email !== supplierObj?.email &&
+                        supplierEmail &&
                         !isCheckingSupplierEmail
                       }
                     />
                     {supplierEmailUniqueValidator.validate() &&
+                      supplierEmail &&
                       !isCheckingSupplierEmail && (
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -503,9 +491,9 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                       )}
                     <Form.Control.Feedback type="invalid">
                       {errors.email}
-                      {!errors.email &&
-                        supplierEmailUniqueValidator.validate() &&
+                      {!supplierEmailUniqueValidator.validate() &&
                         !isCheckingSupplierEmail &&
+                        supplierEmail &&
                         supplierEmailUniqueValidator.text}
                     </Form.Control.Feedback>
                     {isCheckingSupplierEmail && !errors.email && (
@@ -518,9 +506,12 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         <SecondaryEmailComponent
                           key={index}
                           index={index}
-                          secondaryEmail={email}
                           handleDeleteEmail={removeSecondaryEmail}
                           onEmailChange={updateSecondaryEmail}
+                          onSecondaryEmailValidation={setSecondaryEmailsValid}
+                          supplierObjSecondaryEmail={
+                            supplierObj?.secondary_emails?.[index].email
+                          }
                           formik={{
                             handleChange,
                             values,
@@ -577,26 +568,33 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                           setIsCheckingSupplierPhone(true);
                           setPhoneSuffix(value);
                         }}
-                        onFocus={() => setFieldTouched("phoneSuffix", true)}
                         onBlur={handleBlur}
                         isInvalid={
                           (touched.phoneSuffix && !!errors.phoneSuffix) ||
-                          !supplierPhoneUniqueValidator.validate()
+                          (!supplierPhoneUniqueValidator.validate() &&
+                            phoneSuffix)
                         }
                         isValid={
-                          touched.phoneSuffix &&
                           !errors.phoneSuffix &&
                           supplierPhoneUniqueValidator.validate() &&
-                          !isCheckingSupplierPhone
+                          phoneSuffix &&
+                          phoneSuffix.length === 7 &&
+                          !isCheckingSupplierPhone &&
+                          isSupplierPhoneUnique
                         }
                       />
-                      <Form.Control.Feedback type="valid">
-                        Looks good!
-                      </Form.Control.Feedback>
+                      {supplierPhoneUniqueValidator.validate() &&
+                        phoneSuffix &&
+                        !isCheckingSupplierPhone && (
+                          <Form.Control.Feedback type="valid">
+                            Looks good!
+                          </Form.Control.Feedback>
+                        )}
                       <Form.Control.Feedback type="invalid">
                         {errors.phoneSuffix}
                         {!supplierPhoneUniqueValidator.validate() &&
                           !isCheckingSupplierPhone &&
+                          phoneSuffix &&
                           supplierPhoneUniqueValidator.text}
                       </Form.Control.Feedback>
                       {isCheckingSupplierPhone && (
@@ -631,6 +629,7 @@ const SupplierModal = ({ onSuccessfulSubmit, supplierObj }) => {
                         !supplierNameUniqueValidator.validate() ||
                         !supplierEmailUniqueValidator.validate() ||
                         !supplierPhoneUniqueValidator.validate() ||
+                        !secondaryEmailsValid ||
                         isCheckingSupplierName ||
                         isCheckingSupplierEmail ||
                         isCheckingSupplierPhone

@@ -76,6 +76,11 @@ const ManufacturersPage = () => {
     ); // Filters the manufacturers based on the selected supplier
   }, [supplier]);
 
+  // Rests the search input value. passed down as prop to the children components to be used when necessary
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
+
   // Function to fetch manufacturers data
   const fetchManufacturers = ({ searchValue = "", nextPage = null } = {}) => {
     isLoadingRef.current = true; // Indicates the start of a data loading process
@@ -245,6 +250,7 @@ const ManufacturersPage = () => {
             viewManufacturers.length ? viewManufacturers : baseManufacturers
           }
           handleEdit={fetchManufacturers}
+          clearSearchValue={resetSearchValue}
           // Chooses between filtered or unfiltered list of manufacturers
         />
       </InfiniteScroll>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
@@ -15,6 +15,13 @@ import UpdateAmountModal from "./UpdateAmountModal";
 import Table from "react-bootstrap/Table";
 import StockItemComponent from "./StockItemComponent";
 import "./ProductComponentStyle.css";
+import ManualStockItemCreationModal from "./ManualStockItemCreationModal";
+import {
+  calculatePriceAfterDiscount,
+  formatDecimalNumber,
+  getCurrencySymbol,
+} from "../../config_and_helpers/helpers";
+import { CURRENCY_SYMBOLS } from "../../config_and_helpers/config";
 
 // plusIcon: The icon for adding a stock item
 const plusIcon = (
@@ -22,40 +29,32 @@ const plusIcon = (
 );
 
 /**
- * Represents an inventory modal component for displaying and managing product details.
+ * Represents a modal for managing inventory items.
  *
- * This component shows detailed information about a product and it's related stock items, provides options
- * to edit, update stock amounts, or delete the product. It uses a modal layout to
- * display the product details and includes embedded components like `UpdateAmountModal`,
- * `ProductModal`, `SupplierDetailModal`, and `ManufacturerDetailModal` for specific functionalities.
- *
- * @component
- * @param {Object} props
- * @param {Object} props.product - The product object containing detailed information.
- * @param {Function} props.handleEdit - Callback function to handle the edit operation on the product.
- * @param {Function} props.updateProducts - Callback function to update the products list post deletion.
- * @returns The InventoryModal component.
- *
- * Usage:
- * ```jsx
- * <InventoryModal
- *    product={productDetails}
- *    handleEdit={editHandler}
- *    updateProducts={productsUpdateHandler}
- * />
- * ```
+ * @param {Object} product - The product details.
+ * @param {function} handleEdit - The function to handle editing of the product.
+ * @param {function} updateProducts - The function to update the list of products.
+ * @param {function} clearSearchValue - A function to clear the parent component search value
  */
-const InventoryModal = ({ product, handleEdit, updateProducts }) => {
+const InventoryModal = ({
+  product,
+  handleEdit,
+  updateProducts,
+  clearSearchValue,
+}) => {
   // State for controlling the visibility of the modal.
   const [show, setShow] = useState(false);
   // State for managing the product items in stock
   const [items, setItems] = useState(product ? product.items : []);
   // State for managing the showing of a new empty item table row
   const [addNewItem, setAddNewItem] = useState(false);
-  //Calculate teh current stock of subunits of the given product
+  //Calculate the current stock of subunits of the given product
   const [totalItemStock, setTotalItemStock] = useState(
-    items.reduce((total, item) => total + item.item_stock, 0),
+    items.reduce((total, item) => total + item?.item_sub_stock, 0),
   );
+
+  // Constant valuing if to show the 'in use' bar
+  const showBar = product.unit === "Package" || product.unit === "Box";
 
   // Function to close the modal.
   const handleClose = () => setShow(false);
@@ -76,24 +75,27 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
   };
 
   // Function to update the stock items array
-  const updateStockItems = (itemObj, deleteItem) => {
+  const updateStockItems = (data, deleteItem) => {
     // if the 'addNewItem' state is true, this is a creation of a new product, thus returning 'addNewItem' to false
     if (addNewItem) addStockItem();
     // if the deleteItem param was passed, remove it from the items array via filtering
     if (deleteItem) {
-      setItems((prevItems) =>
-        prevItems.filter((item) => item.id !== itemObj.id),
-      );
-      // else, update the items array when the passed in itemObj
+      setItems((prevItems) => prevItems.filter((item) => item.id !== data.id));
+      // else, update the items array when the passed in data
     } else {
-      setItems((prevItems) => [...prevItems, itemObj]);
+      // Determine how to update the items state based on there are multiple new items in an array or a single item
+      if (Array.isArray(data)) {
+        setItems((prevItems) => [...prevItems, ...data]);
+      } else {
+        setItems((prevItems) => [...prevItems, data]);
+      }
     }
   };
 
   return (
     <>
       {/* Button to open the modal, displaying the product's name. */}
-      <Button variant="link" onClick={handleShow}>
+      <Button variant="link" onClick={handleShow} style={{ fontSize: "14px" }}>
         {product.name}
       </Button>
 
@@ -125,7 +127,15 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Stock: </p>
               </Col>
               <Col>
-                <p className="fs-6">{`${product.stock} (${totalItemStock})`}</p>
+                <p className="fs-6">
+                  {product.stock === null
+                    ? null
+                    : `${product.stock} ${
+                        product.unit === "Package" || product.unit === "Box"
+                          ? `(${totalItemStock})`
+                          : ""
+                      }`}
+                </p>
               </Col>
               <Col md={4}>
                 <UpdateAmountModal
@@ -171,7 +181,11 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Unit: </p>
               </Col>
               <Col>
-                <p className="fs-6">{product.unit}</p>
+                <p className="fs-6">
+                  {product.unit === "Assays"
+                    ? "Reactions / Tests / Assays"
+                    : product.unit}
+                </p>
               </Col>
             </Row>
             <Row md={3}>
@@ -179,12 +193,14 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                 <p className="fs-6 fw-bold">Unit Quantity: </p>
               </Col>
               <Col>
-                <p className="fs-6">{product.unit_quantity}</p>
+                <p className="fs-6">
+                  {formatDecimalNumber(product.unit_quantity)}
+                </p>
               </Col>
             </Row>
             <Row md={3}>
               <Col>
-                <p className="fs-6 fw-bold">Units Per Main Unit: </p>
+                <p className="fs-6 fw-bold">Units Per Sub Unit: </p>
               </Col>
               <Col>
                 <p className="fs-6">{product.units_per_sub_unit}</p>
@@ -207,13 +223,65 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               </Col>
             </Row>
             <Row md={3}>
+              <Col>
+                <p className="fs-6 fw-bold">Price: </p>
+              </Col>
+              <Col>
+                <div className="fs-6">
+                  <div>
+                    <span>
+                      Pre-Discount:{" "}
+                      {product.price !== null
+                        ? `${formatDecimalNumber(product.price)}${
+                            CURRENCY_SYMBOLS[product.currency]
+                              ? `${getCurrencySymbol(product.currency)}`
+                              : ""
+                          }`
+                        : ""}
+                    </span>
+                  </div>
+                  {product.discount && (
+                    <div>
+                      <span>
+                        Post-Discount:{" "}
+                        {product.price !== null && product.discount !== null
+                          ? `${calculatePriceAfterDiscount(
+                              product.price,
+                              product.discount,
+                            )}${
+                              CURRENCY_SYMBOLS[product.currency]
+                                ? ` ${getCurrencySymbol(product.currency)}`
+                                : ""
+                            } (-${formatDecimalNumber(product.discount)}%)`
+                          : ""}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </Col>
+            </Row>
+            <Row md={3}>
               <Col className="mt-1">
                 <p className="fs-6 fw-bold">Website Profile: </p>
               </Col>
               <Col>
-                <a href={product.url} target="_blank" rel="noopener noreferrer">
-                  <Link size={"2.2rem"} />
-                </a>
+                {product.url && (
+                  <a
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Link size={"2.2rem"} />
+                  </a>
+                )}
+              </Col>
+            </Row>
+            <Row md={3}>
+              <Col className="mt-1">
+                <p className="fs-6 fw-bold">Notes: </p>
+              </Col>
+              <Col md={8} className="bordered-shadow-container">
+                {product.notes !== null && product.notes}
               </Col>
             </Row>
 
@@ -251,19 +319,22 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                     productId={product.id}
                     onSuccessfulSubmit={updateStockItems}
                     showAddNewItem={addStockItem}
+                    currentStock={product.stock}
                   />
                 )}
 
                 {/* Render a mapping function mapping over the items related to the product */}
                 {items.map((item, index) => (
                   <StockItemComponent
-                    key={index}
+                    key={item.id}
                     itemObj={item}
                     index={index}
                     editItem={true}
                     onSuccessfulSubmit={updateStockItems}
                     unitQuantity={product.unit_quantity}
                     onStockUpdate={updateProductStock}
+                    productId={product.id}
+                    showBar={showBar}
                   />
                 ))}
 
@@ -282,6 +353,17 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
                     </Button>
                   </td>
                 </tr>
+                <tr className="text-center align-middle">
+                  <td colSpan="9">
+                    <ManualStockItemCreationModal
+                      productName={product.name}
+                      productId={product.id}
+                      productSubStock={product.quantity}
+                      onManualCreate={setTotalItemStock}
+                      onSuccessfulSubmit={updateStockItems}
+                    />
+                  </td>
+                </tr>
               </tbody>
             </Table>
           </Container>
@@ -293,6 +375,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               <ProductModal
                 productObj={product}
                 onSuccessfulSubmit={handleEdit}
+                clearSearchValue={clearSearchValue}
               />
             </div>
             <DeleteButton
@@ -301,6 +384,7 @@ const InventoryModal = ({ product, handleEdit, updateProducts }) => {
               objectId={product.id}
               deleteFetchFunc={deleteProduct}
               onSuccessfulDelete={updateProducts}
+              clearSearchValue={clearSearchValue}
             />
           </div>
           <Button variant="secondary" onClick={handleClose}>

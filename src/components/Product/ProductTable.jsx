@@ -11,30 +11,22 @@ import {
 import ProductDetailModal from "./ProductDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
-import { getCurrencySymbol } from "../../config_and_helpers/helpers";
+import {
+  calculatePriceAfterDiscount,
+  formatDecimalNumber,
+  getCurrencySymbol,
+} from "../../config_and_helpers/helpers";
 
 /**
- * Renders a list of products within a table layout.
+ * Displays a table listing of products.
  *
- * @component
- * @param {Object} props - The properties that define the ProductTable.
- * @param {Array} props.productList - An array of product objects to be displayed in the table.
- * @param {Function} props.handleEdit - The function to be called when a product is edited or deleted.
- *
- * @example
- * // Here is how to use this component
- * const productList = [
- *    // Here an array of product objects
- * ];
- * const handleEdit = () => {
- *    // Define edit functionality here.
- * };
- * <ProductTable productList={productList} handleEdit={handleEdit} />
- *
- * @returns {React.Element} The rendered ProductTable component.
+ * @param {Object} ProductTable - The ProductTable component.
+ * @param {Array} productList - The list of products to display in the table.
+ * @param {Function} handleEdit - A callback function to handle editing a product.
+ * @param {Function} clearSearchValue - A callback function to clear the search value.
+ * @returns {ReactComponent} - The rendered ProductTable component.
  */
-const ProductTable = ({ productList, handleEdit }) => {
-  console.log(productList);
+const ProductTable = ({ productList, handleEdit, clearSearchValue }) => {
   return (
     <Table striped bordered hover>
       <thead>
@@ -49,7 +41,6 @@ const ProductTable = ({ productList, handleEdit }) => {
           <th style={{ minWidth: "130px" }}>Unit Quantity</th>
           <th>Unit</th>
           <th>Stock</th>
-          <th>Storage</th>
           <th>Location</th>
           <th>Price</th>
           <th>URL</th>
@@ -63,12 +54,16 @@ const ProductTable = ({ productList, handleEdit }) => {
         {productList.map((product, index) => {
           // Calculate total item stock for the current product
           const totalItemStock = product.items.reduce(
-            (total, item) => total + item.item_stock,
+            (total, item) => total + item.item_sub_stock,
             0,
           );
 
           return (
-            <tr key={product.id} className="text-center align-middle">
+            <tr
+              key={product.id}
+              className="text-center align-middle"
+              style={{ fontSize: "14px" }}
+            >
               {/* Displays the serial number of the item */}
               <td>{index + 1}</td>
               {/* Displays the product image, if it exists, or a default image */}
@@ -100,37 +95,106 @@ const ProductTable = ({ productList, handleEdit }) => {
                 <ProductDetailModal
                   productObj={product}
                   updateProducts={handleEdit}
+                  clearSearchValue={clearSearchValue}
                 />
               </td>
               <td>{product.category}</td>
-              <td>{product.unit_quantity}</td>
-              <td>{product.unit}</td>
-              <td>{`${product.stock} (${totalItemStock})`}</td>
-              <td>{product.storage}</td>
-              <td>{product.location}</td>
-              <td style={{ minWidth: "130px" }}>{`${
-                product.price !== null ? product.price : ""
-              } ${
-                CURRENCY_SYMBOLS[product.currency]
-                  ? `${getCurrencySymbol(product.currency)}`
-                  : ""
-              }`}</td>
+              <td>{formatDecimalNumber(product.unit_quantity)}</td>
               <td>
-                <a href={product.url} target="_blank" rel="noopener noreferrer">
-                  <Link size={"2rem"} />
-                </a>
+                {product.unit === "Assays"
+                  ? "Reactions / Tests / Assays"
+                  : product.unit}
+              </td>
+              <td>
+                {
+                  /* If the product unit is "Assays", replace it with "Reactions / Tests / Assays" */
+                  product.unit === "Assays"
+                    ? "Reactions / Tests / Assays"
+                    : product.unit
+                }
+              </td>
+              <td>
+                {
+                  /* If product stock is not null, display the stock. If the product unit is "Package" or "Box", display the total item stock */
+                  product.stock === null
+                    ? null
+                    : `${product.stock} ${
+                        product.unit === "Package" || product.unit === "Box"
+                          ? `(${totalItemStock})`
+                          : ""
+                      }`
+                }
+              </td>
+              {/* Display product location */}
+              <td>{product.location}</td>
+              {
+                /* If product's discount is null, show only the product price. */
+                product.discount === null ? (
+                  <td style={{ minWidth: "100px" }}>
+                    {product.price !== null
+                      ? `${formatDecimalNumber(product.price)}${
+                          /* If the product currency has a symbol, append it to the price. */
+                          CURRENCY_SYMBOLS[product.currency]
+                            ? ` ${getCurrencySymbol(product.currency)}`
+                            : ""
+                        }`
+                      : ""}
+                  </td>
+                ) : (
+                  /* If the product has a discount, show the pre-discount and post-discount prices */
+                  <td>
+                    <div>
+                      <span>
+                        Pre-Discount: {formatDecimalNumber(product.price)}
+                        {CURRENCY_SYMBOLS[product.currency]
+                          ? ` ${getCurrencySymbol(product.currency)}`
+                          : ""}
+                      </span>
+                    </div>
+                    <div>
+                      <span>
+                        Post-Discount:{" "}
+                        {/* Calculate the price after the discount is applied */}
+                        {calculatePriceAfterDiscount(
+                          product.price,
+                          product.discount,
+                        )}
+                        {CURRENCY_SYMBOLS[product.currency]
+                          ? ` ${getCurrencySymbol(product.currency)}`
+                          : ""}{" "}
+                        {/* Display the discount amount in percentage */}
+                        (-{formatDecimalNumber(product.discount)}%)
+                      </span>
+                    </div>
+                  </td>
+                )
+              }
+              <td>
+                {product.url && (
+                  <a
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Link size={"2rem"} />
+                  </a>
+                )}
               </td>
               <td>
                 {/* Renders the manufacturer detail modal for each product */}
                 {product?.manufacturer && (
                   <ManufacturerDetailModal
                     manufacturerId={product.manufacturer}
+                    smallerFont={true}
                   />
                 )}
               </td>
               <td>
                 {/* Renders the supplier detail modal for each product */}
-                <SupplierDetailModal supplierId={product.supplier} />
+                <SupplierDetailModal
+                  supplierId={product.supplier}
+                  smallerFont={true}
+                />
               </td>
               {/* Renders an edit button and a delete button for each product */}
               <td className="align-items-center">
@@ -146,6 +210,7 @@ const ProductTable = ({ productList, handleEdit }) => {
                   objectId={product.id}
                   deleteFetchFunc={deleteProduct}
                   onSuccessfulDelete={handleEdit}
+                  clearSearchValue={clearSearchValue}
                 />
               </td>
             </tr>

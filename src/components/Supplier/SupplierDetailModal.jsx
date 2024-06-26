@@ -17,19 +17,22 @@ import ProductDetailModal from "../Product/ProductDetailModal";
 import ManufacturerDetailModal from "../Manufacturer/ManufacturerDetailModal";
 
 /**
- * `SupplierDetailModal` is a functional component that displays a modal with detailed information about a supplier.
- * It fetches the supplier data via the supplier details API on mount if supplier data is not passed as a prop.
- * It also provides options to edit or delete the supplier data.
+ * SupplierDetailModal is a component that displays the details of a supplier in a modal.
+ * It takes the following props:
  *
- * @component
- * @prop {Object} supplierObj - The supplier object to display in the modal, if not passed, the data will be fetched using supplierId
- * @prop {Function} updateSuppliers - The function to run after a supplier has been edited or deleted
- * @prop {string} supplierId - The ID of the supplier to fetch data for, used if supplierObj is not passed
- *
- * @example
- * <SupplierDetailModal supplierObj={supplier} updateSuppliers={handleEdit} supplierId={supplierId} />
+ * @param {Object} supplierObj - The supplier object containing the supplier data.
+ * @param {function} updateSuppliers - A function to update the suppliers list after a change is made.
+ * @param {string} supplierId - The ID of the supplier.
+ * @param {function} clearSearchValue - A function to clear the search value after a change is made.
+ * @param {boolean} smallerFont - A boolean value indicating whether the font size should be smaller.
  */
-const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
+const SupplierDetailModal = ({
+  supplierObj,
+  updateSuppliers,
+  supplierId,
+  clearSearchValue,
+  smallerFont,
+}) => {
   const { token } = useContext(AppContext); // Fetching the token from the AppContext
   const isLoadingRef = useRef(false); // Reference variable to hold loading state
   const [show, setShow] = useState(false); // State-variable for handling the visibility of the modal
@@ -86,7 +89,11 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
       {supplier && ( // If the supplier data is available, render the following JSX
         <>
           {/* Button to open the modal */}
-          <Button variant="link" onClick={handleShow}>
+          <Button
+            variant="link"
+            onClick={handleShow}
+            {...(smallerFont ? { style: { fontSize: "12px" } } : {})}
+          >
             {supplier.name}
           </Button>
           <Modal
@@ -253,6 +260,7 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                   <SupplierModal
                     supplierObj={supplier}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
                   />
                 </div>
                 <DeleteButton
@@ -261,6 +269,7 @@ const SupplierDetailModal = ({ supplierObj, updateSuppliers, supplierId }) => {
                   objectId={supplier.id}
                   deleteFetchFunc={deleteSupplier}
                   onSuccessfulDelete={updateSuppliers}
+                  clearSearchValue={clearSearchValue}
                 />
               </div>
               {/* A button to close the modal */}

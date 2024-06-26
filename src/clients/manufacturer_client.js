@@ -321,14 +321,8 @@ export const checkManufacturerName = async (token, name) => {
       },
     );
 
-    // Process the response according to whether the manufacturer name already exists
-    if (response.data.unique) {
-      // The manufacturer name does not exist, so return the successful response
-      return { success: true };
-    } else {
-      // The manufacturer name exists, so return an error message
-      return { unique: false, error: response.data.message };
-    }
+    // If the request is successful, return the uniqueness check result
+    return response.data.unique;
   } catch (error) {
     // If the request fails, log the error messages and return them
     console.error(error.response.data);

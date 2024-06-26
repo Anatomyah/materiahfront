@@ -128,6 +128,11 @@ const QuotesList = ({ activeTab }) => {
     [],
   );
 
+  // Function to reset the search input value passed on to the children components
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
+
   // Handler for keydown event in the search input
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
@@ -156,7 +161,10 @@ const QuotesList = ({ activeTab }) => {
         <Row className="align-items-center justify-content-md-evenly">
           {/* Column for the QuoteModal trigger button */}
           <Col md="auto" className="m">
-            <QuoteModal onSuccessfulSubmit={fetchQuotes} />
+            <QuoteModal
+              onSuccessfulSubmit={fetchQuotes}
+              clearSearchValue={resetSearchValue}
+            />
           </Col>
 
           {/* Column for the search input field */}
@@ -217,7 +225,7 @@ const QuotesList = ({ activeTab }) => {
           });
         }}
         hasMore={hasMore}
-        loader={<Spinner className="loader" key={0} /* ... */ />}
+        loader={<Spinner className="loader" key={0} />}
       >
         {/* QuoteTable component to display the list of quotes. If baseQuotes array is populated and
          based on the teh activeTab boolean, render the relevant tab
@@ -229,12 +237,14 @@ const QuotesList = ({ activeTab }) => {
             quoteList={viewQuotes.length ? viewQuotes : baseQuotes}
             handleEdit={fetchQuotes}
             activeTab={"unfulfilled"}
+            clearSearchValue={resetSearchValue}
           />
         ) : (
           <QuoteTable
             quoteList={viewQuotes.length ? viewQuotes : baseQuotes}
             handleEdit={fetchQuotes}
             activeTab={"fulfilled"}
+            clearSearchValue={resetSearchValue}
           />
         )}
       </InfiniteScroll>

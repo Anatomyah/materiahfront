@@ -7,36 +7,18 @@ import ManufacturerModal from "./ManufacturerModal";
 import ManufacturerDetailModal from "./ManufacturerDetailModal";
 
 /**
- * ManufacturerTable Component.
- *
- * This is a table component that displays a list of manufacturers.
- * Each row in the table represents a manufacturer and displays their name, website, and actions (edit and delete).
- * Each manufacturer name in the table is a button that opens a modal containing more details about the manufacturer.
- *
- * @component
- *
- * @prop {Array<{id: string, name: string, website: string}>} manufacturerList - Array of objects, where each object represents a manufacturer and their details (id, name, and website).
- * @prop {Function} handleEdit - Function to handle edit requests.
- *
- * @example
- *
- * const manufacturerList = [
- *   { id: '1', name: 'Manufacturer 1', website: 'www.manufacturer1.com'},
- *   { id: '2', name: 'Manufacturer 2', website: 'www.manufacturer2.com'},
- * ];
- * let handleEdit = (updatedManufacturer) => {
- *   // Save the updated manufacturer to backend here
- * };
- *
- * return (
- *   <ManufacturerTable
- *     manufacturerList={manufacturerList}
- *     handleEdit={handleEdit}
- *   />
- * );
- *
+ * Represents a table component to list manufacturers.
+ * @param {Object} ManufacturerTable - The props for the ManufacturerTable component.
+ * @param {Array} ManufacturerTable.manufacturerList - The list of manufacturers to be displayed in the table.
+ * @param {Function} ManufacturerTable.handleEdit - The function to handle the edit action on a manufacturer.
+ * @param {Function} ManufacturerTable.clearSearchValue - The function to clear the search value.
+ * @returns {JSX.Element} - The ManufacturerTable component.
  */
-const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
+const ManufacturerTable = ({
+  manufacturerList,
+  handleEdit,
+  clearSearchValue,
+}) => {
   return (
     // Table to list manufacturers
     <Table striped bordered hover>
@@ -62,6 +44,7 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
               <ManufacturerDetailModal
                 manufacturerObj={manufacturer}
                 updateManufacturers={handleEdit}
+                clearSearchValue={clearSearchValue}
               />
             </td>
             {/*Display manufacturer's website*/}
@@ -81,6 +64,7 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
                 <ManufacturerModal
                   manufacturerObj={manufacturer}
                   onSuccessfulSubmit={handleEdit}
+                  clearSearchValue={clearSearchValue}
                 />
               </div>
               {/* Delete manufacturer */}
@@ -90,6 +74,7 @@ const ManufacturerTable = ({ manufacturerList, handleEdit }) => {
                 objectId={manufacturer.id}
                 deleteFetchFunc={deleteManufacturer}
                 onSuccessfulDelete={handleEdit}
+                clearSearchValue={clearSearchValue}
               />
             </td>
           </tr>

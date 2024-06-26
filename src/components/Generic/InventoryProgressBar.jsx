@@ -1,14 +1,20 @@
 import ProgressBar from "react-bootstrap/ProgressBar";
+import { calculatePercentage } from "../../config_and_helpers/helpers";
 
 /**
- * Renders a ProgressBar component with a label based on the currentPercentage prop.
+ * Renders a progress bar component with the given currentValue and totalValue.
+ * The value of the progress bar represents the percentage of currentValue compared to totalValue.
  *
- * @param {Object} props - The props object.
- * @param {number} props.currentPercentage - The current percentage value.
- *
- * @return {JSX.Element} - The rendered ProgressBar component.
+ * @param {Object} props - The props object containing currentValue and totalValue.
+ * @param {number} props.currentValue - The current value for the progress bar.
+ * @param {number} props.totalValue - The total value for the progress bar.
+ * @returns {JSX.Element} - The rendered progress bar component.
  */
-export const InventoryProgressBar = ({ currentPercentage }) => {
+export const InventoryProgressBar = ({ currentValue, totalValue }) => {
+  //   Calculate the percentage between the totalValue constant and the currentValue variable
+  //   for the "now" prop of the progress bar
+  const currentPercentage = calculatePercentage(totalValue, currentValue);
+
   return (
     <ProgressBar
       animated
@@ -21,7 +27,7 @@ export const InventoryProgressBar = ({ currentPercentage }) => {
           : "danger"
       }
       now={currentPercentage}
-      label={`${currentPercentage}%`}
+      label={`${currentValue}/${Number(totalValue)}`} // The label of the bar format: 3/10
     />
   );
 };

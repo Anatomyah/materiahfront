@@ -16,14 +16,19 @@ import { getManufacturerSelectList } from "../../clients/manufacturer_client";
 import { getSupplierSelectList } from "../../clients/supplier_client";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Col, Form, Spinner } from "react-bootstrap";
+import { Col, Form, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import "./ProductComponentStyle.css";
 import "font-awesome/css/font-awesome.min.css";
-import DeleteIcon from "@mui/icons-material/Delete";
 import debounce from "lodash/debounce";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { PencilFill } from "react-bootstrap-icons";
+import {
+  PencilFill,
+  FiletypePdf,
+  TrashFill,
+  InfoCircle,
+} from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
+import { Link } from "react-router-dom";
 
 /**
  * Creates a Yup schema for product form validation based on whether the current user is a supplier or not.
@@ -67,7 +72,7 @@ const createFormSchema = ({ isSupplier }) =>
         "Unit volume/quantity must be a positive number",
       ),
     storageConditions: yup.string().required("Storage condition is required"),
-    location: yup.string(),
+    location: yup.string().notRequired(),
     stock: yup
       .string()
       .matches(/^\d+$/, "Current stock must be a positive number")
@@ -79,46 +84,42 @@ const createFormSchema = ({ isSupplier }) =>
             .matches(/^\d+(\.\d*)?$/, "Current price must be a valid number")
         : yup.mixed().notRequired(),
     ),
+    discount: yup.lazy((value) =>
+      !isSupplier
+        ? yup
+            .string()
+            .matches(
+              /^\d+(\.\d*)?$/,
+              "Discount percentage must be a valid number",
+            )
+        : yup.mixed().notRequired(),
+    ),
     supplier: yup.lazy((value) =>
       !isSupplier
         ? yup.string().required("Supplier is required")
         : yup.mixed().notRequired(),
     ),
-    productUrl: yup.string().url("Enter a valid URL"),
+    productUrl: yup
+      .string()
+      .url("Enter a valid URL")
+      .max(500, "URL exceeds permitted length"),
+    notes: yup.string().max(255, "Notes cannot exceed 255 characters"),
   });
 
 /**
- * Renders a modal that allows the user to create a new product or edit the details of an existing product.
- * Integrated with validation, which works based on the Yup scheme.
- *
- * @component
- * @param {Object} props - The properties that define the ProductModal.
- * @param {Function} props.onSuccessfulSubmit - A callback function that is called when a product is successfully created or updated.
- * @param {Object} props.productObj - An object containing the product's information.
- * @param {boolean} props.homeShowModal - A boolean value that determines whether the modal is visible initially.
- * @param {Function} props.setHomeShowModal - A function to update the state of homeShowModal.
- *
- * @example
- * // Importing the component
- * import ProductModal from './ProductModal';
- * // Here is how to use this component
- * const onSuccessfulSubmit = () => console.log('Product was successfully created or updated');
- * const productObj = {
- *  name: 'Example',
- *  cat_num: 'EX123',
- *  // And the rest of the required properties
- * };
- * const homeShowModal = false;
- * const setHomeShowModal = (value) => console.log(value);
- * <ProductModal onSuccessfulSubmit={onSuccessfulSubmit} productObj={productObj} homeShowModal={homeShowModal} setHomeShowModal={setHomeShowModal} />
- *
- * @returns {React.Element} The rendered ProductModal component.
+ * Represents a modal component for creating/editing a product.
+ * @param {function} onSuccessfulSubmit - The function to be called when the form is successfully submitted.
+ * @param {Object} productObj - The object containing the details of the product being edited (optional).
+ * @param {boolean} homeShowModal - Indicates whether to display the modal (optional).
+ * @param {function} setHomeShowModal - The function to handle the modal display state (optional).
+ * @param {function} clearSearchValue - The function to clear the search value (optional).
  */
 const ProductModal = ({
   onSuccessfulSubmit,
   productObj,
   homeShowModal,
   setHomeShowModal,
+  clearSearchValue,
 }) => {
   // Retrieves context values including the authentication token and user role information.
   const { token, isSupplier, userDetails } = useContext(AppContext);
@@ -133,9 +134,9 @@ const ProductModal = ({
   // Indicates whether the system is in the process of checking for the uniqueness of the Catalogue Number (CAT#). Initialized as `false` by default.
   const [isCheckingCatNum, setIsCheckingCatNum] = useState(false);
   // Stores the list of available manufacturers retrieved from the backend. Initialized as `null` by default.
-  const [manufacturerList, setManufacturerList] = useState(null);
+  const [manufacturerList, setManufacturerList] = useState([]);
   // Stores the list of available suppliers retrieved from the backend. Initialized as `null` by default.
-  const [supplierList, setSupplierList] = useState(null);
+  const [supplierList, setSupplierList] = useState([]);
   // Stores the Supplier ID for fetching  the filtered manufacturers accordingly
   const [supplierId, setSupplierId] = useState(
     productObj ? productObj.supplier : "",
@@ -150,16 +151,27 @@ const ProductModal = ({
   );
   // Indicates whether the form is being submitted or not. Initialized as `false` by default.
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubUnitsField, setShowSubUnitsField] = useState(false); // Indicates whether to present the subunits form field
+  const [showDiscountField, setShowDiscountField] = useState(false); // Indicates whether to present the discount form field
 
   // useEffect hook to initialize the supplier list
   useEffect(() => {
     getSupplierSelectList(token, setSupplierList); // Fetches the supplier list.
-  }, []);
+  }, [token]);
 
   // useEffect hook to fetch the filtered manufacturer list related to the selected supplier
   useEffect(() => {
-    getManufacturerSelectList(token, setManufacturerList);
-  }, []);
+    if (supplierId) {
+      getManufacturerSelectList(token, setManufacturerList, supplierId);
+    }
+  }, [supplierId]);
+
+  // useEffect in charge of setting the showDiscountField and ShowSubUnitsField states
+  // in case of editing a product and these values exist
+  useEffect(() => {
+    if (productObj && productObj.discount) setShowDiscountField(true);
+    if (productObj && productObj.units_per_sub_unit) setShowSubUnitsField(true);
+  }, [productObj]);
 
   // Object for validating the uniqueness of the catalogue number.
   // It contains an id, error text, and a validation function.
@@ -232,11 +244,23 @@ const ProductModal = ({
     // Resets the 'images' state to the initial images of the product object,
     // or to an empty array if no product object is present.
     setImages(productObj ? productObj.images : []);
+    // Reset the catalogue number value
+    setCatalogueNumber("");
   };
 
   // Function to handle the action to show the modal.
   // It simply sets the 'showModal' state to true, which is typically used to render the modal.
   const handleShow = () => setShowModal(true);
+
+  // Function used to toggle the ShowSubUnitsField boolean state
+  const toggleShowSubUnitsField = () => {
+    setShowSubUnitsField((prevState) => !prevState);
+  };
+
+  // Function used to toggle the ShowDiscountField boolean state
+  const toggleShowDiscountField = () => {
+    setShowDiscountField((prevState) => !prevState);
+  };
 
   // Function to handle the submission of the product form.
   // It processes the form values, manages image data, and sends the data to the server.
@@ -257,9 +281,11 @@ const ProductModal = ({
       location: values.location,
       stock: values.stock,
       price: values.price,
+      discount: values.discount,
       currency: values.currency,
       url: values.productUrl,
       manufacturer: values.manufacturer,
+      notes: values.notes,
     };
 
     // Sets the supplier ID based on whether the user is a supplier or not.
@@ -301,6 +327,8 @@ const ProductModal = ({
         setTimeout(() => {
           // Callback function on successful submission.
           if (onSuccessfulSubmit) onSuccessfulSubmit();
+          // If the clearSearchValue was passed, call it to clear the search value in the parent component
+          if (clearSearchValue) clearSearchValue();
           response.toast(); // Triggers a success toast message.
           setIsSubmitting(false); // Resets the submitting state.
           handleClose(); // Closes the modal.
@@ -332,7 +360,7 @@ const ProductModal = ({
       )}
 
       {/* Modal component that displays the form for creating or editing a product. */}
-      <Modal show={showModal} onHide={handleClose}>
+      <Modal show={showModal} onHide={handleClose} backdrop="static">
         <Modal.Header closeButton>
           <Modal.Title>{productObj ? "Edit" : "Create"} Product</Modal.Title>
         </Modal.Header>
@@ -355,6 +383,10 @@ const ProductModal = ({
             stock: productObj ? productObj.stock : "",
             price:
               productObj && productObj?.price !== null ? productObj.price : "",
+            discount:
+              productObj && productObj?.discount !== null
+                ? productObj.discount
+                : "",
             currency:
               productObj && productObj?.currency !== null
                 ? productObj.currency
@@ -366,6 +398,11 @@ const ProductModal = ({
             supplier: productObj ? productObj.supplier : "",
             productUrl: productObj ? productObj.url : "",
             productImages: null,
+            notes: productObj
+              ? productObj?.notes
+                ? productObj.notes
+                : ""
+              : "",
           }}
           validationSchema={formSchema} // Validation schema for the form fields.
           onSubmit={(values) => {
@@ -384,11 +421,13 @@ const ProductModal = ({
                   location: true,
                   stock: true,
                   price: true,
+                  discount: true,
                   currency: true,
                   manufacturer: true,
                   supplier: true,
                   productUrl: true,
                   productImages: true,
+                  notes: true,
                 }
               : {}
           }
@@ -404,7 +443,6 @@ const ProductModal = ({
             handleBlur,
             touched,
             errors,
-            setFieldTouched,
             isValid,
             dirty,
             setFieldValue,
@@ -418,17 +456,18 @@ const ProductModal = ({
                     controlId="formProductName"
                     className="field-margin"
                   >
-                    <Form.Label>Product Name</Form.Label>
+                    <Form.Label>
+                      Product Name <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for product name with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="productName"
                       value={values.productName}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("productName", true)}
                       onBlur={handleBlur}
                       isInvalid={touched.productName && !!errors.productName}
-                      isValid={touched.productName && !errors.productName}
+                      isValid={!errors.productName && values.productName}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -442,7 +481,9 @@ const ProductModal = ({
                     controlId="formCatalogueNumber"
                     className="field-margin"
                   >
-                    <Form.Label>Catalogue Number</Form.Label>
+                    <Form.Label>
+                      Catalogue Number <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for catalogue number with validation feedback. */}
                     <Form.Control
                       type="text"
@@ -454,21 +495,23 @@ const ProductModal = ({
                         setCatalogueNumber(value);
                         setFieldValue("catalogueNumber", value);
                       }}
-                      onFocus={() => setFieldTouched("catalogueNumber", true)}
                       onBlur={handleBlur}
                       isInvalid={
                         (touched.catalogueNumber && !!errors.catalogueNumber) ||
-                        !catalogueNumberUniqueValidator.validate()
+                        (!catalogueNumberUniqueValidator.validate() &&
+                          catalogueNumber)
                       }
                       isValid={
-                        touched.catalogueNumber &&
                         !errors.catalogueNumber &&
                         catalogueNumberUniqueValidator.validate() &&
-                        !isCheckingCatNum
+                        catalogueNumber &&
+                        !isCheckingCatNum &&
+                        isCatNumUnique
                       }
                     />
                     {/* Feedback for valid or invalid input. */}
                     {catalogueNumberUniqueValidator.validate() &&
+                      catalogueNumber &&
                       !isCheckingCatNum && (
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -478,6 +521,7 @@ const ProductModal = ({
                       {errors.catalogueNumber}
                       {!catalogueNumberUniqueValidator.validate() &&
                         !isCheckingCatNum &&
+                        catalogueNumber &&
                         catalogueNumberUniqueValidator.text}
                     </Form.Control.Feedback>
                     {isCheckingCatNum && <Form.Text>Checking...</Form.Text>}
@@ -488,15 +532,20 @@ const ProductModal = ({
                     controlId="formProductCatgeory"
                     className="field-margin"
                   >
-                    <Form.Label>Product Category</Form.Label>
+                    <Form.Label>
+                      Product Category <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for product category with validation feedback. */}
                     <Form.Select
                       name="category"
                       value={values.category}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      isValid={values?.category}
+                      isInvalid={touched.category && !values.category}
                     >
                       <option value="" disabled>
-                        --Select product category--
+                        -- Select product category --
                       </option>
                       {PRODUCT_CATEGORIES.map((choice, index) => (
                         <option key={index} value={choice.value}>
@@ -505,6 +554,9 @@ const ProductModal = ({
                       ))}
                     </Form.Select>
                     {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
                       {errors.category}
                     </Form.Control.Feedback>
@@ -515,15 +567,20 @@ const ProductModal = ({
                     controlId="formProductUnit"
                     className="field-margin"
                   >
-                    <Form.Label>Measurement Unit</Form.Label>
+                    <Form.Label>
+                      Measurement Unit <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for measurement unit with validation feedback. */}
                     <Form.Select
                       name="unit"
                       value={values.unit}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      isValid={values?.unit}
+                      isInvalid={touched.unit && !values.unit}
                     >
                       <option value="" disabled>
-                        --Select measurement unit--
+                        -- Select measurement unit --
                       </option>
                       {PRODUCT_MEASUREMENT_UNITS.map((choice, index) => (
                         <option key={index} value={choice.value}>
@@ -532,6 +589,9 @@ const ProductModal = ({
                       ))}
                     </Form.Select>
                     {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
                       {errors.unit}
                     </Form.Control.Feedback>
@@ -540,17 +600,24 @@ const ProductModal = ({
                     controlId="formProductUnitQuantity"
                     className="field-margin"
                   >
-                    <Form.Label>Volume / Quantity</Form.Label>
+                    <Form.Label>
+                      Volume / Quantity <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for unit quantity with validation feedback. */}
                     <Form.Control
                       type="text"
                       name="unitQuantity"
                       value={values.unitQuantity}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("unitQuantity", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.unitQuantity && !!errors.unitQuantity}
-                      isValid={touched.unitQuantity && !errors.unitQuantity}
+                      isValid={!errors.unitQuantity && values.unitQuantity}
+                      isInvalid={
+                        (touched?.unitQuantity && !values?.unitQuantity) ||
+                        (errors?.unitQuantity &&
+                          errors?.unitQuantity !==
+                            "Unit volume/quantity is required" &&
+                          values?.unitQuantity)
+                      }
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -559,8 +626,19 @@ const ProductModal = ({
                     <Form.Control.Feedback type="invalid">
                       {errors.unitQuantity}
                     </Form.Control.Feedback>
+                  </Form.Group>{" "}
+                  <Form.Group className="d-flex flex-row">
+                    <Form.Label className="me-3">
+                      Product has sub units?
+                    </Form.Label>
+                    <Form.Switch
+                      checked={showSubUnitsField}
+                      onChange={toggleShowSubUnitsField}
+                    />
                   </Form.Group>
-                  {values.unit === "Box" || values.unit === "Package" ? (
+                  {values.unit === "Box" ||
+                  values.unit === "Package" ||
+                  showSubUnitsField ? (
                     <Form.Group
                       controlId="formProductUnitsPerSubUnit"
                       className="field-margin"
@@ -572,13 +650,13 @@ const ProductModal = ({
                         name="unitsPerSubUnit"
                         value={values.unitsPerSubUnit}
                         onChange={handleChange}
-                        onFocus={() => setFieldTouched("unitsPerSubUnit", true)}
                         onBlur={handleBlur}
-                        isInvalid={
-                          touched.unitsPerSubUnit && !!errors.unitsPerSubUnit
-                        }
                         isValid={
-                          touched.unitsPerSubUnit && !errors.unitsPerSubUnit
+                          !errors.unitsPerSubUnit && values.unitsPerSubUnit
+                        }
+                        isInvalid={
+                          (touched?.discount && !values?.discount) ||
+                          (errors?.discount && values?.discount)
                         }
                       />
                       {/* Feedback for valid or invalid input. */}
@@ -594,17 +672,24 @@ const ProductModal = ({
                     as={Col}
                     md="8"
                     controlId="formProductStorage"
-                    className="field-margin"
+                    className="field-margin mt-3"
                   >
-                    <Form.Label>Storage Conditions</Form.Label>
+                    <Form.Label>
+                      Storage Conditions <RequiredAsteriskComponent />
+                    </Form.Label>
                     {/* Input for storage condition with validation feedback. */}
                     <Form.Select
                       name="storageConditions"
                       value={values.storageConditions}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      isValid={values.storageConditions}
+                      isInvalid={
+                        touched.storageConditions && !values.storageConditions
+                      }
                     >
                       <option value="" disabled>
-                        --Select storage condition--
+                        -- Select storage condition --
                       </option>
                       {PRODUCT_STORAGE_OPTIONS.map((choice, index) => (
                         <option key={index} value={choice.value}>
@@ -613,6 +698,9 @@ const ProductModal = ({
                       ))}
                     </Form.Select>
                     {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
                     <Form.Control.Feedback type="invalid">
                       {errors.storageConditions}
                     </Form.Control.Feedback>
@@ -628,14 +716,11 @@ const ProductModal = ({
                       name="location"
                       value={values.location}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("location", true)}
                       onBlur={handleBlur}
-                      isInvalid={
-                        touched.location && values.stock && !!errors.location
-                      }
                       isValid={
-                        touched.location && values.stock && !errors.location
+                        values.location && !errors.location && values.location
                       }
+                      isInvalid={errors?.location && values?.location}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -656,12 +741,9 @@ const ProductModal = ({
                       name="stock"
                       value={values.stock}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("stock", true)}
                       onBlur={handleBlur}
-                      isInvalid={
-                        touched.stock && values.stock && !!errors.stock
-                      }
-                      isValid={touched.stock && values.stock && !errors.stock}
+                      isValid={values.stock && !errors.stock && values.stock}
+                      isInvalid={errors?.stock && values?.stock}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -682,12 +764,9 @@ const ProductModal = ({
                       name="price"
                       value={values.price}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("price", true)}
                       onBlur={handleBlur}
-                      isInvalid={
-                        touched.price && values.price && !!errors.price
-                      }
-                      isValid={touched.price && values.price && !errors.price}
+                      isValid={values.price && !errors.price && values.price}
+                      isInvalid={errors?.price && values?.price}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -697,11 +776,46 @@ const ProductModal = ({
                       {errors.price}
                     </Form.Control.Feedback>
                   </Form.Group>
+                  <Form.Group className="d-flex flex-row">
+                    <Form.Label className="me-3">Discount given?</Form.Label>
+                    <Form.Switch
+                      checked={showDiscountField}
+                      onChange={toggleShowDiscountField}
+                    />
+                  </Form.Group>
+                  {showDiscountField ? (
+                    <Form.Group
+                      controlId="formProductDiscount"
+                      className="field-margin"
+                    >
+                      <Form.Label>Discount</Form.Label>
+                      {/* Input for unit quantity with validation feedback. */}
+                      <Form.Control
+                        type="text"
+                        name="discount"
+                        value={values.discount}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        isValid={!errors.discount && values.discount}
+                        isInvalid={
+                          (touched?.discount && !values?.discount) ||
+                          (errors?.discount && values?.discount)
+                        }
+                      />
+                      {/* Feedback for valid or invalid input. */}
+                      <Form.Control.Feedback type="valid">
+                        Looks good!
+                      </Form.Control.Feedback>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.discount}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  ) : null}
                   <Form.Group
                     as={Col}
                     md="8"
-                    controlId="formProductUnit"
-                    className="field-margin"
+                    controlId="formProductCurrency"
+                    className="field-margin mt-4"
                   >
                     <Form.Label>Currency</Form.Label>
                     {/* Input for measurement unit with validation feedback. */}
@@ -709,20 +823,21 @@ const ProductModal = ({
                       name="currency"
                       value={values.currency}
                       onChange={handleChange}
+                      isValid={values.currency}
                     >
                       <option value="" disabled>
-                        --Select currency--
+                        -- Select currency --
                       </option>
                       <option value="NIS">NIS</option>
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
                     </Form.Select>
                     {/* Feedback for valid or invalid input. */}
-                    <Form.Control.Feedback type="invalid">
-                      {errors.currency}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
                     </Form.Control.Feedback>
                   </Form.Group>
-                  {!isSupplier && supplierList && (
+                  {!isSupplier && supplierList.length > 0 && (
                     <>
                       <Form.Group
                         as={Col}
@@ -730,7 +845,9 @@ const ProductModal = ({
                         controlId="formProductSupplier"
                         className="field-margin"
                       >
-                        <Form.Label>Supplier</Form.Label>
+                        <Form.Label>
+                          Supplier <RequiredAsteriskComponent />
+                        </Form.Label>
                         {/* Input for supplier with validation feedback. */}
                         <Form.Select
                           name="supplier"
@@ -740,9 +857,12 @@ const ProductModal = ({
                             handleChange(event);
                             setSupplierId(supplierId);
                           }}
+                          onBlur={handleBlur}
+                          isValid={values.supplier}
+                          isInvalid={touched.supplier && !values.supplier}
                         >
                           <option value="" disabled>
-                            --Select Supplier--
+                            -- Select Supplier --
                           </option>
                           {supplierList.map((choice, index) => (
                             <option key={index} value={choice.value}>
@@ -751,43 +871,66 @@ const ProductModal = ({
                           ))}
                         </Form.Select>
                         {/* Feedback for valid or invalid input. */}
+                        <Form.Control.Feedback type="valid">
+                          Looks good!
+                        </Form.Control.Feedback>
                         <Form.Control.Feedback type="invalid">
                           {errors.supplier}
                         </Form.Control.Feedback>
                       </Form.Group>
                     </>
                   )}
-
-                  {manufacturerList && (
-                    <Form.Group
-                      as={Col}
-                      md="8"
-                      controlId="formProductManufacturer"
-                      className="field-margin"
+                  <Form.Group
+                    as={Col}
+                    md="8"
+                    controlId="formProductManufacturer"
+                    className="field-margin"
+                  >
+                    <Form.Label>Related Manufacturer</Form.Label>
+                    {/* Input for manufacturer with validation feedback. */}
+                    <Form.Select
+                      name="manufacturer"
+                      value={values.manufacturer}
+                      onChange={handleChange}
+                      disabled={manufacturerList.length <= 0}
+                      isValid={values.manufacturer}
                     >
-                      <Form.Label>Manufacturer</Form.Label>
-                      {/* Input for manufacturer with validation feedback. */}
-                      <Form.Select
-                        name="manufacturer"
-                        value={values.manufacturer}
-                        onChange={handleChange}
-                      >
-                        <option value="" disabled>
-                          --Select Manufacturer--
-                        </option>
-                        {manufacturerList.map((choice, index) => (
+                      <option value="" disabled>
+                        -- Select Manufacturer --
+                      </option>
+                      {manufacturerList.length > 0 &&
+                        manufacturerList.map((choice, index) => (
                           <option key={index} value={choice.value}>
                             {choice.label}
                           </option>
                         ))}
-                      </Form.Select>
-                      {/* Feedback for valid or invalid input. */}
-                      <Form.Control.Feedback type="invalid">
-                        {errors.manufacturer}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  )}
-
+                    </Form.Select>
+                    {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    {/* Overlay trigger to notfiy the user that this supplier has no manufacturers related to it */}
+                    {supplierId && manufacturerList.length === 0 && (
+                      <Form.Text>
+                        No Manufacturers related to this supplier{" "}
+                        <OverlayTrigger
+                          overlay={
+                            <Tooltip
+                              id={`tooltip-no-related-manufacturers-info`}
+                              className="custom-tooltip"
+                            >
+                              Update this supplier's related manufacturers via
+                              the <Link to="/suppliers">suppliers page</Link>
+                            </Tooltip>
+                          }
+                          placement="right"
+                          delay={{ show: 50, hide: 2000 }}
+                        >
+                          <InfoCircle />
+                        </OverlayTrigger>
+                      </Form.Text>
+                    )}
+                  </Form.Group>
                   <Form.Group
                     controlId="formProductUrl"
                     className="field-margin"
@@ -799,10 +942,9 @@ const ProductModal = ({
                       name="productUrl"
                       value={values.productUrl}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("productUrl", true)}
                       onBlur={handleBlur}
-                      isInvalid={touched.productUrl && !!errors.productUrl}
-                      isValid={touched.productUrl && !errors.productUrl}
+                      isValid={!errors.productUrl && values.productUrl}
+                      isInvalid={errors?.productUrl && values?.productUrl}
                     />
                     {/* Feedback for valid or invalid input. */}
                     <Form.Control.Feedback type="valid">
@@ -814,7 +956,7 @@ const ProductModal = ({
                   </Form.Group>
                   {/* Dynamic rendering of product images. */}
                   <div className="field-margin">
-                    {images.map((image) => {
+                    {images.map((image, index) => {
                       // Determines the URL for each image and checks if it's a PDF.
                       let imageUrl =
                         image.image_url || URL.createObjectURL(image.file);
@@ -824,7 +966,7 @@ const ProductModal = ({
                       return (
                         <div key={image.id}>
                           {isPdf ? (
-                            <>
+                            <div className={`${index > 0 && "mt-2"}`}>
                               <a
                                 href={imageUrl}
                                 target="_blank"
@@ -832,19 +974,22 @@ const ProductModal = ({
                                 className="btn btn-outline-dark"
                                 style={{ width: "200px" }}
                               >
-                                <PictureAsPdfIcon />
+                                <FiletypePdf size={30} />
                               </a>
-                              <DeleteIcon
+                              <TrashFill
+                                size={20}
+                                color={"red"}
                                 onClick={() => handleDeleteImage(image.id)}
                                 style={{ cursor: "pointer" }}
                               />
-                            </>
+                            </div>
                           ) : (
-                            <>
+                            <div className={`${index > 0 && "mt-2"}`}>
                               <a
                                 href={imageUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                className={"me-3"}
                               >
                                 <img
                                   src={imageUrl}
@@ -852,11 +997,16 @@ const ProductModal = ({
                                   width="200"
                                 />
                               </a>
-                              <DeleteIcon
-                                onClick={() => handleDeleteImage(image.id)}
+                              <TrashFill
+                                size={20}
+                                color={"red"}
+                                onClick={() => {
+                                  setFieldValue("productImages", "");
+                                  handleDeleteImage(image.id);
+                                }}
                                 style={{ cursor: "pointer" }}
                               />
-                            </>
+                            </div>
                           )}
                         </div>
                       );
@@ -890,6 +1040,33 @@ const ProductModal = ({
                     <Form.Control.Feedback type="valid">
                       Looks good!
                     </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Label>Notes</Form.Label>
+                  <Form.Group controlId="formProductNotes">
+                    <Form.Control
+                      as="textarea"
+                      rows={4}
+                      placeholder="Enter note"
+                      name={"notes"}
+                      value={values.notes}
+                      onChange={(event) => {
+                        const { value } = event.target;
+                        if (value.length <= 255) {
+                          handleChange(event);
+                        }
+                      }}
+                      onBlur={handleBlur}
+                      isValid={touched.notes && !errors.notes && values.notes}
+                      isInvalid={errors?.notes && values?.notes}
+                    />
+                    {/* Feedback for valid or invalid input. */}
+                    <Form.Control.Feedback type="valid">
+                      Looks good!
+                    </Form.Control.Feedback>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.productUrl}
+                    </Form.Control.Feedback>
+                    <Form.Text>{`${values?.notes?.length}/255`}</Form.Text>
                   </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>

@@ -20,6 +20,7 @@ import {
   PieChart,
   Cart3,
   PersonCircle,
+  Envelope,
 } from "react-bootstrap-icons";
 
 /**
@@ -166,6 +167,10 @@ function TopNavBar() {
                     <Nav.Link onClick={() => setShowCart(true)}>
                       <Cart3 className="mb-1" style={{ fontSize: "18px" }} />{" "}
                       <span style={{ fontSize: "18px" }}>Cart</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/messages" disabled>
+                      <Envelope className="mb-1" style={{ fontSize: "18px" }} />{" "}
+                      <span style={{ fontSize: "18px" }}>Messages</span>
                     </Nav.Link>
                   </Nav>
                 </>

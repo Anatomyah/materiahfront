@@ -1,4 +1,5 @@
 import React, {
+  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -26,6 +27,11 @@ import { Spinner } from "react-bootstrap";
 import { showToast } from "../../config_and_helpers/helpers";
 import debounce from "lodash/debounce";
 
+// Context passing on the total product list and it setProducts function in order to update said array
+// such that updates occur both on the server side and on the client side without needing to
+// re-fetch the updated data from the server
+export const ProductContext = createContext();
+
 /**
  * Represents a product list component, displaying products either in a table or card format.
  *
@@ -47,6 +53,7 @@ import debounce from "lodash/debounce";
  * />
  * ```
  */
+
 const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   // State and context management.
   const { token, isSupplier } = useContext(AppContext);
@@ -63,6 +70,11 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
   useEffect(() => {
     getSupplierSelectList(token, setSupplierSelectList);
   }, []);
+
+  // Rests the search input value. passed down as prop to the children components to be used when necessary
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
 
   // Function to fetch products based on certain parameters.
   const fetchProducts = ({
@@ -148,7 +160,10 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         <Row className="align-items-center justify-content-md-evenly">
           {!isShopView && (
             <Col md="auto" className="m">
-              <ProductModal onSuccessfulSubmit={fetchProducts} />
+              <ProductModal
+                onSuccessfulSubmit={fetchProducts}
+                clearSearchValue={resetSearchValue}
+              />
             </Col>
           )}
           <Col xs={5} className="ms-2">
@@ -246,7 +261,15 @@ const ProductList = ({ isShopView = false, isCatalogueView = false }) => {
         {!products.length ? (
           <div>Nothing here...</div>
         ) : !isCatalogueView && !isShopView ? (
-          <ProductTable productList={products} handleEdit={fetchProducts} />
+          //   Product context provider passing on the products array and its setProducts function
+          //   to its children components
+          <ProductContext.Provider value={{ products, setProducts }}>
+            <ProductTable
+              productList={products}
+              handleEdit={fetchProducts}
+              clearSearchValue={resetSearchValue}
+            />
+          </ProductContext.Provider>
         ) : (
           <div className="bg-dark-subtle">
             <div className="d-flex flex-wrap flex-row justify-content-start">

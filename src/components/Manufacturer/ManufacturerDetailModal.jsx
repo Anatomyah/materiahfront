@@ -17,42 +17,20 @@ import ManufacturerModal from "./ManufacturerModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 
 /**
- * ManufacturerDetailModal Component.
- *
- * This is a modal component that displays detailed information about a specific manufacturer.
- * It shows their name, website, the suppliers and the products associated with them.
- * There are options to delete the manufacturer or edit their information.
- * Clicking on the suppliers or products linked in the modal opens further modals with more details about the clicked entity.
- *
- * @component
- *
- * @prop {object} manufacturerObj - The detailed information of the manufacturer.
- * @prop {Function} updateManufacturers - The function to update the manufacturer list after the manufacturer's information has been edited or the manufacturer has been deleted.
- * @prop {number | string} manufacturerId - The id of the manufacturer.
- *
- * @example
- *
- * const manufacturerObj = {
- *   <Insert manufacturer data here>
- * };
- * let manufacturerId;
- * const updateManufacturers = () => {
- *   // Fetch the updated manufacturers here
- * };
- *
- * return (
- *   <ManufacturerDetailModal
- *     manufacturerObj={manufacturerObj}
- *     updateManufacturers={updateManufacturers}
- *     manufacturerId={manufacturerId}
- *   />
- * );
- *
+ * Component representing a modal for displaying manufacturer details.
+ * @param {object} manufacturerObj - The details of the manufacturer.
+ * @param {function} updateManufacturers - The function to update manufacturers.
+ * @param {string} manufacturerId - The id of the manufacturer.
+ * @param {function} clearSearchValue - A function to clear the parent component search value
+ * @param {boolean} smallerFont - A flag indicating if the font should be smaller.
+ * @returns {JSX.Element} The ManufacturerDetailModal component.
  */
 const ManufacturerDetailModal = ({
   manufacturerObj,
   updateManufacturers,
   manufacturerId,
+  clearSearchValue,
+  smallerFont,
 }) => {
   // useContext retrieves the token value that is required for fetching API data
   const { token } = useContext(AppContext);
@@ -122,7 +100,11 @@ const ManufacturerDetailModal = ({
       {manufacturer && (
         <>
           {/* Button to open the modal */}
-          <Button variant="link" onClick={handleShow}>
+          <Button
+            variant="link"
+            onClick={handleShow}
+            {...(smallerFont ? { style: { fontSize: "12px" } } : {})} // Determine if to decrease the font size for better presentation on tables
+          >
             {manufacturer.name}
           </Button>
 
@@ -256,6 +238,7 @@ const ManufacturerDetailModal = ({
                   <ManufacturerModal
                     manufacturerObj={manufacturer}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
                   />
                 </div>
 
@@ -266,6 +249,7 @@ const ManufacturerDetailModal = ({
                   objectId={manufacturer.id}
                   deleteFetchFunc={deleteManufacturer}
                   onSuccessfulDelete={updateManufacturers}
+                  clearSearchValue={clearSearchValue}
                 />
               </div>
 

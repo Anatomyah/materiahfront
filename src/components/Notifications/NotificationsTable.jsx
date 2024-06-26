@@ -4,21 +4,28 @@ import DeleteButton from "../Generic/DeleteButton";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import OrderDetailModal from "../Order/OrderDetailModal";
-import { formatTimeTillExpiry } from "../../config_and_helpers/helpers";
+import {
+  formatDateStr,
+  formatTimeTillExpiry,
+} from "../../config_and_helpers/helpers";
 import {
   deleteExpiryNotification,
   deleteOrderNotification,
 } from "../../clients/notifications_client";
 /**
- * Renders a notifications table.
- *
- * @param {object} props - The component props.
- * @param {array} props.notificationsList - The list of notifications.
- * @param {function} props.handleEdit - The function to handle edit actions.
- * @param {string} props.activeTab - The active tab of the table.
- * @returns {JSX.Element} - The table component.
+ * NotificationsTable component displays a table of notifications based on the active tab.
+ * @param {object} notificationsList - List of notifications to be displayed in the table.
+ * @param {function} handleEdit - Function to handle edit action on a notification.
+ * @param {string} activeTab - Active tab to determine which table to display.
+ * @param {function} clearSearchValue - Function to clear search value when a notification is deleted.
+ * @returns {JSX.Element} - The NotificationsTable component.
  */
-const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
+const NotificationsTable = ({
+  notificationsList,
+  handleEdit,
+  activeTab,
+  clearSearchValue,
+}) => {
   return (
     <>
       {activeTab === "order" ? (
@@ -49,6 +56,7 @@ const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
                   {/* Clicking on the name opens the supplier detail modal*/}
                   <SupplierDetailModal
                     supplierId={notification.product.supplier.id}
+                    smallerFont={true}
                   />
                 </td>
                 {/* Clicking on the name opens the product detail modal*/}
@@ -68,6 +76,7 @@ const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
                     objectId={notification.id}
                     deleteFetchFunc={deleteOrderNotification}
                     onSuccessfulDelete={handleEdit}
+                    clearSearchValue={clearSearchValue}
                   />
                 </td>
               </tr>
@@ -103,32 +112,33 @@ const NotificationsTable = ({ notificationsList, handleEdit, activeTab }) => {
                 <td>
                   {/* Clicking on the name opens the supplier detail modal*/}
                   <SupplierDetailModal
-                    supplierId={notification.product_item.product.supplier}
+                    supplierId={notification.stock_item.product.supplier}
+                    smallerFont={true}
                   />
                 </td>
                 {/* Clicking on the name opens the product detail modal*/}
                 <td>
                   <ProductDetailModal
-                    productId={notification.product_item.product.id}
+                    productId={notification.stock_item.product.id}
                   />
                 </td>
-                <td>{notification.product_item.id}</td>
-                <td>{notification.product_item.batch}</td>
-                <td>{notification.product_item.expiry}</td>
+                <td>{notification.stock_item.id}</td>
+                <td>{notification.stock_item.batch}</td>
+                <td>{formatDateStr(notification.stock_item.expiry)}</td>
                 <td style={{ backgroundColor: "#f84f4f", color: "white" }}>
-                  {formatTimeTillExpiry(notification.product_item.expiry)}
+                  {formatTimeTillExpiry(notification.stock_item.expiry)}
                 </td>
                 {/* Clicking on the name opens the order detail modal*/}
                 <td>
                   {notification?.order ? (
                     <OrderDetailModal
-                      orderId={notification.product_item.order.id}
+                      orderId={notification.stock_item.order.id}
                     />
                   ) : (
                     "N/A"
                   )}
                 </td>
-                <td>{notification.product_item?.order?.received || "N/A"}</td>
+                <td>{notification.stock_item?.order?.received || "N/A"}</td>
 
                 {/*Display actions: Delete*/}
                 <td className="d-flex flex-row align-items-center justify-content-evenly">

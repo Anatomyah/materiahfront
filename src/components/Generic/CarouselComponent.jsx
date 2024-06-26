@@ -60,7 +60,7 @@ const CarouselComponent = ({ images }) => {
       <Carousel
         activeIndex={index}
         onSelect={handleSelect}
-        style={{ width: "70%", height: "70%", margin: "auto" }} // Style applied to Carousel
+        style={{ width: "40%", height: "40%", margin: "auto" }}
       >
         {/* Map through imagesToDisplay array to create Carousel Items */}
         {imagesToDisplay.map((image, idx) => (

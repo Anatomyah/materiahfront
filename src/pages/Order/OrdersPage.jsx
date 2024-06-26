@@ -115,6 +115,11 @@ const OrdersPage = () => {
     [],
   );
 
+  // Rests the search input value. passed down as prop to the children components to be used when necessary
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
+
   // Function to handle 'Enter' key event on search input
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
@@ -143,7 +148,10 @@ const OrdersPage = () => {
         <Row className="align-items-center justify-content-md-evenly">
           {/* Column for the OrderModal component */}
           <Col md="auto" className="m">
-            <OrderModal onSuccessfulSubmit={fetchOrders} />
+            <OrderModal
+              onSuccessfulSubmit={fetchOrders}
+              clearSearchValue={resetSearchValue}
+            />
             {/* OrderModal is used for adding or editing orders. It triggers fetchOrders on successful submission */}
           </Col>
 
@@ -225,6 +233,7 @@ const OrdersPage = () => {
           <OrderTable
             orderList={viewOrders.length ? viewOrders : baseOrders}
             handleEdit={fetchOrders}
+            clearSearchValue={resetSearchValue}
             // Chooses between filtered or unfiltered list of orders
           />
         </OrderContext.Provider>

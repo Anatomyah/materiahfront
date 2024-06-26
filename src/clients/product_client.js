@@ -543,40 +543,45 @@ export const updateProductStock = async (token, productId, value) => {
 };
 
 /**
- * Creates a stock item.
- * @param {string} token - The authentication token.
- * @param {string} productId - The ID of the product.
- * @param {Object} itemData - The data of the stock item.
- * @param {string} itemData.batch - The batch number of the stock item.
- * @param {boolean} itemData.in_use - Indicates whether the stock item is in use.
- * @param {string} itemData.expiry - The expiry date of the stock item.
- * @returns {Promise<Object>} A promise that resolves to an object containing the success status,
- * the created stock item, and a function to show a success toast. Rejects with an array of
- * error messages if an error occurs during creation.
+ * Create a stock item in the backend.
+ * @async
+ * @param {string} token - The token for authentication.
+ * @param {string} productId - The ID of the product for which the stock item needs to be created.
+ * @param {object|array} data - The data for the stock item. It can be an object for a single stock item or an array of objects for multiple stock items.
+ * @param {boolean} multiple - Indicates whether to create multiple stock items or not.
+ * @returns {object} - An object with the following properties:
+ *     - success {boolean} - Indicates whether the stock item creation was successful or not.
+ *     - data {array} - An array of created stock items.
+ *     - toast {function} - A function to show success toast message.
+ * @throws {array} - An array containing the error messages if there are any errors during stock item creation.
  */
-export const createStockItem = async (token, productId, itemData) => {
+export const createStockItem = async (token, productId, data, multiple) => {
+  let URL = `${BACKEND_URL}products/create_stock_item/`;
+
+  if (multiple) URL += "?multiple=True";
+
+  const dataToSend = multiple
+    ? { product_id: productId, items: data }
+    : {
+        product_id: productId,
+        batch: data.batch,
+        in_use: data.inUse,
+        expiry: data.expiry,
+        opened_on: data.openedOn,
+      };
+
   try {
     // Make a POST request to the backend to create the stock item
-    const response = await axios.post(
-      `${BACKEND_URL}products/create_stock_item/`,
-      {
-        product_id: productId,
-        batch: itemData.batch,
-        in_use: itemData.inUse,
-        expiry: itemData.expiry,
-        opened_on: itemData.openedOn,
+    const response = await axios.post(URL, dataToSend, {
+      headers: {
+        Authorization: `Token ${token}`,
       },
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      },
-    );
+    });
 
     // Return the success status and a function to show success toast
     return {
       success: true,
-      stockItem: response.data.stock_item,
+      data: response.data["item(s)"],
       toast: () =>
         showToast(
           "Stock item created successfully!",
@@ -697,7 +702,7 @@ export const updateProductItemStock = async (token, itemId, updatedStock) => {
   try {
     // Make a PATCH request to the backend to update the stock of the product item
     await axios.patch(
-      `${BACKEND_URL}products/update_product_item_stock/`,
+      `${BACKEND_URL}products/update_stock_item_sub_stock/`,
       {
         item_id: itemId,
         updated_stock: updatedStock,

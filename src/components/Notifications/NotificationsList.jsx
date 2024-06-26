@@ -106,6 +106,11 @@ const NotificationsList = ({ activeTab }) => {
     });
   }, [supplier, searchInput]);
 
+  // Rests the search input value. passed down as prop to the children components to be used when necessary
+  const resetSearchValue = () => {
+    setSearchInput("");
+  };
+
   // Debounced handler for search input changes.
   const handleSearchInput = useCallback(
     debounce((value) => {
@@ -215,6 +220,7 @@ const NotificationsList = ({ activeTab }) => {
           <NotificationsTable
             notificationsList={notifications}
             handleEdit={fetchNotifications}
+            clearSearchValue={resetSearchValue}
             activeTab="order"
           />
         ) : (
@@ -222,6 +228,7 @@ const NotificationsList = ({ activeTab }) => {
             notificationsList={notifications}
             handleEdit={fetchNotifications}
             activeTab="expiry"
+            clearSearchValue={resetSearchValue}
           />
         )}
       </InfiniteScroll>

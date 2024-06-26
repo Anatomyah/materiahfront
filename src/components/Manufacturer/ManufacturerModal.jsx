@@ -16,6 +16,7 @@ import debounce from "lodash/debounce";
 import "./ManufacturerComponentStyle.css";
 import { PencilFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
 
 /**
  * formSchema Yup Validation Schema
@@ -23,13 +24,13 @@ import { showToast } from "../../config_and_helpers/helpers";
  * A Yup validation schema for a form used to create or edit a manufacturer.
  * The form includes the fields 'name' and 'websiteUrl', each having its own validation.
  *
- * 'name' field: A string that is required. An error message "Supplier name is required" is shown if it is missing.
+ * 'name' field: A string that is required. An error message "Manufacturer name is required" is shown if it is missing.
  * 'websiteUrl' field: A URL string that is required. An error message "Website is required" is shown if it is missing, and "Enter a valid URL" if URL is not valid.
  *
  * @type {Yup.object}
  */
 const formSchema = yup.object().shape({
-  name: yup.string().required("Supplier name is required"),
+  name: yup.string().required("Manufacturer name is required"),
   websiteUrl: yup
     .string()
     .required("Website is required")
@@ -37,39 +38,18 @@ const formSchema = yup.object().shape({
 });
 
 /**
- * ManufacturerModal Component.
+ * Modal component for creating/editing a manufacturer.
  *
- * This is a form component, contained within a modal, for creating or editing a manufacturer.
- * The form contains fields for the manufacturer's name, website, and associated suppliers.
- * When the form is submitted, a create or update request is sent to the server.
- * The form fields are validated using Yup and Formik.
- * For the manufacturer's name, a uniqueness check is also done through an API request.
- *
- * @component
- *
- * @prop {Function} onSuccessfulSubmit - Function to call when manufacturer creation or update is successfully completed.
- * @prop {object} manufacturerObj - The current manufacturer data; if present, the form becomes an edit form for this manufacturer.
- *
- * @example
- *
- * const onSuccessfulSubmit = () => {
- *   <Insert necessary actions in case of successful form submission>
- * };
- * const manufacturerObj = {
- *   name: 'Manufacturer',
- *   website: 'www.example.com',
- *   suppliers: [<Insert supplier data here>],
- * };
- *
- * return (
- *   <ManufacturerModal
- *     onSuccessfulSubmit={onSuccessfulSubmit}
- *     manufacturerObj={manufacturerObj}
- *   />
- * );
- *
+ * @param {function} onSuccessfulSubmit - Function to be called when form is successfully submitted
+ * @param {object} manufacturerObj - The manufacturer object to be edited (optional)
+ * @param {function} clearSearchValue - A function to clear the parent component search value
+ * @returns {React.Component} ManufacturerModal
  */
-const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
+const ManufacturerModal = ({
+  onSuccessfulSubmit,
+  manufacturerObj,
+  clearSearchValue,
+}) => {
   // The user's auth token from context
   const { token } = useContext(AppContext);
   // State for selected related suppliers; initialized from the manufacturerObj prop, if present
@@ -137,6 +117,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
   // Functions to handle modal show and hide
   const handleClose = () => {
     setShowModal(false);
+    setName("");
   };
   const handleShow = () => setShowModal(true);
 
@@ -175,6 +156,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
           onSuccessfulSubmit(); // Calls the onSuccessfulSubmit function provided as prop
           response.toast(); // Displays a success toast notification
           setIsSubmitting(false);
+          if (clearSearchValue) clearSearchValue(); // If clearSearchValue is truthy, clear the search value in the parent component
           handleClose(); // Closes the modal after submitting the form
           if (!manufacturerObj) {
             resetModal(); // Resets the form to initial state
@@ -246,7 +228,6 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
             touched,
             errors,
             isValid,
-            setFieldTouched,
             dirty,
           }) => {
             return (
@@ -259,7 +240,9 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
                     controlId="formManufacturerName"
                     className="field-margin"
                   >
-                    <Form.Label>Manufacturer Name</Form.Label>
+                    <Form.Label>
+                      Manufacturer Name {<RequiredAsteriskComponent />}
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="name"
@@ -271,22 +254,24 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
                         setIsCheckingManufacturerName(true);
                         setName(value);
                       }}
-                      onFocus={() => setFieldTouched("name", true)}
                       onBlur={handleBlur}
                       // Field is marked as invalid if it has a validation error message or if the manufacturer name is not unique
                       isInvalid={
                         (touched.name && !!errors.name) ||
-                        !manufacturerNameUniqueValidator.validate()
+                        (!manufacturerNameUniqueValidator.validate() && name)
                       }
                       // Field is marked as valid if touched and no error, and manufacturer name is unique
                       isValid={
-                        touched.name &&
                         !errors.name &&
-                        manufacturerNameUniqueValidator.validate()
+                        manufacturerNameUniqueValidator.validate() &&
+                        name &&
+                        !isCheckingManufacturerName &&
+                        isManufacturerNameUnique
                       }
                     />
                     {/* Validation feedback messages */}
                     {manufacturerNameUniqueValidator.validate() &&
+                      name &&
                       !isCheckingManufacturerName && (
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -298,6 +283,7 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
                       {/* If manufacturer name isn't unique, show error message */}
                       {!manufacturerNameUniqueValidator.validate() &&
                         !isCheckingManufacturerName &&
+                        name &&
                         manufacturerNameUniqueValidator.text}
                     </Form.Control.Feedback>
 
@@ -309,16 +295,21 @@ const ManufacturerModal = ({ onSuccessfulSubmit, manufacturerObj }) => {
 
                   {/* Form input group for Website Link */}
                   <Form.Group controlId="formWebsiteUrl" className="mb-4">
-                    <Form.Label>Website Link</Form.Label>
+                    <Form.Label>
+                      Website Link {<RequiredAsteriskComponent />}
+                    </Form.Label>
                     <Form.Control
                       type="text"
                       name="websiteUrl"
                       value={values.websiteUrl}
                       onChange={handleChange}
-                      onFocus={() => setFieldTouched("websiteUrl", true)}
                       onBlur={handleBlur}
                       isInvalid={touched.websiteUrl && !!errors.websiteUrl}
-                      isValid={touched.websiteUrl && !errors.websiteUrl}
+                      isValid={
+                        touched.websiteUrl &&
+                        !errors.websiteUrl &&
+                        values.websiteUrl
+                      }
                     />
                     <Form.Control.Feedback type="valid">
                       Looks good!

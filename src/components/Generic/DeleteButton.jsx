@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { TrashFill } from "react-bootstrap-icons";
 import { OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { showToast } from "../../config_and_helpers/helpers";
 
@@ -11,7 +11,7 @@ import { showToast } from "../../config_and_helpers/helpers";
  *
  * This component is an encapsulated Bootstrap Button which, when clicked, opens a Bootstrap Modal asking for confirmation of a delete action.
  * It takes as props an objectType (to display in the delete confirmation), objectName (to display in the delete confirmation), an objectId(to delete),
- * a deleteFetchFunc (the function for deletion), and an onSuccessfulDelete callback for updates after successfully deleting an item.
+ * a deleteFetchFunc (the function for deletion), a clear SearchValue to manage if the search value in the parent component should be cleared, and an onSuccessfulDelete callback for updates after successfully deleting an item.
  *
  * @component
  *
@@ -21,6 +21,7 @@ import { showToast } from "../../config_and_helpers/helpers";
  * @prop {Function} deleteFetchFunc - Function that handles the deletion. This function should return a promise.
  * @prop {Function} onSuccessfulDelete - Callback that is called after a successful deletion to update the UI accordingly.
  * @prop {Function} disableDelete - A boolean prop to enable the disabling of the delete button when relevant
+ * @prop {Boolean} clearSearchValue - A boolean prop to enable the disabling of the delete button when relevant
  *
  * @example
  * return (
@@ -42,6 +43,7 @@ const DeleteButton = ({
   deleteFetchFunc,
   onSuccessfulDelete,
   disableDelete,
+  clearSearchValue,
 }) => {
   // Access token from the app-wide context
   const { token } = useContext(AppContext);
@@ -79,7 +81,7 @@ const DeleteButton = ({
               style={{ pointerEvents: "none" }}
             >
               {/* DeleteIcon represents the trash bin or delete icon */}
-              <DeleteIcon />
+              <TrashFill />
             </Button>
           </span>
         </OverlayTrigger>
@@ -89,7 +91,7 @@ const DeleteButton = ({
         // If the 'disableDelete' variable is false,
         // return an active button that triggers the handleShow function on click.
         <Button variant="outline-danger" onClick={handleShow}>
-          <DeleteIcon />
+          <TrashFill />
         </Button>
       );
     }
@@ -109,6 +111,8 @@ const DeleteButton = ({
         setTimeout(() => {
           // Call the successful delete callback
           onSuccessfulDelete();
+          // clear the parent component search value if true
+          if (clearSearchValue) clearSearchValue();
           // Close the confirmation modal
           handleClose();
           // Display toast notification

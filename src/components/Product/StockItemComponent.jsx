@@ -10,15 +10,17 @@ import {
   updateStockItem,
 } from "../../clients/product_client";
 import {
-  calculatePercentage,
+  formatDateStr,
   getCurrentDate,
   isExpiryInSixMonths,
   showToast,
+  updateProductStockInProductList,
 } from "../../config_and_helpers/helpers";
 import OrderDetailModal from "../Order/OrderDetailModal";
 import "./ProductComponentStyle.css";
 import InventoryProgressBar from "../Generic/InventoryProgressBar";
 import { PlusCircle, DashCircle } from "react-bootstrap-icons";
+import { ProductContext } from "../../pages/Product/ProductList";
 
 // checkmarkIcon: The icon for item save
 const checkmarkIcon = (
@@ -41,23 +43,18 @@ const editIcon = (
 );
 
 /**
- * This component is used to manipulate the stock of a product in the system.
- * The component provides functionalities to create, update and delete stock items.
- * Moreover, it allows you to enable/disable a stock item from being used in the system.
+ * Represents a component for managing stock items.
  *
- * @component
- * @param {Object} props - The properties passed down to this component.
- * @param {string} props.productId - The id of the associated product.
- * @param {Object} props.itemObj - The initial stock item data, an object with `batch`, `expiry` and `in_use` properties.
- * @param {number} props.index - The index position of the stock item in the list.
- * @param {boolean} [props.editItem=false] - If the item is being edited. Default value is `false`.
- * @param {function} [props.showAddNewItem] - A function to be called when a new item needs to be added to the stock list.
- * @param {function} [props.onSuccessfulSubmit] - A function to be called when a stock item is successfully updated, created or deleted.
- *
- * @returns {React.Element} The rendered StockItemComponent.
- *
- * @example
- * <StockItemComponent productId={productId} itemObj={itemObj} index={index}/>
+ * @param {object} StockItemComponent - The configuration object for the component.
+ * @param {string} StockItemComponent.productId - The ID of the product.
+ * @param {object} StockItemComponent.itemObj - The object representing the stock item.
+ * @param {number} StockItemComponent.index - The index of the stock item.
+ * @param {boolean} [StockItemComponent.editItem=false] - Indicates whether the stock item is being edited.
+ * @param {function} StockItemComponent.showAddNewItem - A function for showing the add new item form.
+ * @param {function} StockItemComponent.onSuccessfulSubmit - A function to be called after successful submission.
+ * @param {number} StockItemComponent.unitQuantity - The unit quantity of the stock item.
+ * @param {function} StockItemComponent.onStockUpdate - A function to be called after updating the stock.
+ * @param {boolean} StockItemComponent.showBar - Indicates whether to show a bar in the component.
  */
 const StockItemComponent = ({
   productId,
@@ -68,13 +65,18 @@ const StockItemComponent = ({
   onSuccessfulSubmit,
   unitQuantity,
   onStockUpdate,
+  showBar,
 }) => {
   // Use the context hook to access the token.
   const { token } = useContext(AppContext);
 
+  // Use the context hook to access the products array
+  const { products, setProducts } = useContext(ProductContext);
+
   // Use the state hook to manage item data.
   // Initialize with the provided itemObject or an empty object if not provided.
   const [itemData, setItemData] = useState({
+    id: itemObj ? itemObj.id : "",
     batch: itemObj ? itemObj.batch : "",
     expiry: itemObj ? itemObj.expiry : "",
     inUse: itemObj ? itemObj.in_use : false,
@@ -85,33 +87,72 @@ const StockItemComponent = ({
         ? getCurrentDate()
         : ""
       : "",
-    itemStock: itemObj ? itemObj?.item_stock : "",
+    itemStock: itemObj ? itemObj?.item_sub_stock : "",
   });
-
-  // Calculate the percentage value to appear on the stock progress bar
-  const [currentStockPercentage, setCurrentStockPercentage] = useState(
-    calculatePercentage(Number(unitQuantity), itemObj?.item_stock),
-  );
 
   // Use state hook to manage the submitting state of the form.
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Use state hook to manage the editing state of the item.
   const [showEdit, setShowEdit] = useState(editItem);
+  // useState to manage the presentation of the expiry date error message
+  const [expiryDateError, setExpiryDateError] = useState(false);
+  // useState to manage the presentation of the expiry date error message
+  const [openedOnDateError, setOpenedOnDateError] = useState(false);
 
+  // The error message for the date errors
+  const dateYearError = "Year value must be 4 digits long";
+
+  // useEffect to update the item stock in case the unit value for the product is edited
   useEffect(() => {
-    setCurrentStockPercentage(
-      calculatePercentage(Number(unitQuantity), itemData.itemStock),
-    );
-  }, [itemData]);
+    if (itemData.itemStock > unitQuantity) {
+      setItemData((prevItemData) => ({
+        ...prevItemData,
+        itemStock: Number(unitQuantity),
+      }));
+    }
+  }, [unitQuantity]);
 
   // Const containing the object returned by the isExpiryInSixMonths function
-  const isExpiredObject = isExpiryInSixMonths(itemObj?.expiry);
+  const isExpiredObject = isExpiryInSixMonths(itemData?.expiry);
 
-  // Handle the form input changes and update the related state.
+  // Function used to handle the inputChange from the stockItem form
   const handleInputChange = (input) => {
+    // Destructure the name and value properties from the input object
     const { name, value } = input.target ? input.target : input;
-    setItemData((prevState) => ({
-      ...prevState,
+
+    // Check if the name of the input is either "openedOn" or "expiry"
+    if (name === "openedOn" || name === "expiry") {
+      // Convert the input value to a date
+      const date = new Date(value);
+
+      // Extract the year from the date
+      const year = date.getFullYear();
+
+      // Check if the year extracted from the date has more than 4 characters or not a number
+      if (year.toString().length > 4 || isNaN(year)) {
+        // If the name of the input is "openedOn", set an error for the "openedOn" date
+        if (name === "openedOn") {
+          setOpenedOnDateError(true);
+
+          // If the name of the input is "expiry", set an error for the "expiry" date
+        } else if (name === "expiry") {
+          setExpiryDateError(true);
+        }
+      } else {
+        // If the year is valid and the name of the input is "openedOn", clear any "openedOn" date errors
+        if (name === "openedOn") {
+          setOpenedOnDateError(false);
+
+          // If the year is valid and the name of the input is "expiry", clear any "expiry" date errors
+        } else if (name === "expiry") {
+          setExpiryDateError(false);
+        }
+      }
+    }
+
+    // Update the item data state with the new value from the input
+    setItemData((prevData) => ({
+      ...prevData,
       [name]: value,
     }));
   };
@@ -131,7 +172,7 @@ const StockItemComponent = ({
       expiry: itemObj ? itemObj.expiry : "",
       inUse: itemObj ? itemObj.in_use : false,
       openedOn: itemObj ? itemObj.opened_on : "",
-      itemStock: itemObj ? itemObj.item_stock : "",
+      itemStock: itemObj ? itemObj.item_sub_stock : "",
     });
   };
 
@@ -148,9 +189,12 @@ const StockItemComponent = ({
       if (response && response.success) {
         setTimeout(() => {
           // Callback function on successful submission.
-          if (!editItem) onSuccessfulSubmit(response.stockItem);
+          if (!editItem) onSuccessfulSubmit(response.data);
           response.toast(); // Triggers a success toast message.
           setIsSubmitting(false); // Resets the submitting state.
+          setProducts(
+            updateProductStockInProductList(products, productId, "add"),
+          );
           showEditItem(); // Moves out of the editing mode.
         }, 1000);
       } else {
@@ -177,6 +221,9 @@ const StockItemComponent = ({
           // Callback function on successful submission.
           onSuccessfulSubmit(itemObj, true);
           response.toast(); // Triggers a success toast message.
+          setProducts(
+            updateProductStockInProductList(products, productId, "subtract"),
+          );
           setIsSubmitting(false); // Resets the submitting state.
         }, 1000);
       } else {
@@ -213,6 +260,10 @@ const StockItemComponent = ({
           onStockUpdate(action);
           response.toast(); // Triggers a success toast message.
           setIsSubmitting(false); // Resets the submitting state.
+          // If the item stock equals to 1 prior to the deletion process, delete the stock item
+          if (itemData.itemStock === 1) {
+            handleDelete();
+          }
         }, 1000);
       } else {
         // Displays an error toast if the submission fails.
@@ -279,7 +330,7 @@ const StockItemComponent = ({
           {/* Similar conditional rendering for expiry date of an item */}
           {showEdit ? (
             <>
-              <div>{itemData.expiry}</div>
+              <div>{itemData.expiry ? formatDateStr(itemData.expiry) : ""}</div>
               {itemData.expiry && isExpiredObject.expired && (
                 <div style={{ fontSize: "12px", marginTop: "4px" }}>
                   {isExpiredObject.timeTillExpiry}
@@ -287,13 +338,19 @@ const StockItemComponent = ({
               )}
             </>
           ) : (
-            <Form.Control
-              type="date"
-              name="expiry"
-              value={itemData.expiry}
-              onChange={handleInputChange}
-              style={{ textAlign: "center" }}
-            />
+            <Form.Group>
+              <Form.Control
+                type="date"
+                name="expiry"
+                value={itemData.expiry}
+                onChange={handleInputChange}
+                style={{ textAlign: "center" }}
+                isInvalid={expiryDateError}
+              />
+              <Form.Control.Feedback type="invalid">
+                {dateYearError}
+              </Form.Control.Feedback>
+            </Form.Group>
           )}
         </td>
         {/* Checkbox to indicate if the stock item is in use */}
@@ -313,17 +370,25 @@ const StockItemComponent = ({
         <td style={itemData.inUse ? { backgroundColor: "#fafa98" } : null}>
           {showEdit ? (
             <>
-              <div>{itemData.openedOn}</div>
+              <div>
+                {itemData.openedOn ? formatDateStr(itemData.openedOn) : ""}
+              </div>
             </>
           ) : (
-            <Form.Control
-              disabled={!itemData.inUse}
-              type="date"
-              name="openedOn"
-              value={itemData.openedOn}
-              onChange={handleInputChange}
-              style={{ textAlign: "center" }}
-            />
+            <Form.Group>
+              <Form.Control
+                disabled={!itemData.inUse}
+                type="date"
+                name="openedOn"
+                value={itemData.openedOn}
+                onChange={handleInputChange}
+                style={{ textAlign: "center" }}
+                isInvalid={openedOnDateError}
+              />
+              <Form.Control.Feedback type="invalid">
+                {dateYearError}
+              </Form.Control.Feedback>
+            </Form.Group>
           )}
         </td>
         {/* Condition rendering for showing buttons based on various states (submitting/edit mode etc.) */}
@@ -349,6 +414,7 @@ const StockItemComponent = ({
                       handleSubmit();
                     }}
                     className="rounded-edge-button-right"
+                    disabled={expiryDateError || openedOnDateError}
                   >
                     {checkmarkIcon}
                   </Button>
@@ -358,6 +424,8 @@ const StockItemComponent = ({
                     onClick={() => {
                       showEditItem();
                       resetItem();
+                      setExpiryDateError(false);
+                      setOpenedOnDateError(false);
                     }}
                   >
                     {invalidIcon}
@@ -393,10 +461,13 @@ const StockItemComponent = ({
       </tr>
       {/* If the item unit is Box or Package, a bar and buttons will appear to display and control the stock inside
        that box or package */}
-      {itemObj && itemData.inUse ? (
+      {itemObj && itemData.inUse && showBar ? (
         <tr className={`text-center align-middle`}>
           <td colSpan={8}>
-            <InventoryProgressBar currentPercentage={currentStockPercentage} />
+            <InventoryProgressBar
+              currentValue={itemData.itemStock}
+              totalValue={unitQuantity}
+            />
           </td>
           <td>
             <Button

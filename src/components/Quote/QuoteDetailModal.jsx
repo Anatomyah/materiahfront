@@ -13,32 +13,36 @@ import OrderDetailModal from "../Order/OrderDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import Table from "react-bootstrap/Table";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
+import {
+  calculatePriceAfterDiscount,
+  formatDateStr,
+  formatDecimalNumber,
+  getCurrencySymbol,
+} from "../../config_and_helpers/helpers";
+import { CURRENCY_SYMBOLS } from "../../config_and_helpers/config";
 
 /**
- * Component: QuoteDetailModal
- * Description: This component renders a detailed view of a quote in a modal.
- * Props:
- *   - quoteObj: Object containing the initial quote data.
- *   - updateQuotes: Function to update the quotes list after changes.
- *   - quoteId: The ID of the quote to be displayed.
- * Usage: This component is used to provide an in-depth view of quote details and allows for editing and deleting the quote.
+ * A modal component to display detailed information about a quote.
+ *
+ * @param {Object} QuoteDetailModal - The object that contains the quote details.
+ * @param {Object} QuoteDetailModal.quoteObj - The quote object to display detailed information about.
+ * @param {Function} QuoteDetailModal.updateQuotes - A function to update the list of quotes.
+ * @param {number} QuoteDetailModal.quoteId - The ID of the quote.
+ * @param {Function} QuoteDetailModal.clearSearchValue - A function to clear the search value.
+ * @returns {JSX.Element} - The rendered component.
  */
-const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
+const QuoteDetailModal = ({
+  quoteObj,
+  updateQuotes,
+  quoteId,
+  clearSearchValue,
+}) => {
   // useContext to access global state, useRef for mutable flag, useState for local state management
   const { token } = useContext(AppContext);
   const isLoadingRef = useRef(false);
   const [show, setShow] = useState(false);
   const [quote, setQuote] = useState(quoteObj);
   const quoteIdToUse = quoteObj ? quoteObj.id : quoteId;
-
-  /**
-   * Function: fetchQuote
-   * Description: Fetches quote details from the server and updates the component state.
-   * Logic:
-   *  - Sets isLoadingRef to true before fetching.
-   *  - Calls getQuoteDetails with token, quoteIdToUse, and setQuote as arguments.
-   *  - Sets isLoadingRef to false after fetching.
-   */
 
   // UseEffect to update the state on re-renders
   useEffect(() => {
@@ -116,7 +120,7 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                   </Col>
                   <Col>
                     {/* Value for request date */}
-                    <p className="fs-6">{quote.request_date}</p>
+                    <p className="fs-6">{formatDateStr(quote.request_date)}</p>
                   </Col>
                 </Row>
                 {/* Additional rows follow the same structure for different quote details */}
@@ -125,7 +129,11 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                     <p className="fs-6 fw-bold">Creation/Reception Date:</p>
                   </Col>
                   <Col>
-                    <p className="fs-6">{quote.creation_date}</p>
+                    <p className="fs-6">
+                      {quote.creation_date
+                        ? formatDateStr(quote.creation_date)
+                        : ""}
+                    </p>
                   </Col>
                 </Row>
                 <Row>
@@ -133,7 +141,11 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                     <p className="fs-6 fw-bold">Last Updated:</p>
                   </Col>
                   <Col>
-                    <p className="fs-6">{quote.last_updated}</p>
+                    <p className="fs-6">
+                      {quote.last_updated
+                        ? formatDateStr(quote.last_updated)
+                        : ""}
+                    </p>
                   </Col>
                 </Row>
                 <Row>
@@ -206,6 +218,8 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                       <th>Product</th>
                       <th>Quantity</th>
                       <th>Price</th>
+                      <th>Discount</th>
+                      <th>Post-Discount Price</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -219,7 +233,29 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                             <ProductDetailModal productId={item.product.id} />
                           </td>
                           <td>{item.quantity}</td>
-                          <td>{item.price}</td>
+                          <td>
+                            {/*  Display the price formatted as a decimal */}
+                            {formatDecimalNumber(item.price)}
+                            {/* If the item's currency has a symbol, append it to the price */}
+                            {CURRENCY_SYMBOLS[item.currency]
+                              ? `${getCurrencySymbol(item.currency)}`
+                              : ""}
+                          </td>
+                          <td>
+                            {/* If item has a discount, display it formatted as decimal followed by a percentage sign */}
+                            {item?.discount !== null
+                              ? `${formatDecimalNumber(item?.discount)}%`
+                              : null}
+                          </td>
+                          <td>
+                            {/* If the item has a discount, calculate the price after discount, else display null */}
+                            {item?.discount !== null
+                              ? calculatePriceAfterDiscount(
+                                  item.price,
+                                  item?.discount,
+                                )
+                              : null}
+                          </td>
                         </tr>
                       </React.Fragment>
                     ))}
@@ -235,6 +271,8 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                   <QuoteModal
                     quoteObj={quote}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
+                    disableEdit={!!quote.order}
                   />
                 </div>
                 {/* Delete button for the quote */}
@@ -246,6 +284,7 @@ const QuoteDetailModal = ({ quoteObj, updateQuotes, quoteId }) => {
                   objectId={quote.id}
                   deleteFetchFunc={deleteQuote}
                   onSuccessfulDelete={updateQuotes}
+                  clearSearchValue={clearSearchValue}
                 />
               </div>
               {/* Close button for the modal */}

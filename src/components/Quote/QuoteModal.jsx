@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { AppContext } from "../../App";
@@ -8,11 +8,11 @@ import { createQuoteManually, updateQuote } from "../../clients/quote_client";
 import QuoteItemComponent from "./QuoteItemComponent";
 import * as yup from "yup";
 import { Formik } from "formik";
-import { Col, Form, FormControl, Spinner } from "react-bootstrap";
-import AddBoxIcon from "@mui/icons-material/AddBox";
-import { PencilFill } from "react-bootstrap-icons";
+import { Col, Form, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
+import { PencilFill, Plus } from "react-bootstrap-icons";
 
 import { showToast } from "../../config_and_helpers/helpers";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
 
 // Validation schema for each quote item
 const itemSchema = yup.object().shape({
@@ -24,6 +24,10 @@ const itemSchema = yup.object().shape({
     .string()
     .required("Price is required")
     .matches(/^\d+(\.\d+)?$/, "Current price must be a valid number"),
+  discount: yup
+    .string()
+    .matches(/^\d+(\.\d+)?$/, "Discount percentage must be a valid number"),
+  currency: yup.string().required("Currency is required"),
 });
 
 // Form validation schema creation function
@@ -58,18 +62,15 @@ const createFormSchema = ({ hasQuoteFile }) =>
   });
 
 /**
- * Component: QuoteModal
- * @component
- *
- * @description
- * Renders a modal for creating or editing a quote. It includes functionalities for selecting suppliers,
- * products, managing quote items, and uploading a quote file.
- *
- * @prop {Function} onSuccessfulSubmit - Callback function to be called after a successful form submission.
- * @prop {Object} quoteObj - Object containing the quote data for editing. If not provided, the modal is in 'Create' mode.
- * @prop {boolean} homeShowModal - Flag to control modal visibility from the parent component.
- * @prop {Function} setHomeShowModal - Function to update the modal visibility in the parent component.
- *
+ * Represents a QuoteModal component.
+ * @constructor
+ * @param {Object} props - The component props.
+ * @param {Function} props.onSuccessfulSubmit - The callback function to be called on successful form submission.
+ * @param {Object} props.quoteObj - The quote object.
+ * @param {boolean} props.homeShowModal - Flag indicating whether the modal should be shown on the home page.
+ * @param {Function} props.setHomeShowModal - The function to set the flag indicating whether the modal should be shown on the home page.
+ * @param {Function} props.clearSearchValue - The function to clear the search value.
+ * @param {boolean} props.disableEdit - Flag indicating whether editing is disabled.
  */
 
 const QuoteModal = ({
@@ -77,8 +78,14 @@ const QuoteModal = ({
   quoteObj,
   homeShowModal,
   setHomeShowModal,
+  clearSearchValue,
+  disableEdit,
 }) => {
   const { token } = useContext(AppContext);
+
+  // useRef to indicate when products are fetched
+  const fetchingProductsRef = useRef(null);
+
   // State declarations for managing form data and UI state
   const [hasQuoteFile, setHasQuoteFile] = useState(false);
   const formSchema = createFormSchema({
@@ -100,9 +107,19 @@ const QuoteModal = ({
             product: item.product.id,
             quantity: item.quantity,
             price: item.price || "",
+            discount: item.discount || "",
+            currency: item.currency || "",
           }));
         }
-      : [],
+      : [
+          {
+            product: "",
+            quantity: "",
+            price: "",
+            discount: "",
+            currency: "",
+          },
+        ],
   );
   const [fileChanged, setFileChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,19 +144,24 @@ const QuoteModal = ({
   // Functions for fetching product list and managing state updates
   const fetchProductSelectList = () => {
     // Fetch product list based on the selected supplier
-    getProductSelectList(token, setProductSelectList, supplier);
+    getProductSelectList(token, setProductSelectList, supplier).then(() => {
+      fetchingProductsRef.current = false;
+    });
   };
 
   // Initialize a default item in the form when the product list is loaded
   useEffect(() => {
     if (productSelectList.length && items.length === 0) {
-      setItems([{ product: "", quantity: "", price: "" }]);
+      setItems([
+        { product: "", quantity: "", price: "", discount: "", currency: "" },
+      ]);
     }
   }, [productSelectList]);
 
   // Fetch product list based on selected supplier
   useEffect(() => {
     if (supplier) {
+      fetchingProductsRef.current = true;
       fetchProductSelectList();
     }
   }, [supplier]);
@@ -157,7 +179,9 @@ const QuoteModal = ({
     // Only reset if creating a new quote (i.e., quoteObj is not provided)
     if (!quoteObj) {
       setQuoteFile("");
-      setItems([{ product: "", quantity: "", price: "" }]);
+      setItems([
+        { product: "", quantity: "", price: "", discount: "", currency: "" },
+      ]);
     }
   };
 
@@ -178,7 +202,10 @@ const QuoteModal = ({
   const addItem = (e) => {
     e.preventDefault();
     // Appends a new item object to the items array
-    setItems([...items, { product: "", quantity: "", price: "" }]);
+    setItems([
+      ...items,
+      { product: "", quantity: "", price: "", discount: "", currency: "" },
+    ]);
   };
 
   // Updates a specific item in the items array
@@ -230,6 +257,7 @@ const QuoteModal = ({
       if (response && response.success) {
         setTimeout(() => {
           onSuccessfulSubmit();
+          if (clearSearchValue) clearSearchValue();
           response.toast();
           setIsSubmitting(false);
           handleClose();
@@ -249,17 +277,51 @@ const QuoteModal = ({
     });
   };
 
-  return (
-    <>
-      {/* Button to trigger the modal - conditional render based on quoteObj existence */}
-      {!homeShowModal && (
+  // A function called upon to render editing button
+  // If disableEdit is true, button is rendered disabled with an Overlay trigger
+  const renderButton = () => {
+    // Tooltip rendering function
+    const renderTooltip = (props) => (
+      <Tooltip id={`tooltip-delete-${quoteObj.id}`} {...props}>
+        Cannot edit: Quote linked to an order.
+      </Tooltip>
+    );
+
+    if (disableEdit) {
+      return (
+        <OverlayTrigger
+          overlay={renderTooltip}
+          placement="top"
+          delay={{ show: 50, hide: 400 }}
+        >
+          <span className="d-inline-block">
+            <Button
+              variant={quoteObj ? "outline-success" : "success"}
+              onClick={handleShow}
+              disabled
+              style={{ pointerEvents: "none" }}
+            >
+              {quoteObj ? <PencilFill /> : "Create Quote"}
+            </Button>
+          </span>
+        </OverlayTrigger>
+      );
+    } else {
+      return (
         <Button
           variant={quoteObj ? "outline-success" : "success"}
           onClick={handleShow}
         >
           {quoteObj ? <PencilFill /> : "Create Quote"}
         </Button>
-      )}
+      );
+    }
+  };
+
+  return (
+    <>
+      {/* Button to trigger the modal - conditional render based on quoteObj existence */}
+      {!homeShowModal && renderButton()}
 
       {/* Main Modal Component */}
       <Modal show={showModal} onHide={handleClose} backdrop="static">
@@ -277,6 +339,7 @@ const QuoteModal = ({
                   items: quoteObj.items.map(() => ({
                     quantity: true,
                     price: true,
+                    currency: true,
                   })),
                   supplier: true,
                   quoteFile: true,
@@ -290,10 +353,14 @@ const QuoteModal = ({
               ? quoteObj.items.map((item) => ({
                   quantity: item.quantity,
                   price: item.price,
+                  discount: item?.discount || "",
+                  currency: item.currency || "",
                 }))
               : items.map((item) => ({
                   quantity: item.quantity || "",
                   price: item.price || "",
+                  discount: item?.discount || "",
+                  currency: item.currency || "",
                 })),
             supplier: supplier ? supplier : "",
             quoteFile: "",
@@ -333,7 +400,6 @@ const QuoteModal = ({
                     <Form.Label>Select Supplier</Form.Label>
                     {/* Dropdown for selecting supplier */}
                     <Form.Select
-                      disabled={!!quoteObj}
                       name="supplier"
                       value={values.supplier}
                       onChange={(event) => {
@@ -399,13 +465,15 @@ const QuoteModal = ({
                         }}
                         variant="outline-success"
                       >
-                        <AddBoxIcon />
+                        <Plus size={30} />
                       </Button>
                       <Form.Group
                         controlId="formOrderImages"
                         className="field-margin"
                       >
-                        <Form.Label>Upload Quote File</Form.Label>
+                        <Form.Label>
+                          Upload Quote File <RequiredAsteriskComponent />
+                        </Form.Label>
                         <Form.Control
                           type="file"
                           accept="application/pdf,
@@ -418,7 +486,8 @@ const QuoteModal = ({
                             handleFileChange(files[0]);
                             setFieldValue("quoteFile", files);
                           }}
-                          isValid={touched.quoteFile && quoteFile}
+                          onBlur={handleBlur}
+                          isValid={!errors.quoteFile && values.quoteFile}
                           isInvalid={
                             touched.quoteFile &&
                             (!!errors.quoteFile || !quoteFile)
@@ -452,17 +521,22 @@ const QuoteModal = ({
                         className="field-margin"
                       >
                         <Form.Label className="mt-3">
-                          Demand Reference
+                          Demand Reference <RequiredAsteriskComponent />
                         </Form.Label>
                         <Form.Control
                           type="text"
                           name="demandRef"
                           value={values.demandRef}
                           onChange={handleChange}
-                          onFocus={() => setFieldTouched("demandRef", true)}
                           onBlur={handleBlur}
-                          isInvalid={touched.demandRef && !!errors.demandRef}
-                          isValid={touched.demandRef && !errors.demandRef}
+                          isValid={!errors?.demandRef && values?.demandRef}
+                          isInvalid={
+                            (touched?.demandRef && !values?.demandRef) ||
+                            (errors?.demandRef &&
+                              errors?.demandRef !==
+                                "Demand reference is required" &&
+                              values?.demandRef)
+                          }
                         />
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -472,16 +546,22 @@ const QuoteModal = ({
                         </Form.Control.Feedback>
                       </Form.Group>
                       <Form.Group controlId="budget" className="field-margin">
-                        <Form.Label>Budget</Form.Label>
+                        <Form.Label>
+                          Budget <RequiredAsteriskComponent />
+                        </Form.Label>
                         <Form.Control
                           type="text"
                           name="budget"
                           value={values.budget}
                           onChange={handleChange}
-                          onFocus={() => setFieldTouched("budget", true)}
                           onBlur={handleBlur}
-                          isInvalid={touched.budget && !!errors.budget}
-                          isValid={touched.budget && !errors.budget}
+                          isValid={!errors?.budget && values?.budget}
+                          isInvalid={
+                            (touched?.budget && !values?.budget) ||
+                            (errors?.budget &&
+                              errors?.budget !== "Budget number is required" &&
+                              values?.budget)
+                          }
                         />
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -492,7 +572,11 @@ const QuoteModal = ({
                       </Form.Group>
                     </div>
                   ) : supplier ? (
-                    <h6>This supplier has no products related to it</h6>
+                    fetchingProductsRef.current ? (
+                      <Spinner size={"sm"} variant={"dark"} />
+                    ) : (
+                      <h6>This supplier has no products related to it</h6>
+                    )
                   ) : null}
                 </Modal.Body>
                 <Modal.Footer>

@@ -10,20 +10,25 @@ import OrderDetailModal from "../Order/OrderDetailModal";
 import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import { Accordion } from "react-bootstrap";
+import {
+  calculatePriceAfterDiscount,
+  formatDateStr,
+  formatDecimalNumber,
+  getCurrencySymbol,
+} from "../../config_and_helpers/helpers";
+import { CURRENCY_SYMBOLS } from "../../config_and_helpers/config";
 
 /**
- * Component: QuoteTable
+ * Renders a table of quotes with their details and associated actions.
  *
- * @description
- * The QuoteTable component renders a table displaying a list of quotes. Each row in the table
- * represents a quote and includes actions like viewing, editing, and deleting the quote. It also
- * provides a detailed view of each quote item using an accordion.
+ * @param {Object} props - The props passed to the QuoteTable component.
+ * @param {Array} props.quoteList - The list of quotes to be displayed.
+ * @param {Function} props.handleEdit - The function to handle edit actions for a quote.
+ * @param {Function} props.clearSearchValue - The function to clear the search value.
  *
- * @prop {Array} quoteList - Array of quote objects to display in the table.
- * @prop {Function} handleEdit - Function to call when a quote is edited.
- *
+ * @returns {JSX.Element} The JSX markup for the QuoteTable component.
  */
-const QuoteTable = ({ quoteList, handleEdit }) => {
+const QuoteTable = ({ quoteList, handleEdit, clearSearchValue }) => {
   return (
     <Table striped bordered hover>
       {/* Table header defining the columns */}
@@ -52,11 +57,15 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
               {/* Rendering individual data cells with quote information */}
               <td>{index + 1}</td>
               <td>
-                <QuoteDetailModal quoteId={quote.id} />
+                <QuoteDetailModal quoteObj={quote} />
               </td>
-              <td>{quote.request_date}</td>
-              <td>{quote.creation_date}</td>
-              <td>{quote.last_updated}</td>
+              <td>{formatDateStr(quote.request_date)}</td>
+              <td>
+                {quote.creation_date ? formatDateStr(quote.creation_date) : ""}
+              </td>
+              <td>
+                {quote.last_updated ? formatDateStr(quote.last_updated) : ""}
+              </td>
               <td>
                 <a
                   href={quote.quote_url}
@@ -70,7 +79,10 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                 <OrderDetailModal orderId={quote?.order} />
               </td>
               <td>
-                <SupplierDetailModal supplierId={quote.supplier.id} />
+                <SupplierDetailModal
+                  supplierId={quote.supplier.id}
+                  smallerFont={true}
+                />
               </td>
               <td>{quote.status}</td>
               <td>{quote.corporate_demand_ref}</td>
@@ -80,6 +92,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                   <QuoteModal
                     quoteObj={quote}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
+                    disableEdit={!!quote.order}
                   />
                 </div>
                 <DeleteButton
@@ -90,6 +104,7 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                   objectId={quote.id}
                   deleteFetchFunc={deleteQuote}
                   onSuccessfulDelete={handleEdit}
+                  clearSearchValue={clearSearchValue}
                 />
               </td>
             </tr>
@@ -113,6 +128,8 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                             <td>Product</td>
                             <td>Quantity</td>
                             <td>Price</td>
+                            <td>Discount</td>
+                            <th>Post-Discount Price</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -126,7 +143,29 @@ const QuoteTable = ({ quoteList, handleEdit }) => {
                                   />
                                 </td>
                                 <td>{item.quantity}</td>
-                                <td>{item.price}</td>
+                                <td>
+                                  {/* Format and display item's price */}
+                                  {formatDecimalNumber(item.price)}
+                                  {/* If there is a symbol for the item's currency, get and display the currency symbol */}
+                                  {CURRENCY_SYMBOLS[item.currency]
+                                    ? `${getCurrencySymbol(item.currency)}`
+                                    : ""}
+                                </td>
+                                <td>
+                                  {/* If there is a discount for the item, format and display the discount as a percentage, else display null */}
+                                  {item?.discount !== null
+                                    ? `${formatDecimalNumber(item?.discount)}%`
+                                    : null}
+                                </td>
+                                <td>
+                                  {/* If there is a discount for the item, calculate and display the price after discount, else display null */}
+                                  {item?.discount !== null
+                                    ? calculatePriceAfterDiscount(
+                                        item.price,
+                                        item?.discount,
+                                      )
+                                    : null}
+                                </td>
                               </tr>
                             </React.Fragment>
                           ))}

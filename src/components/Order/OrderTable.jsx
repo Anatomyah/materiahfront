@@ -10,19 +10,18 @@ import SupplierDetailModal from "../Supplier/SupplierDetailModal";
 import { Accordion } from "react-bootstrap";
 import ProductDetailModal from "../Product/ProductDetailModal";
 import { OrderDeletionContext } from "../../App";
+import { formatDateStr } from "../../config_and_helpers/helpers";
 
 /**
- * OrderTable Component
+ * Represents a table component for displaying order details.
  *
- * This component displays a list of orders in a tabular format. Each order is rendered as a row in the table.
- * The table includes various details for each order such as order quote, arrival time, received by, receipts, supplier, and status.
- * Actions that can update the order can also be done here like edit and delete.
- *
- * @component
- * @param {Array} orderList - A list of order objects to be displayed as rows in the table.
- * @param {function} handleEdit - A function that tell parent component to refresh the order data.
+ * @param {Object} orderTable - The order table component.
+ * @param {Array} orderList - An array of order objects.
+ * @param {function} handleEdit - A callback function for editing an order.
+ * @param {function} clearSearchValue - A function for clearing the search value.
+ * @returns {JSX.Element} - The rendered table component.
  */
-const OrderTable = ({ orderList, handleEdit }) => {
+const OrderTable = ({ orderList, handleEdit, clearSearchValue }) => {
   // Fetches the isOrderDeleted context to manage follow-up actions
   const { toggleOrderDeleted } = useContext(OrderDeletionContext);
   // Callback function on order deletion
@@ -63,18 +62,28 @@ const OrderTable = ({ orderList, handleEdit }) => {
               <td style={{ width: "200px" }}>
                 <div className="d-flex flex-row justify-content-around">
                   <QuoteDetailModal quoteId={order.quote.id} />
-                  <a href={order.quote.quote_url} className="link-">
+                  <a
+                    href={order.quote.quote_url}
+                    className="link-"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <FileEarmarkPdfFill size={"1.5rem"} />
                   </a>
                 </div>
               </td>
-              <td>{order.arrival_date}</td>
+              <td>{formatDateStr(order.arrival_date)}</td>
               <td>{order.received_by}</td>
               <td>
                 <div className="justify-content-center d-flex flex-row">
                   {order.images.map((image, index) => (
                     <div key={index}>
-                      <a key={index} href={image.image_url}>
+                      <a
+                        key={index}
+                        href={image.image_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <FileEarmarkTextFill size={"2rem"} />
                       </a>
                       {index !== order.images.length - 1 && <span>|</span>}
@@ -83,7 +92,10 @@ const OrderTable = ({ orderList, handleEdit }) => {
                 </div>
               </td>
               <td>
-                <SupplierDetailModal supplierId={order.supplier.id} />
+                <SupplierDetailModal
+                  supplierId={order.supplier.id}
+                  smallerFont={true}
+                />
               </td>
               <td>{order.quote.status}</td>
               <td>{order.corporate_order_ref}</td>
@@ -92,6 +104,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                   <OrderModal
                     orderObj={order}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
                   />
                 </div>
                 <DeleteButton
@@ -100,6 +113,7 @@ const OrderTable = ({ orderList, handleEdit }) => {
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
                   onSuccessfulDelete={onOrderDelete}
+                  clearSearchValue={clearSearchValue}
                 />
               </td>
             </tr>

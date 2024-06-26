@@ -6,7 +6,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 import Form from "react-bootstrap/Form";
 import { showToast } from "../../config_and_helpers/helpers";
 import { AppContext } from "../../App";
-import CheckIcon from "@mui/icons-material/Check";
+import { CheckLg } from "react-bootstrap-icons";
 import {
   getProductDetails,
   getProductSelectList,
@@ -130,14 +130,14 @@ const UpdateAmountModal = ({
 
           {/* Button to execute the stock update. Disabled if the input is negative */}
           <Button
-            disabled={isInputNegative}
+            disabled={!amount || isInputNegative}
             variant="outline-success"
             onClick={() => {
               handleShow();
             }}
             className="rounded-edge-button-right"
           >
-            <CheckIcon />
+            <CheckLg size={25} />
           </Button>
 
           {/* Negative feedback if the number entered is negative */}

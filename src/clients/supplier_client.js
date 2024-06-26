@@ -330,6 +330,7 @@ export const getSupplierDetails = async (
  */
 export const checkSupplierEmail = async (token, value) => {
   // Try to send a GET request to check if a supplier's email is unique
+
   try {
     const response = await axios.get(
       `${BACKEND_URL}suppliers/check_email/?value=${value}`,
@@ -419,6 +420,30 @@ export const checkSupplierName = async (token, name) => {
     return response.data.unique;
 
     // If any error occurs during the name uniqueness check
+  } catch (error) {
+    // Log the error details to the console
+    console.error(error.response.data);
+    // Return the error message as the response data
+    return Object.values(error.response.data);
+  }
+};
+
+export const checkSupplierSecondaryEmail = async (token, value) => {
+  // Try to send a GET request to check if a supplier's secondary email is unique
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}suppliers/check_secondary_email/?value=${value}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    );
+
+    // If the request is successful, return the uniqueness check result
+    return response.data.unique;
+
+    // If any error occurs during the secondary email uniqueness check
   } catch (error) {
     // Log the error details to the console
     console.error(error.response.data);

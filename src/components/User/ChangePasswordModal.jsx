@@ -199,7 +199,11 @@ const ChangePasswordModal = ({ userEmail }) => {
   return (
     <>
       {/* Button to trigger the modal. Text and style vary based on userEmail prop */}
-      <Button variant={userEmail ? "primary" : "link"} onClick={handleShow}>
+      <Button
+        variant={userEmail ? "primary" : "link"}
+        onClick={handleShow}
+        disabled
+      >
         {userEmail ? "Change Password" : "Forgot your password?"}
       </Button>
 

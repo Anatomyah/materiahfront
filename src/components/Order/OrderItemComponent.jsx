@@ -255,52 +255,6 @@ const OrderItemComponent = ({
         stock_items: newStockItemsArray,
       };
 
-      // const currentStockItems = orderObjItemStockItems
-      //   ? orderObjItemStockItems
-      //   : updatedItems[orderItemIndex].stock_items || [];
-      // const newQuantity = parseInt(quoteItemQuantity, 10);
-      //
-      // let newStockItemsArray;
-      //
-      // if (orderObjItemStockItems) {
-      //   newStockItemsArray = orderObjItemStockItems;
-      //   const stockItemsArrayLength = orderObjItemStockItems.length;
-      //
-      //   if (newQuantity > stockItemsArrayLength) {
-      //     // Add new stock items if the new quantity is greater than the current length
-      //     const additionalItems = Array.from(
-      //       { length: newQuantity - stockItemsArrayLength },
-      //       () => ({
-      //         expiry: "",
-      //         batch: "",
-      //       }),
-      //     );
-      //     newStockItemsArray = [...orderObjItemStockItems, ...additionalItems];
-      //   } else {
-      //     if (newQuantity > currentStockItems.length) {
-      //       // Add new stock items if the new quantity is greater than the current length
-      //       const additionalItems = Array.from(
-      //         { length: newQuantity - currentStockItems.length },
-      //         () => ({
-      //           expiry: "",
-      //           batch: "",
-      //         }),
-      //       );
-      //
-      //       newStockItemsArray = [...currentStockItems, ...additionalItems];
-      //     } else {
-      //       // Retain only the number of items equal to the new quantity, from the start of the array
-      //       newStockItemsArray = currentStockItems.slice(0, newQuantity);
-      //     }
-      //   }
-      //   handleOrderItemInstantChange("stock_items", newStockItemsArray);
-      //
-      //   updatedItems[orderItemIndex] = {
-      //     ...updatedItems[orderItemIndex],
-      //     stock_items: newStockItemsArray,
-      //   };
-      // }
-
       // If 'otherReasonDetail' exists, clear it out (in case the selectedReason for the
       // item being unfulfilled is 'Other')
       if (formik.values.items[orderItemIndex].otherReasonDetail !== "") {
@@ -413,8 +367,6 @@ const OrderItemComponent = ({
             <Form.Label>Received Quantity</Form.Label>
             <FormControl
               // A bunch of prop assignments for FormControl
-              // onBlur and onFocus handlers for touch feedback //
-              // isValid and isInvalid for displaying validation feedback //
               name={quantityFieldName}
               type="text"
               value={formik.values?.items[orderItemIndex]?.quantity || 0}
@@ -425,10 +377,9 @@ const OrderItemComponent = ({
                 handleQuantityChange(value);
               }}
               onBlur={formik.handleBlur}
-              onFocus={() => formik.setFieldTouched(quantityFieldName, true)}
               isValid={
-                formik.touched.items?.[orderItemIndex]?.quantity &&
-                !formik.errors.items?.[orderItemIndex]?.quantity
+                !formik.errors.items?.[orderItemIndex]?.quantity &&
+                formik.values.items?.[orderItemIndex]?.quantity
               }
               isInvalid={
                 !!formik.errors.items?.[orderItemIndex]?.quantity &&

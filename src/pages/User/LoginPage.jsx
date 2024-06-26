@@ -2,7 +2,6 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../clients/user_client";
 import { AppContext } from "../../App";
-import AccountModal from "../../components/User/AccountModal";
 import Image from "react-bootstrap/Image";
 import Container from "react-bootstrap/Container";
 import { Form, Spinner } from "react-bootstrap";
@@ -96,82 +95,123 @@ const LoginPage = () => {
           }}
         >
           {/* Form component where the form fields are outlined */}
-          {({ handleSubmit, handleChange, values, errors }) => (
-            <Form
-              noValidate
-              onSubmit={handleSubmit}
-              className="d-flex flex-column align-items-center"
-            >
-              {/* Welcome header */}
-              <h1 className="mb-3">Welcome!</h1>
+          {({
+            handleSubmit,
+            handleChange,
+            handleBlur,
+            values,
+            errors,
+            touched,
+          }) => {
+            return (
+              <Form
+                noValidate
+                onSubmit={handleSubmit}
+                className="d-flex flex-column align-items-center"
+              >
+                {/* Welcome header */}
+                <h1 className="mb-3">Welcome!</h1>
 
-              {/* Username field group */}
-              <Form.Group className="mb-3" controlId="loginUsername">
-                <Form.Label>Username</Form.Label>
-                <Form.Control
-                  size="lg"
-                  type="text"
-                  name="username"
-                  value={values.username}
-                  onChange={handleChange}
-                  isInvalid={!!errors.username}
-                />
-                {/* Showing validation error messages */}
-                <Form.Control.Feedback type="invalid">
-                  {errors.username}
-                </Form.Control.Feedback>
-              </Form.Group>
-
-              {/* Password field group */}
-              <Form.Group className="mb-3" controlId="loginPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  size="lg"
-                  type="password"
-                  name="password"
-                  value={values.password}
-                  onChange={handleChange}
-                  isInvalid={!!errors.password}
-                />
-                {/* Showing validation error messages */}
-                <Form.Control.Feedback>{errors.password}</Form.Control.Feedback>
-              </Form.Group>
-
-              {/* Remember Me checkbox */}
-              <Form.Group className="mb-3" controlId="formRememberMe">
-                <Form.Check
-                  type="checkbox"
-                  label="Remember Me"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-              </Form.Group>
-
-              {/* Display alert if there is a login error */}
-              {loginError && (
-                <div className="alert alert-danger mb-3">
-                  Unable to log in with provided credentials
-                </div>
-              )}
-
-              {/* Submit Button. Shows a loading spinner if the form is currently submitting */}
-              {isSubmitting ? (
-                <Button variant="dark" disabled>
-                  <Spinner
+                {/* Username field group */}
+                <Form.Group
+                  className="mb-3 position-relative"
+                  controlId="loginUsername"
+                  style={{ width: "100%", maxWidth: "250px" }}
+                >
+                  <Form.Label>Username</Form.Label>
+                  <Form.Control
                     size="lg"
-                    as="span"
-                    animation="border"
-                    role="status"
-                    aria-hidden="true"
+                    type="text"
+                    name="username"
+                    value={values.username}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={
+                      touched.username && !!errors.username && !values.username
+                    }
                   />
-                </Button>
-              ) : (
-                <Button variant="dark" type="submit" size="lg">
-                  Login
-                </Button>
-              )}
-            </Form>
-          )}
+                  {/* Showing validation error messages */}
+                  <Form.Control.Feedback
+                    type="invalid"
+                    className="position-absolute"
+                    style={{ bottom: "-1.5rem" }}
+                  >
+                    {errors.username}
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                {/* Password field group */}
+                <Form.Group
+                  className="mb-3 mt-2 position-relative"
+                  controlId="loginPassword"
+                  style={{
+                    width: "100%",
+                    maxWidth: "250px",
+                    paddingBottom: "1.5rem",
+                  }}
+                >
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    size="lg"
+                    type="password"
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    isInvalid={
+                      touched.password && !!errors.password && !values.password
+                    }
+                  />
+                  {/* Showing validation error messages */}
+                  <Form.Control.Feedback
+                    type={"invalid"}
+                    className="position-absolute"
+                    style={{ bottom: "0" }} // Adjusted position to bottom 0
+                  >
+                    {errors.password}
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                {/* Remember Me checkbox */}
+                <Form.Group
+                  className="mb-3"
+                  style={{ bottom: "0" }} // Adjusted position to bottom 0
+                  controlId="formRememberMe"
+                >
+                  <Form.Check
+                    type="checkbox"
+                    label="Remember Me"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                </Form.Group>
+
+                {/* Display alert if there is a login error */}
+                {loginError && (
+                  <div className="alert alert-danger mb-3">
+                    Unable to log in with provided credentials
+                  </div>
+                )}
+
+                {/* Submit Button. Shows a loading spinner if the form is currently submitting */}
+                {isSubmitting ? (
+                  <Button variant="dark" disabled>
+                    <Spinner
+                      size="lg"
+                      as="span"
+                      animation="border"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                  </Button>
+                ) : (
+                  <Button variant="dark" type="submit" size="lg">
+                    Login
+                  </Button>
+                )}
+              </Form>
+            );
+          }}
         </Formik>
 
         {/* Links to the account creation and password reset modals */}

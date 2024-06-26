@@ -1,6 +1,6 @@
 import { validateToken } from "../clients/user_client";
 import { toast } from "react-toastify";
-import { differenceInMonths, differenceInDays } from "date-fns";
+import { differenceInDays, differenceInMonths } from "date-fns";
 import { CURRENCY_SYMBOLS } from "./config";
 
 /**
@@ -107,6 +107,7 @@ export const initializeApp = async (
  * @param {boolean} rememberMe - A flag indicating if the 'Remember Me' option was selected during login.
  * @param {Array} cart - The current state of the shopping cart.
  * @param {boolean} notificationsSeen - A flag indicating if the notifications toast was seen
+ * @param {Array} baseMessageThreads - The messages retrieved from the Gmail API
  * @returns {function} - The created handler function for the `beforeunload` window event.
  */
 export const createBeforeUnloadHandler = (
@@ -430,4 +431,87 @@ export const messageFormatDateAndTime = (datetimeStr) => {
  */
 export const calculatePercentage = (constant, variable) => {
   return (variable / constant) * 100;
+};
+
+/**
+ * Updates the stock of a specific product by adding or subtracting 1.
+ * @param {Array} products - Array of product objects.
+ * @param {number} productId - The id of the product to update.
+ * @param {string} operation - The operation to perform ("add" or "subtract").
+ * @returns {Array} - New array of products with the updated stock for the specified product.
+ */
+export const updateProductStockInProductList = (
+  products,
+  productId,
+  operation,
+) => {
+  // Map over the array of products
+  return products.map((product) => {
+    // Check if the current product ID matches the one passed to the function
+    if (product.id === productId) {
+      // If operation is "add", increment the stock by 1, otherwise, decrement
+      const newStock =
+        operation === "add" ? product.stock + 1 : product.stock - 1;
+      // Return the updated product object with the new stock
+      return {
+        ...product,
+        // If the new stock would be less than zero, set it to zero. Otherwise, set it to the value of newStock
+        stock: newStock < 0 ? 0 : newStock,
+      };
+    }
+    // If the product ID does not match, return the original product object
+    return product;
+  });
+};
+
+/**
+ * Format a decimal number string.
+ *
+ * @param {string} numStr - The decimal number as a string.
+ * @returns {number|string} - The formatted number.
+ */
+export const formatDecimalNumber = (numStr) => {
+  // Check if the number has a decimal point
+  if (numStr.includes(".")) {
+    // Split the number into integer and decimal parts
+    let [integerPart, decimalPart] = numStr.split(".");
+
+    // If the second decimal place is zero, return the integer part
+    if (decimalPart[1] === "0") {
+      return parseInt(integerPart, 10);
+    } else {
+      // Otherwise, return the number with only two decimal places
+      return parseFloat(numStr).toFixed(2);
+    }
+  }
+
+  // Return the original number if no formatting is needed
+  return numStr;
+};
+
+/**
+ * Calculates the price after applying a discount.
+ *
+ * @param {string} numStr - The original price as a string.
+ * @param {string} discountStr - The discount percentage as a string.
+ * @returns {number} - The final price after applying the discount.
+ */
+export const calculatePriceAfterDiscount = (numStr, discountStr) => {
+  const price = parseFloat(numStr);
+  const discountPercentage = parseFloat(discountStr);
+
+  const discountAmount = (price * discountPercentage) / 100;
+
+  return price - discountAmount;
+};
+
+/**
+ * Converts a date string from the format "yyyy-mm-dd" to "dd-mm-yyyy".
+ *
+ * @param {string} dateStr - The date string in the format "yyyy-mm-dd".
+ * @returns {string} The converted date string in the format "dd-mm-yyyy".
+ */
+export const formatDateStr = (dateStr) => {
+  const [year, month, day] = dateStr.split("-");
+  return `${day}-${month}-${year}`;
 };

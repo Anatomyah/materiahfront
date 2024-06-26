@@ -24,7 +24,7 @@ const QuotesPage = () => {
             eventKey="unfulfilled"
             onClick={() => setActiveTab("unfulfilled")}
           >
-            {/* Unfulfilled Quotes */}
+            Unfulfilled Quotes
           </Nav.Link>
         </Nav.Item>
         <Nav.Item>
@@ -33,7 +33,7 @@ const QuotesPage = () => {
             eventKey="fulfilled"
             onClick={() => setActiveTab("fulfilled")}
           >
-            {/* Fulfilled Quotes */}
+            Fulfilled Quotes
           </Nav.Link>
         </Nav.Item>
       </Nav>

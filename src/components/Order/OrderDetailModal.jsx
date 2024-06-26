@@ -14,26 +14,24 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import { Accordion, Col, Spinner } from "react-bootstrap";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { formatDateStr } from "../../config_and_helpers/helpers";
 
 /**
- * OrderDetailModal Component
+ * OrderDetailModal component displays the details of an order in a modal.
  *
- * This component takes an order object as props and displays a detailed view of that order in the form of
- * a clickable link that can be opened in a modal. This view includes order information such as
- * the supplier, quote, and items along with their details.
- *
- * @component
- * @prop {object} orderObj The object of the order to be shown in detail view.
- * @prop {function} updateOrders A function to update orders in parent state.
- * @prop {string} orderId A string denoting the order id.
- *
- * @example
- *
- * return (
- *   <OrderDetailModal orderObj={sampleOrderObject} updateOrders={updateOrderListFunction} orderId={"orderid123"} />
- * );
+ * @param {Object} props - The props object that contains the necessary data and callbacks.
+ * @param {Object} props.orderObj - The Order object to display in the modal.
+ * @param {Function} props.updateOrders - Callback function to update the list of orders.
+ * @param {Number} props.orderId - The order ID to use (if orderObj is null or undefined).
+ * @param {Function} props.clearSearchValue - Callback function to clear the search value.
+ * @returns {JSX.Element} - The rendered OrderDetailModal component.
  */
-const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
+const OrderDetailModal = ({
+  orderObj,
+  updateOrders,
+  orderId,
+  clearSearchValue,
+}) => {
   // Hooks for necessary states and context values
   const { token } = useContext(AppContext);
   const { toggleOrderDeleted } = useContext(OrderDeletionContext);
@@ -138,7 +136,7 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                     <p className="fs-6 fw-bold">Arrival Date:</p>
                   </Col>
                   <Col>
-                    <p className="fs-6">{order.arrival_date}</p>
+                    <p className="fs-6">{formatDateStr(order.arrival_date)}</p>
                   </Col>
                 </Row>
                 <Row>
@@ -251,6 +249,7 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                   <OrderModal
                     orderObj={order}
                     onSuccessfulSubmit={handleEdit}
+                    clearSearchValue={clearSearchValue}
                   />
                 </div>
 
@@ -261,6 +260,7 @@ const OrderDetailModal = ({ orderObj, updateOrders, orderId }) => {
                   objectId={order.id}
                   deleteFetchFunc={deleteOrder}
                   onSuccessfulDelete={onOrderDelete} // Triggers the provided onDelete function when the delete operation is successful
+                  clearSearchValue={clearSearchValue}
                 />
               </div>
 

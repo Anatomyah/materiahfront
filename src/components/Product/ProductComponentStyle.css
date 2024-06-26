@@ -2,7 +2,7 @@
 Applies a bottom-margin to fields, ideal for keeping vertical rhythm in form layouts
 */
 .field-margin {
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
 }
 
 /*
@@ -20,6 +20,13 @@ Rounds the right-side corners of a button
     border-bottom-right-radius: 5px !important;
 }
 
+/* Custom styles for the disabled button */
+button.rounded-edge-button-right:disabled {
+    border: none;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
 .bold-checkbox input[type="checkbox"] {
     height: 20px; /* Increase size */
     width: 20px; /* Increase size */
@@ -34,4 +41,23 @@ Rounds the right-side corners of a button
 .modal-90w {
     width: 100%; /* Set the width of the modal */
     max-width: none; /* Override the default max-width */
+}
+
+/* Custom Tooltip Styles */
+.custom-tooltip .tooltip-inner {
+    background-color: #f8f9fa; /* Light background color */
+    color: #343a40; /* Dark text color */
+    border: 1px solid #dee2e6;
+}
+
+.custom-tooltip .tooltip-arrow {
+    border-top-color: #dee2e6;
+}
+
+.bordered-shadow-container {
+    border: 1px solid #ddd; /* Example border */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Example shadow */
+    padding: 15px; /* Add padding to the container */
+    word-wrap: break-word; /* Ensure long words break appropriately */
+    white-space: pre-wrap; /* Ensure newlines and whitespace are preserved */
 }

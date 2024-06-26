@@ -7,14 +7,14 @@ import SupplierModal from "./SupplierModal";
 import SupplierDetailModal from "./SupplierDetailModal";
 
 /**
- * `SupplierTable` is a functional component that renders a data table of suppliers.
- * It displays the supplier's details and provides functionality to edit and delete a supplier.
+ * SupplierTable is a functional component that renders a table of suppliers.
  *
- * @component
- * @prop {Object[]} supplierList - Array of supplier objects to display in the table
- * @prop {Function} handleEdit - Function to handle the event when a supplier is edited or deleted
+ * @param {Object} supplierList - The list of suppliers to display in the table.
+ * @param {Function} handleEdit - The function to handle edits made to a supplier.
+ * @param {Function} clearSearchValue - The function to clear the search value.
+ * @returns {JSX.Element} - Returns the rendered table component.
  */
-const SupplierTable = ({ supplierList, handleEdit }) => {
+const SupplierTable = ({ supplierList, handleEdit, clearSearchValue }) => {
   return (
     <Table striped bordered hover>
       {/* Start of the Table component */}
@@ -38,6 +38,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
               <SupplierDetailModal
                 supplierObj={supplier} // Pass the current supplier to the Detail Modal component
                 updateSuppliers={handleEdit} // Pass the handleEdit function to the Detail Modal component
+                clearSearchValue={clearSearchValue}
               />
             </td>
             <td>
@@ -62,6 +63,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
               <SupplierModal
                 supplierObj={supplier} // Pass the current supplier to the Modal component
                 onSuccessfulSubmit={handleEdit} //* Pass the handleEdit function to the Modal component
+                clearSearchValue={clearSearchValue}
               />
               <DeleteButton
                 objectType="supplier" // Object type is supplier
@@ -69,6 +71,7 @@ const SupplierTable = ({ supplierList, handleEdit }) => {
                 objectId={supplier.id} // Pass supplier ID
                 deleteFetchFunc={deleteSupplier} //Pass deleteSupplier function
                 onSuccessfulDelete={handleEdit} // Once deletion is successful, refresh supplier list using handleEdit function
+                clearSearchValue={clearSearchValue}
               />
             </td>
           </tr>

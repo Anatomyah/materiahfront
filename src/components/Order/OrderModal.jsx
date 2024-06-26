@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { AppContext, OrderDeletionContext } from "../../App";
 import {
   getOpenQuotesSelectList,
@@ -10,12 +10,11 @@ import { createOrder, updateOrder } from "../../clients/order_client";
 import * as yup from "yup";
 import { Col, Form, Spinner } from "react-bootstrap";
 import { Formik } from "formik";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { PencilFill } from "react-bootstrap-icons";
+import { PencilFill, FiletypePdf, TrashFill } from "react-bootstrap-icons";
 import { showToast } from "../../config_and_helpers/helpers";
 import { OrderContext } from "../../pages/Order/OrdersPage";
 import OrderItemComponent from "./OrderItemComponent";
+import RequiredAsteriskComponent from "../Generic/RequiredAsteriskComponent";
 
 /**
  * ItemSchema Yup Validation Schema
@@ -64,7 +63,9 @@ const createFormSchema = ({ hasExistingImages }) =>
     arrivalDate: yup
       .date()
       .required("Arrival date is required.")
-      .typeError("Invalid date format. Please enter a valid date."),
+      .typeError("Invalid date format. Please enter a valid date.")
+      .max(new Date(), "Date of arrival cannot be in the future"),
+
     orderImages: yup
       .mixed()
       .when([], () => {
@@ -94,33 +95,20 @@ const createFormSchema = ({ hasExistingImages }) =>
   });
 
 /**
- * OrderModal Component
- *
- * This component is a bootstrapped Modal which presents a Form to the user.
- * The form is utilized to either create a new order or update an existing order.
- *
- * @component
- * @prop {function} onSuccessfulSubmit Function called when order is successfully submitted
- * @prop {object} orderObj Object of existing order when updating an order
- * @prop {boolean} homeShowModal Boolean used to manually control the showing of this modal
- * @prop {function} setHomeShowModal Function to sets the value of homeShowModal
- *
- * @example
- *
- * return (
- *   <OrderModal
- *     onSuccessfulSubmit={updateOrderList}
- *     orderObj={existingOrder}
- *     homeShowModal={modalVisible}
- *     setHomeShowModal={setModalVisible}
- *   />
- * );
+ * Represents a modal component for creating or updating an order.
+ * @constructor
+ * @param {function} onSuccessfulSubmit - The function to be called when the form submission is successful.
+ * @param {object} orderObj - The object representing the order. If provided, the modal will be used to update an existing order.
+ * @param {boolean} homeShowModal - A flag indicating whether the modal should be shown when the component is rendered.
+ * @param {function} setHomeShowModal - The function to be called to update the flag for showing the modal.
+ * @param {function} clearSearchValue - The function to be called to clear the search value.
  */
 const OrderModal = ({
   onSuccessfulSubmit,
   orderObj,
   homeShowModal,
   setHomeShowModal,
+  clearSearchValue,
 }) => {
   // useContext - Fetches the user token from the overall app context.
   const { token } = useContext(AppContext);
@@ -350,12 +338,13 @@ const OrderModal = ({
     orderPromise.then((response) => {
       if (response && response.success) {
         setTimeout(() => {
-          onSuccessfulSubmit();
+          if (onSuccessfulSubmit) onSuccessfulSubmit();
+          if (clearSearchValue) clearSearchValue();
           response.toast();
           setIsSubmitting(false);
           handleClose();
           if (orderObj) setOrderUpdated(true);
-        }, 1000);
+        }, 2000);
       } else {
         // If there was an error, we halt the submission process and display a notification with the error message.
         showToast(
@@ -509,7 +498,7 @@ const OrderModal = ({
                     )}
 
                     {/* Link to Quote */}
-                    {relatedQuoteObj && !orderObj && (
+                    {relatedQuoteObj && (
                       <div style={{ marginTop: "1.95rem" }}>
                         <a
                           href={
@@ -519,10 +508,10 @@ const OrderModal = ({
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-outline-dark"
+                          className="btn btn-outline-dark align-middle p-2 me-3 d-flex align-items-center"
                         >
-                          {orderObj && "View Quote "}
-                          <PictureAsPdfIcon />
+                          <FiletypePdf size={20} className={"me-2"} />
+                          <p className="mb-0">Quote</p>
                         </a>
                       </div>
                     )}
@@ -542,7 +531,7 @@ const OrderModal = ({
                       style={{ margin: "1rem" }}
                     >
                       {orderObj && "View Quote "}
-                      <PictureAsPdfIcon />
+                      <FiletypePdf />
                     </a>
                   )}
 
@@ -616,7 +605,8 @@ const OrderModal = ({
                         className="field-margin"
                       >
                         <Form.Label>
-                          Upload Order Receipt (pdf, jpg, png, gif)
+                          Upload Order Receipt (pdf, jpg, png, gif){" "}
+                          <RequiredAsteriskComponent />
                         </Form.Label>
                         <Form.Control
                           type="file"
@@ -629,6 +619,7 @@ const OrderModal = ({
                             handleFileChange(files);
                             setFieldValue("orderImages", files);
                           }}
+                          onBlur={handleBlur}
                           isValid={values.orderImages && images.length}
                           isInvalid={
                             touched.orderImages &&
@@ -645,37 +636,38 @@ const OrderModal = ({
                       <div>
                         {/* Display of Existing Images */}
                         <div className="field-margin">
-                          {images.map((image) => {
+                          {images.map((image, index) => {
                             let imageUrl =
                               image.image_url ||
                               URL.createObjectURL(image.file);
 
-                            const isPdf = imageUrl
+                            const isPdf = image?.file?.name
                               .toLowerCase()
                               .endsWith(".pdf");
 
                             return (
                               <div key={image.id}>
                                 {isPdf ? (
-                                  <>
+                                  <div className={`${index > 0 && "mt-2"}`}>
                                     <a
                                       href={imageUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="btn btn-outline-dark"
-                                      style={{ width: "200px" }}
+                                      className="btn btn-outline-dark align-middle p-3 me-3"
                                     >
-                                      <PictureAsPdfIcon />
+                                      <FiletypePdf size={30} />
                                     </a>
-                                    <DeleteIcon
+                                    <TrashFill
+                                      size={20}
+                                      color={"red"}
                                       onClick={() =>
                                         handleDeleteImage(image.id)
                                       }
                                       style={{ cursor: "pointer" }}
                                     />
-                                  </>
+                                  </div>
                                 ) : (
-                                  <>
+                                  <div className={`${index > 0 && "mt-2"}`}>
                                     <a
                                       href={imageUrl}
                                       target="_blank"
@@ -685,15 +677,18 @@ const OrderModal = ({
                                         src={imageUrl}
                                         alt={`product-${values.catalogueNumber}-image-${image.id}`}
                                         width="200"
+                                        className={"me-3"}
                                       />
                                     </a>
-                                    <DeleteIcon
+                                    <TrashFill
+                                      size={20}
+                                      color={"red"}
                                       onClick={() =>
                                         handleDeleteImage(image.id)
                                       }
                                       style={{ cursor: "pointer" }}
                                     />
-                                  </>
+                                  </div>
                                 )}
                               </div>
                             );
@@ -706,7 +701,9 @@ const OrderModal = ({
                         controlId="formArrivalDate"
                         className="field-margin"
                       >
-                        <Form.Label>Arrival Date</Form.Label>
+                        <Form.Label>
+                          Arrival Date <RequiredAsteriskComponent />
+                        </Form.Label>
                         <Form.Control
                           type="date"
                           name="arrivalDate"
@@ -715,12 +712,9 @@ const OrderModal = ({
                             handleChange(e);
                             setFieldValue("arrivalDate", e.target.value);
                           }}
-                          onFocus={() => setFieldTouched("arrivalDate", true)}
                           onBlur={handleBlur}
-                          isInvalid={
-                            touched.arrivalDate && !!errors.arrivalDate
-                          }
-                          isValid={touched.arrivalDate && !errors.arrivalDate}
+                          isInvalid={!!errors.arrivalDate}
+                          isValid={!errors.arrivalDate && values.arrivalDate}
                         />
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -735,16 +729,23 @@ const OrderModal = ({
                         controlId="receivedBy"
                         className="field-margin"
                       >
-                        <Form.Label>Received By</Form.Label>
+                        <Form.Label>
+                          Received By <RequiredAsteriskComponent />
+                        </Form.Label>
                         <Form.Control
                           type="text"
                           name="receivedBy"
                           value={values.receivedBy}
                           onChange={handleChange}
-                          onFocus={() => setFieldTouched("receivedBy", true)}
                           onBlur={handleBlur}
-                          isInvalid={touched.receivedBy && !!errors.receivedBy}
-                          isValid={touched.receivedBy && !errors.receivedBy}
+                          isValid={!errors.receivedBy && values?.receivedBy}
+                          isInvalid={
+                            (touched?.receivedBy && !values?.receivedBy) ||
+                            (errors?.receivedBy &&
+                              errors?.receivedBy !==
+                                "Received by is required" &&
+                              values?.receivedBy)
+                          }
                         />
                         <Form.Control.Feedback type="valid">
                           Looks good!
@@ -757,23 +758,26 @@ const OrderModal = ({
                         controlId="corporateOrderRef"
                         className="field-margin"
                       >
-                        <Form.Label>Order Reference</Form.Label>
+                        <Form.Label>
+                          Order Reference <RequiredAsteriskComponent />
+                        </Form.Label>
                         <Form.Control
                           type="text"
                           name="corporateOrderRef"
                           value={values.corporateOrderRef}
                           onChange={handleChange}
-                          onFocus={() =>
-                            setFieldTouched("corporateOrderRef", true)
-                          }
                           onBlur={handleBlur}
-                          isInvalid={
-                            touched.corporateOrderRef &&
-                            !!errors.corporateOrderRef
-                          }
                           isValid={
-                            touched.corporateOrderRef &&
-                            !errors.corporateOrderRef
+                            !errors.corporateOrderRef &&
+                            values?.corporateOrderRef
+                          }
+                          isInvalid={
+                            (touched?.corporateOrderRef &&
+                              !values?.corporateOrderRef) ||
+                            (errors?.corporateOrderRef &&
+                              errors?.corporateOrderRef !==
+                                "Order reference field is required." &&
+                              values?.corporateOrderRef)
                           }
                         />
                         <Form.Control.Feedback type="valid">
